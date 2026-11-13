@@ -453,6 +453,9 @@ const tfBooking = {
         const pkgs  = window.twellerBooking.packages || {};
         const type  = types[s.sessionTypeKey];
         if (!type) { this.clearState(); return; }
+        // A draft for a session with its own page resumes there, not here:
+        // Book Us keeps showing its menu (no surprise redirect).
+        if (this.landingFor(s.sessionTypeKey)) return;
 
         // Rebuild the chain step by step, stopping wherever the saved data no
         // longer holds up — a package that was withdrawn, a date now in the
@@ -834,8 +837,24 @@ const tfBooking = {
         }
     },
 
+    // A session with its own landing page (Christmas) opens that page,
+    // carrying the ad parameters along.
+    landingFor(key) {
+        if (this.locked) return '';
+        const l = (window.twellerBooking.landings || {})[key];
+        if (!l) return '';
+        try {
+            const u = new URL(l, location.href);
+            if (u.pathname.replace(/\/+$/, '') === location.pathname.replace(/\/+$/, '')) return '';
+            new URLSearchParams(location.search).forEach((v, k) => { if (k !== 'session' && k !== 'package' && !u.searchParams.has(k)) u.searchParams.set(k, v); });
+            return u.href;
+        } catch (e) { return l; }
+    },
+
     selectSessionType(key, type) {
         if (key === 'weddings') return;
+        const landing = this.landingFor(key);
+        if (landing) { window.location.href = landing; return; }
         this.selectedSessionTypeKey = key;
         this.selectedSessionData = type;
         this.selectedPackageKey = null;

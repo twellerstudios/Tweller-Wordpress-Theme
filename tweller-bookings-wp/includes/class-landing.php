@@ -31,6 +31,7 @@ class TwellerFlow2_Landing {
         add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue' ), 20 );
         add_action( 'tweller_flow_2_session_created', array( __CLASS__, 'note_early_bird' ), 20, 2 );
         add_filter( 'tweller_flow_2_booking_backdrops', array( __CLASS__, 'backdrops' ) );
+        add_filter( 'tweller_flow_2_session_landings', array( __CLASS__, 'landings' ) );
         add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ), 20 );
         add_action( 'admin_init', array( __CLASS__, 'admin_save' ) );
         add_action( 'admin_enqueue_scripts', array( __CLASS__, 'admin_assets' ) );
@@ -163,10 +164,50 @@ class TwellerFlow2_Landing {
         return $is = ( $page && is_page( $page ) && TwellerFlow2_Booking_Links::requested_key() === $s['session_key'] );
     }
 
+    /**
+     * The page renders inside the site's own header and footer (the theme's
+     * menu stays). Astra is asked for a full-width, title-less layout so the
+     * hero can run edge to edge; the share tags are swapped in the finished
+     * HTML (see filter_html) so the theme's <head> is left as it is.
+     */
     public static function template( $template ) {
         if ( ! self::is_landing() ) return $template;
-        add_filter( 'show_admin_bar', '__return_false' );
+        add_filter( 'astra_get_content_layout', function () { return 'page-builder'; } );
+        add_filter( 'astra_page_layout', function () { return 'no-sidebar'; } );
+        add_filter( 'astra_the_title_enabled', '__return_false' );
+        add_filter( 'body_class', function ( $c ) { $c[] = 'tw-xmas-page'; $c[] = 'ast-page-builder-template'; return $c; } );
+        add_action( 'wp_head', array( __CLASS__, 'preloads' ), 2 );
+        ob_start( array( __CLASS__, 'filter_html' ) );
         return TWELLER_FLOW_2_PLUGIN_DIR . 'templates/landing-christmas.php';
+    }
+
+    /** Hero image + display font preloads (LCP). */
+    public static function preloads() {
+        $s = self::settings();
+        $first = $s['scenes'][0] ?? null;
+        if ( $first && empty( $first['image_id'] ) ) {
+            echo '<link rel="preload" as="image" href="' . esc_url( TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/christmas/' . sanitize_file_name( $first['slug'] ) . '-portrait-900.webp?v=' . self::ASSET_VER ) . '" media="(max-width: 700px) and (orientation: portrait)" fetchpriority="high">' . "\n";
+        }
+        echo '<link rel="preload" as="font" type="font/woff2" href="' . esc_url( TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/fonts/cormorant-garamond-latin-600-normal.woff2' ) . '" crossorigin>' . "\n";
+    }
+
+    /** Before & after pairs shown on the page (web only). */
+    public static function before_after() {
+        $base = TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/christmas/before-after/';
+        $v    = '?v=' . self::ASSET_VER;
+        $pairs = array(
+            array( 'n' => 1, 'label' => 'Snowy Window',     'w' => 1183, 'h' => 845 ),
+            array( 'n' => 2, 'label' => 'Champagne Gold',   'w' => 1200, 'h' => 1199 ),
+            array( 'n' => 3, 'label' => 'Fireside Library', 'w' => 1178, 'h' => 884 ),
+        );
+        $out = array();
+        foreach ( $pairs as $p ) {
+            if ( ! file_exists( TWELLER_FLOW_2_PLUGIN_DIR . 'public/landing/christmas/before-after/ba' . $p['n'] . '-after.webp' ) ) continue;
+            $p['before'] = $base . 'ba' . $p['n'] . '-before.webp' . $v;
+            $p['after']  = $base . 'ba' . $p['n'] . '-after.webp' . $v;
+            $out[] = $p;
+        }
+        return apply_filters( 'tweller_flow_2_christmas_before_after', $out );
     }
 
     public static function enqueue() {
@@ -185,15 +226,6 @@ class TwellerFlow2_Landing {
             'contentName'  => TwellerFlow2_Session::session_type_label( $s['session_key'] ),
         ) );
 
-        // Astra / Elementor header-footer chrome isn't printed by this
-        // template; drop the heaviest of their front-end styles too.
-        // The theme's own stylesheets style markup this template doesn't
-        // print, and their heading colours would fight the page's.
-        foreach ( array( 'elementor-frontend', 'hfe-style', 'hfe-widgets-style', 'elementor-icons',
-                         'astra-theme-css', 'astra-addon-css', 'woocommerce-general', 'woocommerce-layout',
-                         'woocommerce-smallscreen', 'wc-blocks-style', 'global-styles', 'classic-theme-styles' ) as $h ) {
-            wp_dequeue_style( $h );
-        }
     }
 
     // ── Dates ────────────────────────────────────────
@@ -243,6 +275,16 @@ class TwellerFlow2_Landing {
             'extra'       => self::early_bird_active(),
             'extra_label' => 'Early bird: pick your free extra scene',
         );
+        return $all;
+    }
+
+    /** Book Us → Christmas Photos opens this page instead of the package step. */
+    public static function landings( $all ) {
+        $s = self::settings();
+        if ( ! empty( $s['enabled'] ) ) {
+            $url = TwellerFlow2_Booking_Links::link_for( $s['session_key'] );
+            if ( $url ) $all[ $s['session_key'] ] = $url;
+        }
         return $all;
     }
 
@@ -346,15 +388,17 @@ class TwellerFlow2_Landing {
     }
 
     /**
-     * wp_head() output with every other plugin's social-preview tags and
+     * The page's <head> with every other plugin's social-preview tags and
      * <title> replaced by this page's own — the SEO Framework, the booking
      * links class and Astra would otherwise each print a set, and Facebook
      * reads the first.
      */
-    public static function head() {
-        ob_start();
-        wp_head();
-        $html = ob_get_clean();
+    public static function filter_html( $html ) {
+        $end = stripos( $html, '</head>' );
+        if ( $end === false ) return $html;
+        $head = substr( $html, 0, $end );
+        $rest = substr( $html, $end );
+        $html = $head;
         $html = preg_replace( '#<meta\s+(?:property|name)=["\'](?:og|twitter|article):[^>]*>\s*#i', '', $html );
         $html = preg_replace( '#<meta\s+name=["\']description["\'][^>]*>\s*#i', '', $html );
         $html = preg_replace( '#<link\s+rel=["\']canonical["\'][^>]*>\s*#i', '', $html );
@@ -376,7 +420,7 @@ class TwellerFlow2_Landing {
         $tags .= "<meta name=\"twitter:card\" content=\"summary_large_image\">\n";
         $tags .= '<meta name="twitter:title" content="' . esc_attr( self::share_title() ) . "\">\n";
         $tags .= '<meta name="twitter:image" content="' . esc_url( $og['url'] ) . "\">\n";
-        echo $tags . $html; // phpcs:ignore WordPress.Security.EscapeOutput -- wp_head output plus escaped tags
+        return $html . $tags . $rest;
     }
 
     // ── Admin ────────────────────────────────────────

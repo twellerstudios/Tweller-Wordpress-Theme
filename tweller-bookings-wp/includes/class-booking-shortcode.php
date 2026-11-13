@@ -57,6 +57,9 @@ class TwellerFlow2_Booking_Shortcode {
             // Visual backdrop picker per session type (Christmas scenes…),
             // supplied by TwellerFlow2_Landing; empty = no picker.
             'backdrops' => self::backdrops(),
+            // Session types with their own landing page (Christmas): picking
+            // them on Book Us opens that page.
+            'landings' => (array) apply_filters( 'tweller_flow_2_session_landings', array() ),
         ));
     }
 

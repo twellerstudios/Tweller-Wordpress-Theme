@@ -38,36 +38,12 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
     $out .= '<img ' . $src_attr . '="' . esc_url( $img['md'] ) . '" width="' . (int) $img['lg_w'] . '" height="' . (int) $img['lg_h'] . '" alt="' . esc_attr( $scene['name'] . ' Christmas scene' ) . '" style="object-position:' . esc_attr( $scene['focus'] ) . '"' . $a . '>';
     return $out . '</picture>';
 };
-?><!doctype html>
-<html <?php language_attributes(); ?>>
-<head>
-<meta charset="<?php bloginfo( 'charset' ); ?>">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#14110F">
-<?php if ( empty( $scenes[0]['image_id'] ) ) : ?>
-<link rel="preload" as="image" href="<?php echo esc_url( TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/christmas/' . sanitize_file_name( $scenes[0]['slug'] ) . '-portrait-900.webp?v=' . TwellerFlow2_Landing::ASSET_VER ); ?>" media="(max-width: 700px) and (orientation: portrait)" fetchpriority="high">
-<?php endif; ?>
-<link rel="preload" as="font" type="font/woff2" href="<?php echo esc_url( $font_url ); ?>" crossorigin>
-<?php $L::head(); ?>
-</head>
-<body <?php body_class( 'tw-xmas' ); ?>>
-<?php if ( function_exists( 'wp_body_open' ) ) wp_body_open(); ?>
+?><?php get_header(); ?>
+<div class="tw-xmas" id="tw-xmas">
 <a class="tw-skip" href="#packages">Skip to packages</a>
 
-<header class="tw-top">
-    <a class="tw-top__brand" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Tweller Studios home">
-        <?php
-        $logo_id = (int) get_theme_mod( 'custom_logo' );
-        if ( $logo_id ) {
-            echo wp_get_attachment_image( $logo_id, 'thumbnail', false, array( 'class' => 'tw-top__logo', 'alt' => 'Tweller Studios', 'loading' => 'eager', 'decoding' => 'async' ) );
-        }
-        ?>
-        <span class="tw-top__name">Tweller Studios</span>
-    </a>
-    <a class="tw-top__cta" href="#packages" data-scroll>Book now</a>
-</header>
+<div class="tw-main">
 
-<main id="main">
 
 <!-- 1 · Hero -->
 <section class="tw-hero" aria-labelledby="tw-hero-title">
@@ -99,7 +75,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <!-- 2 · Pick your scene -->
 <section class="tw-sec tw-scenes" aria-labelledby="tw-scenes-title">
     <div class="tw-wrap">
-        <p class="tw-kicker">01 · Digital backdrops</p>
+        <p class="tw-kicker">Digital backdrops</p>
         <h2 id="tw-scenes-title" class="tw-h2">Pick your digital scene</h2>
         <p class="tw-lede">These are digital backdrops, not physical sets: we photograph your family on a white backdrop, then place the backdrop you choose in.</p>
         <ol class="tw-digital" aria-label="How digital backdrops work">
@@ -108,26 +84,69 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
             <li><span class="tw-digital__n">3</span><b>We place the backdrop in</b><small>Light and colour matched so it looks natural</small></li>
         </ol>
     </div>
-    <ul class="tw-scenes__row" role="list">
-        <?php foreach ( $scenes as $i => $scene ) : $img = $L::scene_images( $scene ); ?>
-        <li class="tw-scene">
-            <button type="button" class="tw-scene__btn" data-scene="<?php echo (int) $i; ?>" aria-label="View <?php echo esc_attr( $scene['name'] ); ?> full screen">
-                <img src="<?php echo esc_url( $img['sm'] ); ?>" srcset="<?php echo esc_url( $img['sm'] ); ?> <?php echo (int) $img['sm_w']; ?>w, <?php echo esc_url( $img['md'] ); ?> <?php echo (int) $img['md_w']; ?>w" sizes="(min-width: 900px) 45vw, 80vw" width="<?php echo (int) $img['sm_w']; ?>" height="<?php echo (int) $img['sm_h']; ?>" alt="<?php echo esc_attr( $scene['name'] . ' Christmas scene' ); ?>" loading="lazy" decoding="async">
-                <span class="tw-scene__badge">Digital backdrop</span>
-                <span class="tw-scene__expand" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span>
+    <div class="tw-wrap">
+    <div class="tw-slider" data-slider aria-roledescription="carousel" aria-label="Digital Christmas backdrops">
+        <div class="tw-slider__track" data-track tabindex="0">
+            <?php foreach ( $scenes as $i => $scene ) : $img = $L::scene_images( $scene ); ?>
+            <figure class="tw-slide" aria-roledescription="slide" aria-label="<?php echo esc_attr( ( $i + 1 ) . ' of ' . count( $scenes ) . ': ' . $scene['name'] ); ?>">
+                <button type="button" class="tw-slide__img" data-scene="<?php echo (int) $i; ?>" aria-label="View <?php echo esc_attr( $scene['name'] ); ?> full screen">
+                    <img src="<?php echo esc_url( $img['md'] ); ?>" srcset="<?php echo esc_url( $img['md'] ); ?> <?php echo (int) $img['md_w']; ?>w, <?php echo esc_url( $img['lg'] ); ?> <?php echo (int) $img['lg_w']; ?>w" sizes="(min-width: 1120px) 1060px, 100vw" width="<?php echo (int) $img['lg_w']; ?>" height="<?php echo (int) $img['lg_h']; ?>" alt="<?php echo esc_attr( $scene['name'] . ' digital Christmas backdrop' ); ?>" loading="lazy" decoding="async">
+                    <span class="tw-scene__badge">Digital backdrop</span>
+                    <span class="tw-scene__expand" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span>
+                </button>
+                <figcaption class="tw-slide__cap">
+                    <span class="tw-slide__no"><?php echo esc_html( sprintf( '%02d / %02d', $i + 1, count( $scenes ) ) ); ?></span>
+                    <b class="tw-slide__name"><?php echo esc_html( $scene['name'] ); ?></b>
+                    <span class="tw-slide__desc"><?php echo esc_html( $scene['desc'] ); ?></span>
+                    <button type="button" class="tw-slide__pick" data-pick="<?php echo esc_attr( sanitize_key( $scene['slug'] ) ); ?>">Choose this backdrop</button>
+                </figcaption>
+            </figure>
+            <?php endforeach; ?>
+        </div>
+        <button type="button" class="tw-slider__arrow tw-slider__arrow--prev" data-prev aria-label="Previous backdrop"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="tw-slider__arrow tw-slider__arrow--next" data-next aria-label="Next backdrop"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="tw-slider__thumbs" role="tablist" aria-label="Choose a backdrop to view">
+            <?php foreach ( $scenes as $i => $scene ) : $img = $L::scene_images( $scene ); ?>
+            <button type="button" class="tw-thumb<?php echo $i === 0 ? ' is-active' : ''; ?>" role="tab" aria-selected="<?php echo $i === 0 ? 'true' : 'false'; ?>" data-go="<?php echo (int) $i; ?>">
+                <img src="<?php echo esc_url( $img['sm'] ); ?>" width="<?php echo (int) $img['sm_w']; ?>" height="<?php echo (int) $img['sm_h']; ?>" alt="" loading="lazy" decoding="async">
+                <span><?php echo esc_html( $scene['name'] ); ?></span>
             </button>
-            <h3 class="tw-scene__name"><?php echo esc_html( $scene['name'] ); ?></h3>
-            <p class="tw-scene__desc"><?php echo esc_html( $scene['desc'] ); ?></p>
-        </li>
-        <?php endforeach; ?>
-    </ul>
-    <p class="tw-wrap tw-swipe" aria-hidden="true">Swipe to see all 4 →</p>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    </div>
 </section>
+
+<!-- Before & after (web page only) -->
+<?php $ba = $L::before_after(); if ( $ba ) : ?>
+<section class="tw-sec tw-ba" aria-labelledby="tw-ba-title">
+    <div class="tw-wrap">
+        <p class="tw-kicker">What to expect</p>
+        <h2 id="tw-ba-title" class="tw-h2">Before &amp; after</h2>
+        <p class="tw-lede">Real Tweller Studios sessions. Drag the slider: on the left, the photo as we took it; on the right, the finished photo with the digital backdrop placed in.</p>
+        <div class="tw-ba__tabs" role="tablist" aria-label="Before and after examples">
+            <?php foreach ( $ba as $i => $pair ) : ?>
+                <button type="button" class="tw-ba__tab<?php echo $i === 0 ? ' is-active' : ''; ?>" role="tab" aria-selected="<?php echo $i === 0 ? 'true' : 'false'; ?>" data-ba-tab="<?php echo (int) $i; ?>"><?php echo esc_html( $pair['label'] ); ?></button>
+            <?php endforeach; ?>
+        </div>
+        <?php foreach ( $ba as $i => $pair ) : ?>
+        <div class="tw-compare" data-compare data-ba-panel="<?php echo (int) $i; ?>" style="--pos: 50%; --ar: <?php echo esc_attr( round( $pair['w'] / $pair['h'], 4 ) ); ?>; aspect-ratio: <?php echo (int) $pair['w']; ?> / <?php echo (int) $pair['h']; ?>;"<?php echo $i === 0 ? '' : ' hidden'; ?>>
+            <img class="tw-compare__after" src="<?php echo esc_url( $pair['after'] ); ?>" width="<?php echo (int) $pair['w']; ?>" height="<?php echo (int) $pair['h']; ?>" alt="<?php echo esc_attr( 'After: finished photo with the ' . $pair['label'] . ' digital backdrop' ); ?>" loading="lazy" decoding="async">
+            <img class="tw-compare__before" src="<?php echo esc_url( $pair['before'] ); ?>" width="<?php echo (int) $pair['w']; ?>" height="<?php echo (int) $pair['h']; ?>" alt="Before: the photo as taken in studio" loading="lazy" decoding="async">
+            <span class="tw-compare__tag tw-compare__tag--before">Before</span>
+            <span class="tw-compare__tag tw-compare__tag--after">After · <?php echo esc_html( $pair['label'] ); ?></span>
+            <span class="tw-compare__line" aria-hidden="true"><span class="tw-compare__knob"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M9 6l-5 6 5 6M15 6l5 6-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>
+            <input class="tw-compare__range" type="range" min="0" max="100" value="50" aria-label="Drag to compare before and after">
+        </div>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
 
 <!-- 3 · Or keep it real -->
 <section class="tw-sec tw-real" aria-labelledby="tw-real-title">
     <div class="tw-wrap">
-        <p class="tw-kicker">02 · Your own setting</p>
+        <p class="tw-kicker">Your own setting</p>
         <h2 id="tw-real-title" class="tw-h2">Or keep it real</h2>
         <p class="tw-lede">Prefer the tree you decorated yourselves? We'll come to you.</p>
         <?php if ( $gallery ) : ?>
@@ -151,7 +170,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <!-- 4 · How it works -->
 <section class="tw-sec tw-how" aria-labelledby="tw-how-title">
     <div class="tw-wrap">
-        <p class="tw-kicker">03 · How it works</p>
+        <p class="tw-kicker">How it works</p>
         <h2 id="tw-how-title" class="tw-h2">Three easy steps</h2>
         <ol class="tw-steps">
             <li><span class="tw-steps__n">1</span><div><h3>Choose your package, date &amp; scene</h3><p>Pick a time and your backdrop online, and secure it with a deposit.</p></div></li>
@@ -164,7 +183,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <!-- 5 · Packages + booking -->
 <section class="tw-sec tw-packages" id="packages" aria-labelledby="tw-pk-title" tabindex="-1">
     <div class="tw-wrap">
-        <p class="tw-kicker">04 · Packages</p>
+        <p class="tw-kicker">Packages</p>
         <h2 id="tw-pk-title" class="tw-h2">Choose your package</h2>
         <p class="tw-lede">Every package: studio or on location · digital scene or your own decor.</p>
 
@@ -262,11 +281,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
     </div>
 </section>
 
-</main>
-
-<footer class="tw-foot">
-    <p>© <?php echo esc_html( gmdate( 'Y' ) ); ?> Tweller Studios · <a href="<?php echo esc_url( $tel ); ?>" data-contact="call"><?php echo esc_html( $L::phone_display() ); ?></a> · <a href="<?php echo esc_url( $gift_url ); ?>">Gift cards</a></p>
-</footer>
+</div><!-- /.tw-main -->
 
 <!-- 10 · Sticky bar (phones), shown once the hero is out of view -->
 <nav class="tw-sticky" aria-label="Book or contact" data-sticky hidden>
@@ -297,6 +312,5 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
     }, $scenes ) );
 ?></script>
 
-<?php wp_footer(); ?>
-</body>
-</html>
+</div><!-- /.tw-xmas -->
+<?php get_footer(); ?>

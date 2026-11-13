@@ -120,6 +120,101 @@
         }
     }
 
+
+    // ── Backdrop slider: swipe (native scroll-snap), arrows, thumbnails, autoplay ──
+    var slider = $('[data-slider]');
+    if (slider) {
+        var track = $('[data-track]', slider);
+        var slides = $$('.tw-slide', slider);
+        var thumbs = $$('[data-go]', slider);
+        var cur = 0, auto = null, userTouched = false;
+        var setW = function () { slider.style.setProperty('--sw', slider.clientWidth + 'px'); };
+        setW(); window.addEventListener('resize', setW);
+        var go = function (i, smooth) {
+            cur = (i + slides.length) % slides.length;
+            track.scrollTo({ left: slides[cur].offsetLeft - track.offsetLeft, behavior: smooth === false || reduce ? 'auto' : 'smooth' });
+        };
+        var paint = function () {
+            var i = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+            cur = Math.max(0, Math.min(slides.length - 1, i));
+            thumbs.forEach(function (t, k) { t.classList.toggle('is-active', k === cur); t.setAttribute('aria-selected', k === cur ? 'true' : 'false'); });
+        };
+        var stop = function () { userTouched = true; if (auto) { clearInterval(auto); auto = null; } };
+        track.addEventListener('scroll', function () { window.requestAnimationFrame(paint); }, { passive: true });
+        ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (ev) { track.addEventListener(ev, stop, { passive: true }); });
+        var prev = $('[data-prev]', slider), next = $('[data-next]', slider);
+        if (prev) prev.addEventListener('click', function () { stop(); go(cur - 1); });
+        if (next) next.addEventListener('click', function () { stop(); go(cur + 1); });
+        thumbs.forEach(function (t) { t.addEventListener('click', function () { stop(); go(parseInt(t.getAttribute('data-go'), 10) || 0); }); });
+        track.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowRight') { e.preventDefault(); go(cur + 1); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); go(cur - 1); }
+        });
+        // Gentle autoplay while the slider is on screen, until someone touches it.
+        if (!reduce && 'IntersectionObserver' in window) {
+            new IntersectionObserver(function (ents) {
+                var vis = ents[0].isIntersecting;
+                if (vis && !auto && !userTouched) auto = setInterval(function () { if (!document.hidden) go(cur + 1); }, 4500);
+                if (!vis && auto) { clearInterval(auto); auto = null; }
+            }, { threshold: 0.5 }).observe(slider);
+        }
+        // "Choose this backdrop": pre-select it in the booking form, then go to packages.
+        $$('[data-pick]', slider).forEach(function (b) {
+            b.addEventListener('click', function () {
+                try { if (window.tfBooking) window.tfBooking.chooseBackdrop(b.getAttribute('data-pick')); } catch (x) {}
+                goToPackages();
+            });
+        });
+    }
+
+    // ── Before & after: drag to compare, tabs between examples ──
+    $$('[data-compare]').forEach(function (box) {
+        var range = $('input[type="range"]', box);
+        var dragging = false;
+        var set = function (pct) {
+            pct = Math.max(0, Math.min(100, pct));
+            box.style.setProperty('--pos', pct + '%');
+            if (range) range.value = Math.round(pct);
+        };
+        var fromEvent = function (e) {
+            var r = box.getBoundingClientRect();
+            set(((e.clientX - r.left) / r.width) * 100);
+        };
+        box.addEventListener('pointerdown', function (e) {
+            dragging = true; box.hinted = true;
+            try { box.setPointerCapture(e.pointerId); } catch (x) {}
+            fromEvent(e);
+        });
+        box.addEventListener('pointermove', function (e) { if (dragging) fromEvent(e); });
+        ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (ev) { box.addEventListener(ev, function () { dragging = false; }); });
+        box.addEventListener('click', function () { if (range) range.focus({ preventScroll: true }); });
+        if (range) range.addEventListener('input', function () { box.hinted = true; set(parseFloat(range.value)); });
+        // A small sweep the first time it scrolls into view, so people see it moves.
+        if (!reduce && 'IntersectionObserver' in window) {
+            var io = new IntersectionObserver(function (ents) {
+                if (!ents[0].isIntersecting || box.hinted) return;
+                box.hinted = true; io.disconnect();
+                var t0 = null;
+                var step = function (t) {
+                    if (!t0) t0 = t;
+                    var k = Math.min(1, (t - t0) / 1600);
+                    set(50 + Math.sin(k * Math.PI * 2) * 18 * (1 - k * 0.2));
+                    if (k < 1 && !dragging) requestAnimationFrame(step); else if (!dragging) set(50);
+                };
+                requestAnimationFrame(step);
+            }, { threshold: 0.6 });
+            io.observe(box);
+        }
+    });
+    var tabs = $$('[data-ba-tab]');
+    tabs.forEach(function (t) {
+        t.addEventListener('click', function () {
+            var n = t.getAttribute('data-ba-tab');
+            tabs.forEach(function (o) { var on = o === t; o.classList.toggle('is-active', on); o.setAttribute('aria-selected', on ? 'true' : 'false'); });
+            $$('[data-ba-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-ba-panel') !== n; });
+        });
+    });
+
     // ── Scene viewer ─────────────────────────────────
     var viewer = $('[data-viewer]');
     var dataEl = document.getElementById('tw-scenes-data');
