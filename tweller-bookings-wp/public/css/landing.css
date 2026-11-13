@@ -489,3 +489,35 @@ body.tw-xmas-page { overflow-x: hidden; }
 .tw-anim .tw-rv.is-in { opacity: 1; transform: none; }
 .tw-anim .tw-slider.tw-rv .tw-slide__img img { transform: scale(1.05); transition: transform 1.6s cubic-bezier(.22, .61, .36, 1); }
 .tw-anim .tw-slider.tw-rv.is-in .tw-slide__img img { transform: none; }
+
+/* Original & after: a list of sets, filtered by backdrop with a smooth collapse */
+.tw-ba__tab span { opacity: .65; font-weight: 500; margin-left: 4px; }
+.tw-ba__list { display: grid; }
+.tw-ba__item { display: grid; grid-template-rows: 1fr; margin-bottom: 18px; opacity: 1; transform: none; visibility: visible;
+    transition: grid-template-rows .65s cubic-bezier(.22, .61, .36, 1), margin-bottom .65s cubic-bezier(.22, .61, .36, 1),
+                opacity .5s ease .1s, transform .65s cubic-bezier(.22, .61, .36, 1), visibility 0s; }
+.tw-ba__item.is-off { grid-template-rows: 0fr; margin-bottom: 0; opacity: 0; transform: translateY(14px) scale(.985); pointer-events: none;
+    visibility: hidden; transition: grid-template-rows .65s cubic-bezier(.22, .61, .36, 1), margin-bottom .65s cubic-bezier(.22, .61, .36, 1),
+                opacity .3s ease, transform .5s cubic-bezier(.22, .61, .36, 1), visibility 0s linear .65s; }
+.tw-ba__inner { min-height: 0; overflow: hidden; }
+.tw-ba__body { padding: 6px 6px 30px; }
+.tw-ba__head { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 14px; margin: 0 0 16px; }
+.tw-ba__scene { width: 72px; height: 48px; object-fit: cover; border-radius: 8px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
+.tw-ba__name { margin: 0; font: 600 clamp(24px, 5.4vw, 34px)/1.1 var(--serif); color: #fff; }
+.tw-ba__sub { margin: 2px 0 0; font-size: 14px; color: rgba(255, 255, 255, .62); }
+.tw-xmas .tw-ba__pick { grid-column: 1 / -1; justify-self: start; border-color: var(--gold); color: var(--gold); }
+.tw-xmas .tw-ba__pick:hover, .tw-xmas .tw-ba__pick:focus-visible { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+@media (min-width: 700px) {
+    .tw-ba__head { grid-template-columns: auto 1fr auto; }
+    .tw-xmas .tw-ba__pick { grid-column: auto; justify-self: end; }
+}
+@media (prefers-reduced-motion: reduce) { .tw-ba__item, .tw-ba__item.is-off { transition: none; } }
+
+.tw-ba--instant .tw-ba__item { transition: none !important; }
+.tw-ba__more { display: flex; justify-content: center; margin-top: 10px; }
+.tw-ba__more[hidden] { display: none; }
+.tw-ba__morebtn svg { transition: transform .4s cubic-bezier(.22, .61, .36, 1); }
+.tw-ba__morebtn.is-open svg { transform: rotate(180deg); }
+.tw-xmas .tw-ba__morebtn { color: #fff; border-color: rgba(255, 255, 255, .45); }
+.tw-xmas .tw-ba__pick { grid-row: auto; }
+@media (min-width: 700px) { .tw-xmas .tw-ba__pick { grid-column: 3; grid-row: 1; width: auto; align-self: center; } }

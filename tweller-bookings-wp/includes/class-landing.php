@@ -203,9 +203,11 @@ class TwellerFlow2_Landing {
     }
 
     /**
-     * Before & after pairs shown under the hero (web page only). Sets are
+     * Original & after sets shown under the hero (web page only), listed with
+     * their backdrop name. Files are
      * public/landing/christmas/before-after/ba{N}-before.webp + ba{N}-after.webp;
-     * a set appears as soon as both files exist.
+     * a set appears as soon as both exist. The label must be one of the scene
+     * names (it picks the thumbnail and the "Choose this backdrop" button).
      */
     public static function before_after() {
         $dir  = TWELLER_FLOW_2_PLUGIN_DIR . 'public/landing/christmas/before-after/';
@@ -214,17 +216,25 @@ class TwellerFlow2_Landing {
         $sets = apply_filters( 'tweller_flow_2_christmas_before_after_sets', array(
             2 => 'Champagne Gold',
             3 => 'Fireside Library',
-            5 => '',
-            6 => '',
+            5 => 'Champagne Gold',
+            6 => 'Snowy Window',
         ) );
+        $scenes = array();
+        foreach ( self::settings()['scenes'] as $sc ) $scenes[ sanitize_title( $sc['name'] ) ] = $sc;
+
         $out = array();
         foreach ( $sets as $n => $label ) {
             $after = $dir . 'ba' . $n . '-after.webp';
             if ( ! file_exists( $after ) || ! file_exists( $dir . 'ba' . $n . '-before.webp' ) ) continue;
-            $size = @getimagesize( $after );
+            $size  = @getimagesize( $after );
+            $cat   = sanitize_title( $label );
+            $scene = $scenes[ $cat ] ?? null;
             $out[] = array(
                 'n'      => $n,
-                'label'  => $label !== '' ? $label : 'Example ' . ( count( $out ) + 1 ),
+                'cat'    => $cat,
+                'label'  => $scene ? $scene['name'] : $label,
+                'pick'   => $scene ? sanitize_key( $scene['slug'] ) : '',
+                'thumb'  => $scene ? self::scene_images( $scene )['sm'] : '',
                 'w'      => $size ? $size[0] : 1200,
                 'h'      => $size ? $size[1] : 900,
                 'before' => $base . 'ba' . $n . '-before.webp' . $v,

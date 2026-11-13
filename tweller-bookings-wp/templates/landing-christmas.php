@@ -85,21 +85,45 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
             <li>No changes to faces or bodies</li>
             <li>Authentic, natural you</li>
         </ul>
-        <div class="tw-ba__tabs" role="tablist" aria-label="Before and after examples">
-            <?php foreach ( $ba as $i => $pair ) : ?>
-                <button type="button" class="tw-ba__tab<?php echo $i === 0 ? ' is-active' : ''; ?>" role="tab" aria-selected="<?php echo $i === 0 ? 'true' : 'false'; ?>" data-ba-tab="<?php echo (int) $i; ?>"><?php echo esc_html( $pair['label'] ); ?></button>
+        <?php
+        $ba_cats = array();
+        foreach ( $ba as $pair ) { $ba_cats[ $pair['cat'] ] = array( 'label' => $pair['label'], 'n' => ( $ba_cats[ $pair['cat'] ]['n'] ?? 0 ) + 1 ); }
+        ?>
+        <div class="tw-ba__tabs" role="group" aria-label="Filter by backdrop">
+            <button type="button" class="tw-ba__tab is-active" aria-pressed="true" data-ba-filter="all">All <span><?php echo (int) count( $ba ); ?></span></button>
+            <?php foreach ( $ba_cats as $slug => $c ) : ?>
+                <button type="button" class="tw-ba__tab" aria-pressed="false" data-ba-filter="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $c['label'] ); ?> <span><?php echo (int) $c['n']; ?></span></button>
             <?php endforeach; ?>
         </div>
-        <?php foreach ( $ba as $i => $pair ) : ?>
-        <div class="tw-compare" data-compare data-ba-panel="<?php echo (int) $i; ?>" style="--pos: 50%; --ar: <?php echo esc_attr( round( $pair['w'] / $pair['h'], 4 ) ); ?>; aspect-ratio: <?php echo (int) $pair['w']; ?> / <?php echo (int) $pair['h']; ?>;"<?php echo $i === 0 ? '' : ' hidden'; ?>>
-            <img class="tw-compare__after" src="<?php echo esc_url( $pair['after'] ); ?>" width="<?php echo (int) $pair['w']; ?>" height="<?php echo (int) $pair['h']; ?>" alt="<?php echo esc_attr( 'After: finished photo with the ' . $pair['label'] . ' digital backdrop' ); ?>" loading="lazy" decoding="async">
-            <img class="tw-compare__before" src="<?php echo esc_url( $pair['before'] ); ?>" width="<?php echo (int) $pair['w']; ?>" height="<?php echo (int) $pair['h']; ?>" alt="Original: the photo as shot in studio" loading="lazy" decoding="async">
-            <span class="tw-compare__tag tw-compare__tag--before">Original</span>
-            <span class="tw-compare__tag tw-compare__tag--after">After · <?php echo esc_html( $pair['label'] ); ?></span>
-            <span class="tw-compare__line" aria-hidden="true"><span class="tw-compare__knob"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M9 6l-5 6 5 6M15 6l5 6-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>
-            <input class="tw-compare__range" type="range" min="0" max="100" value="50" aria-label="Drag to compare before and after">
+        <div class="tw-ba__list" data-ba-list>
+            <?php foreach ( $ba as $i => $pair ) : ?>
+            <article class="tw-ba__item" data-cat="<?php echo esc_attr( $pair['cat'] ); ?>">
+                <div class="tw-ba__inner"><div class="tw-ba__body">
+                    <header class="tw-ba__head">
+                        <?php if ( $pair['thumb'] ) : ?><img class="tw-ba__scene" src="<?php echo esc_url( $pair['thumb'] ); ?>" alt="" width="72" height="48" loading="lazy" decoding="async"><?php endif; ?>
+                        <div class="tw-ba__title">
+                            <h3 class="tw-ba__name"><?php echo esc_html( $pair['label'] ); ?></h3>
+                            <p class="tw-ba__sub">Digital backdrop &middot; photographed on white</p>
+                        </div>
+                        <?php if ( $pair['pick'] ) : ?><button type="button" class="tw-slide__pick tw-ba__pick" data-pick="<?php echo esc_attr( $pair['pick'] ); ?>">Choose this backdrop</button><?php endif; ?>
+                    </header>
+                    <div class="tw-compare" data-compare style="--pos: 50%; --ar: <?php echo esc_attr( round( $pair['w'] / $pair['h'], 4 ) ); ?>; aspect-ratio: <?php echo (int) $pair['w']; ?> / <?php echo (int) $pair['h']; ?>;">
+                        <img class="tw-compare__after" src="<?php echo esc_url( $pair['after'] ); ?>" width="<?php echo (int) $pair['w']; ?>" height="<?php echo (int) $pair['h']; ?>" alt="<?php echo esc_attr( 'After: finished photo with the ' . $pair['label'] . ' digital backdrop' ); ?>" loading="lazy" decoding="async">
+                        <img class="tw-compare__before" src="<?php echo esc_url( $pair['before'] ); ?>" width="<?php echo (int) $pair['w']; ?>" height="<?php echo (int) $pair['h']; ?>" alt="Original: the photo as shot in studio" loading="lazy" decoding="async">
+                        <span class="tw-compare__tag tw-compare__tag--before">Original</span>
+                        <span class="tw-compare__tag tw-compare__tag--after">After &middot; <?php echo esc_html( $pair['label'] ); ?></span>
+                        <span class="tw-compare__line" aria-hidden="true"><span class="tw-compare__knob"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M9 6l-5 6 5 6M15 6l5 6-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>
+                        <input class="tw-compare__range" type="range" min="0" max="100" value="50" aria-label="<?php echo esc_attr( 'Drag to compare original and after: ' . $pair['label'] ); ?>">
+                    </div>
+                </div></div>
+            </article>
+            <?php endforeach; ?>
         </div>
-        <?php endforeach; ?>
+        <?php if ( count( $ba ) > 2 ) : ?>
+        <div class="tw-ba__more" data-ba-more hidden>
+            <button type="button" class="tw-btn tw-btn--ghost tw-ba__morebtn" aria-expanded="false" data-ba-morebtn><span data-ba-moretext>Show more sets</span> <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <?php endif; ?>
     </div>
 </section>
 <?php endif; ?>

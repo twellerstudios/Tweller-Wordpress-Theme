@@ -235,12 +235,56 @@
             io.observe(box);
         }
     });
-    var tabs = $$('[data-ba-tab]');
-    tabs.forEach(function (t) {
-        t.addEventListener('click', function () {
-            var n = t.getAttribute('data-ba-tab');
-            tabs.forEach(function (o) { var on = o === t; o.classList.toggle('is-active', on); o.setAttribute('aria-selected', on ? 'true' : 'false'); });
-            $$('[data-ba-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-ba-panel') !== n; });
+    // Original & after list: filter by backdrop, show the first two, "Show more" for the rest.
+    var fbtns = $$('[data-ba-filter]'), bitems = $$('.tw-ba__item');
+    var baMore = $('[data-ba-more]'), baMoreBtn = $('[data-ba-morebtn]'), baMoreTxt = $('[data-ba-moretext]');
+    var baList = $('[data-ba-list]');
+    var baCat = 'all', baOpen = false, FIRST = 2;
+    var baApply = function (instant) {
+        var matches = bitems.filter(function (it) { return baCat === 'all' || it.getAttribute('data-cat') === baCat; });
+        var extra = Math.max(0, matches.length - FIRST), shown = 0;
+        if (baList && instant) baList.classList.add('tw-ba--instant');
+        bitems.forEach(function (it) {
+            var idx = matches.indexOf(it);
+            var show = idx > -1 && (baOpen || idx < FIRST);
+            it.classList.toggle('is-off', !show);
+            if (show) { it.removeAttribute('inert'); it.style.transitionDelay = instant ? '' : ((shown++ % 4) * 70) + 'ms'; }
+            else { it.setAttribute('inert', ''); it.style.transitionDelay = ''; }
+        });
+        if (baMore) {
+            baMore.hidden = extra === 0;
+            baMoreBtn.setAttribute('aria-expanded', baOpen ? 'true' : 'false');
+            baMoreBtn.classList.toggle('is-open', baOpen);
+            baMoreTxt.textContent = baOpen ? 'Show fewer' : 'Show ' + extra + ' more set' + (extra === 1 ? '' : 's');
+        }
+        if (baList && instant) { void baList.offsetHeight; baList.classList.remove('tw-ba--instant'); }
+    };
+    if (bitems.length) baApply(true);
+    fbtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            baCat = btn.getAttribute('data-ba-filter'); baOpen = false;
+            fbtns.forEach(function (o) { var on = o === btn; o.classList.toggle('is-active', on); o.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+            baApply(false);
+        });
+    });
+    if (baMoreBtn) baMoreBtn.addEventListener('click', function () {
+        baOpen = !baOpen; baApply(false);
+        if (!baOpen) { var top = $('.tw-ba__tabs'); if (top) top.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); }
+    });
+    // Start fetching the photos in the hidden sets as the section nears the screen, so "Show more" never pops.
+    var baSec = $('.tw-ba');
+    if (baSec && 'IntersectionObserver' in window) {
+        var pre = new IntersectionObserver(function (ents) {
+            if (!ents[0].isIntersecting) return;
+            $$('img[loading="lazy"]', baSec).forEach(function (im) { im.loading = 'eager'; });
+            pre.disconnect();
+        }, { rootMargin: '700px 0px' });
+        pre.observe(baSec);
+    }
+    $$('.tw-ba__pick').forEach(function (b) {
+        b.addEventListener('click', function () {
+            try { if (window.tfBooking) window.tfBooking.chooseBackdrop(b.getAttribute('data-pick')); } catch (x) {}
+            goToPackages();
         });
     });
 
