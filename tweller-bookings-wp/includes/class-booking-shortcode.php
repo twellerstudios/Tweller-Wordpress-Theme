@@ -115,6 +115,7 @@ class TwellerFlow2_Booking_Shortcode {
             if ( $max_date ) echo ' data-max-date="' . esc_attr( $max_date ) . '"';
             if ( $atts['card_cta'] !== '' ) echo ' data-card-cta="' . esc_attr( $atts['card_cta'] ) . '"';
         ?>>
+            <div class="tf2-chosen" id="tf2-chosen" hidden></div>
             <div class="tweller-booking__header">
                 <h2>Book A Session</h2>
                 <p>What date/time are you interested in?</p>
@@ -353,9 +354,22 @@ class TwellerFlow2_Booking_Shortcode {
                 </div>
             </div>
 
-            <div class="tweller-booking__loading" id="tf2-booking-loading" style="display:none;">
-                <div class="tf2-spinner"></div>
-                <p>Securing your spot...</p>
+            <div class="tweller-booking__loading tf2-ld" id="tf2-booking-loading" style="display:none;" role="status" aria-live="polite">
+                <div class="tf2-ld__card">
+                    <div class="tf2-ld__cam" aria-hidden="true">
+                        <svg viewBox="0 0 120 96"><rect x="8" y="22" width="104" height="66" rx="14" class="b"/><path d="M40 22l7-12h26l7 12" class="b"/><circle cx="60" cy="55" r="22" class="r"/><circle cx="60" cy="55" r="12" class="l"/><circle cx="96" cy="36" r="4" class="d"/></svg>
+                        <i class="tf2-ld__flash"></i>
+                    </div>
+                    <div class="tf2-ld__msgs">
+                        <p data-ld-step><b>Booking you in&hellip;</b><span>Please wait. This only takes a moment.</span></p>
+                        <p data-ld-step><b>Holding your date and time</b><span>Saving your backdrop and details.</span></p>
+                        <p data-ld-step><b>Almost there</b><span>Getting your payment page ready.</span></p>
+                        <p data-ld-step class="is-final"><b>You're booked in!</b><span>Taking you to payment&hellip;</span></p>
+                    </div>
+                    <div class="tf2-ld__bar" aria-hidden="true"><i></i></div>
+                    <p class="tf2-ld__note">Please don't close this page.</p>
+                    <div class="tf2-ld__next" aria-hidden="true"><span>Next</span><svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Payment</span></div>
+                </div>
             </div>
         </div>
         <?php

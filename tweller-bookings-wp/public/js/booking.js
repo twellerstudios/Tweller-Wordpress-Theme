@@ -194,6 +194,8 @@ const tfBooking = {
     // Back button keeps leaving the page exactly as it always has.
     syncUrl() {
         const tb = window.twellerBooking;
+        // A landing page keeps its own clean address (/christmas-photos/).
+        if (this.locked) return;
         if (!tb.bookingUrl || !window.history || !history.replaceState) return;
         try {
             const base = new URL(tb.bookingUrl, location.href);
@@ -753,10 +755,9 @@ const tfBooking = {
 
         let extra = '';
         if (cfg.extra) {
-            const opts = cfg.choices.filter((c) => c.thumb).map((c) =>
-                `<option value="${esc(c.key)}"${c.key === this.selectedBackdropExtra ? ' selected' : ''}>${esc(c.name)}</option>`).join('');
-            extra = `<label class="tf2-bd__extra"><span>${esc(cfg.extra_label || 'Your free extra scene')}</span>
-                <select id="tf2-backdrop-extra"><option value="">Decide later</option>${opts}</select></label>`;
+            extra = `<div class="tf2-bd__extra"><span class="tf2-bd__extralabel" id="tf2-dd-label">${esc(cfg.extra_label || 'Your free extra scene')}</span>
+                <details class="tf2-dd" id="tf2-dd"><summary aria-labelledby="tf2-dd-label" id="tf2-dd-sum"></summary>
+                <ul class="tf2-dd__list" id="tf2-dd-list"></ul></details></div>`;
         }
 
         box.innerHTML = `<fieldset class="tf2-bd">
@@ -770,18 +771,79 @@ const tfBooking = {
 
         box.querySelectorAll('input[name="tf2_backdrop"]').forEach((r) => r.addEventListener('change', () => {
             this.selectedBackdrop = r.value;
+            if (this.selectedBackdropExtra === r.value) this.selectedBackdropExtra = '';
             box.classList.remove('tf2-backdrop--missing');
+            this.paintExtra();
+            this.renderChosen();
+            if (this.step === 4 && this.selectedPackageData && this.selectedDate) this.renderSummary();
             this.saveState();
         }));
-        const ex = document.getElementById('tf2-backdrop-extra');
-        if (ex) ex.addEventListener('change', () => { this.selectedBackdropExtra = ex.value; this.saveState(); });
+        this.paintExtra();
+        this.renderChosen();
+    },
+
+    // The free extra scene: a thumbnail dropdown (never the scene already chosen).
+    paintExtra() {
+        const cfg = this.backdropConfig();
+        const sum = document.getElementById('tf2-dd-sum'), list = document.getElementById('tf2-dd-list'), dd = document.getElementById('tf2-dd');
+        if (!cfg || !sum || !list) return;
+        const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const scenes = cfg.choices.filter((c) => c.thumb && c.key !== this.selectedBackdrop);
+        if (!scenes.some((c) => c.key === this.selectedBackdropExtra)) this.selectedBackdropExtra = '';
+        const cur = scenes.find((c) => c.key === this.selectedBackdropExtra);
+        sum.innerHTML = cur
+            ? `<img src="${esc(cur.thumb)}" alt=""><span>${esc(cur.name)}</span>`
+            : `<span class="tf2-dd__ph" aria-hidden="true">+</span><span>Choose your free scene (or decide later)</span>`;
+        list.innerHTML = `<li><button type="button" data-extra="" class="${cur ? '' : 'is-on'}"><span class="tf2-dd__ph" aria-hidden="true">–</span><span>Decide later</span></button></li>` +
+            scenes.map((c) => `<li><button type="button" data-extra="${esc(c.key)}" class="${c.key === this.selectedBackdropExtra ? 'is-on' : ''}"><img src="${esc(c.thumb)}" alt="" loading="lazy"><span>${esc(c.name)}</span></button></li>`).join('');
+        list.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+            this.selectedBackdropExtra = b.getAttribute('data-extra') || '';
+            this.paintExtra();
+            this.renderChosen();
+            if (this.step === 4 && this.selectedPackageData && this.selectedDate) this.renderSummary();
+            if (dd) dd.open = false;
+            this.saveState();
+        }));
+        if (dd && !dd.dataset.wired) {
+            dd.dataset.wired = '1';
+            document.addEventListener('click', (e) => { if (dd.open && !dd.contains(e.target)) dd.open = false; });
+        }
+    },
+
+    // "Your backdrop" chip: shown next to the booking so the choice is always visible.
+    renderChosen() {
+        const el = document.getElementById('tf2-chosen');
+        if (!el) return;
+        const cfg = this.backdropConfig();
+        const c = cfg ? cfg.choices.find((x) => x.key === this.selectedBackdrop) : null;
+        if (!cfg) { el.hidden = true; el.innerHTML = ''; return; }
+        const esc = (t) => String(t).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+        el.hidden = false;
+        el.classList.toggle('is-empty', !c);
+        if (!c) {
+            el.innerHTML = `<span class="tf2-chosen__ph" aria-hidden="true">?</span><span class="tf2-chosen__txt"><span class="tf2-chosen__k">Your backdrop</span><b>None chosen yet</b></span><button type="button" class="tf2-chosen__chg" data-chg>Choose</button>`;
+        } else {
+            const x = cfg.choices.find((y) => y.key === this.selectedBackdropExtra);
+            el.innerHTML = (c.thumb ? `<img src="${esc(c.thumb)}" alt="">` : `<span class="tf2-chosen__ph" aria-hidden="true">✓</span>`) +
+                `<span class="tf2-chosen__txt"><span class="tf2-chosen__k">Your backdrop</span><b>${esc(c.name)}</b>${x ? `<span class="tf2-chosen__x">+ free scene: ${esc(x.name)}</span>` : ''}</span>` +
+                `<button type="button" class="tf2-chosen__chg" data-chg>Change</button>`;
+        }
+        const btn = el.querySelector('[data-chg]');
+        if (btn) btn.addEventListener('click', () => {
+            // On the Christmas page the backdrop slider is the nicest place to pick; otherwise the picker in the form.
+            const target = document.querySelector('.tw-scenes') || document.getElementById('tf2-backdrop');
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
     },
 
     /** Pre-select a backdrop from outside the wizard (the landing page's scene viewer). */
     chooseBackdrop(key) {
         this.selectedBackdrop = key;
+        if (this.selectedBackdropExtra === key) this.selectedBackdropExtra = '';
         const r = document.querySelector('input[name="tf2_backdrop"][value="' + key + '"]');
         if (r) { r.checked = true; document.getElementById('tf2-backdrop').classList.remove('tf2-backdrop--missing'); }
+        this.paintExtra();
+        this.renderChosen();
         this.saveState();
     },
 
@@ -1027,9 +1089,14 @@ const tfBooking = {
                 <div style="margin-top: 6px; font-weight:700;">To pay: TTD ${fmt(total - use)}</div>`;
         }
 
+        const bcfg = this.backdropConfig();
+        const bch = bcfg ? bcfg.choices.find((x) => x.key === this.selectedBackdrop) : null;
+        const bex = bcfg ? bcfg.choices.find((x) => x.key === this.selectedBackdropExtra) : null;
+        const bline = bch ? `<div class="tf2-summary-bd">${bch.thumb ? `<img src="${bch.thumb}" alt="">` : ''}<span>Backdrop: <b>${bch.name}</b>${bex ? ` · free scene: <b>${bex.name}</b>` : ''}</span></div>` : '';
         summary.innerHTML = `
             <h4>${this.selectedPackageData.name}</h4>
             <div class="tf2-summary-detail">${d.toLocaleDateString(undefined, options)} at ${this.selectedTimeDisplay}</div>
+            ${bline}
             ${lines}
             <div style="margin-top: 10px; opacity: 0.95; font-weight:600;">Total: TTD ${fmt(total)}</div>
             ${giftLines}
@@ -1109,6 +1176,34 @@ const tfBooking = {
         window.open(`mailto:hello@twellerstudios.com?subject=Availability Inquiry&body=${msg}`, '_blank');
     },
 
+    // The reassuring "booking you in" screen between the button and the payment page.
+    startLoader() {
+        const el = document.getElementById('tf2-booking-loading');
+        const t0 = Date.now();
+        const steps = el ? Array.from(el.querySelectorAll('[data-ld-step]')) : [];
+        const bar = el ? el.querySelector('.tf2-ld__bar i') : null;
+        let i = 0, timer = null;
+        const show = (n) => {
+            steps.forEach((s2, k) => { s2.classList.toggle('is-on', k === n); s2.classList.toggle('is-done', k < n); });
+            if (bar) bar.style.width = (Math.min(n, steps.length - 1) / (steps.length - 1) * 88 + 8) + '%';
+        };
+        if (el) {
+            el.classList.remove('is-ok');
+            el.style.display = 'flex';
+            document.documentElement.classList.add('tf2-ld-lock');
+            requestAnimationFrame(() => el.classList.add('is-in'));
+            show(0);
+            timer = setInterval(() => { if (i < steps.length - 2) { i++; show(i); } }, 1300);
+        }
+        const done = () => { clearInterval(timer); document.documentElement.classList.remove('tf2-ld-lock'); };
+        return {
+            // Never flash: at least ~2.2 s on screen so each message can be read.
+            minimum: () => new Promise((r) => setTimeout(r, Math.max(0, 2200 - (Date.now() - t0)))),
+            success: () => { clearInterval(timer); if (el) { el.classList.add('is-ok'); show(steps.length - 1); if (bar) bar.style.width = '100%'; } },
+            stop: () => { done(); if (el) { el.classList.remove('is-in', 'is-ok'); el.style.display = 'none'; } }
+        };
+    },
+
     async submitBooking() {
         const name = document.getElementById('tf2-client-name').value;
         const email = document.getElementById('tf2-client-email').value;
@@ -1180,7 +1275,7 @@ const tfBooking = {
             submitBtn.textContent = 'Reserving your session…';
         }
 
-        loading.style.display = 'flex';
+        const seq = this.startLoader();
         errorMsg.style.display = 'none';
 
         try {
@@ -1191,6 +1286,7 @@ const tfBooking = {
             });
 
             const data = await res.json();
+            await seq.minimum();
             
             if (data.success) {
                 this.clearState();
@@ -1207,16 +1303,17 @@ const tfBooking = {
                 // Redirect to tracker page!
                 let tUrl = window.twellerBooking.trackerUrl;
                 let sep = tUrl.includes('?') ? '&' : '?';
-                // A moment for the pixel's Lead request to leave before the page unloads.
-                setTimeout(() => { window.location.href = tUrl + sep + 'code=' + data.tracking_code; }, leadId ? 300 : 0);
+                // Show "taking you to payment" for a beat (the pixel's Lead request leaves meanwhile).
+                seq.success();
+                setTimeout(() => { window.location.href = tUrl + sep + 'code=' + data.tracking_code; }, 1500);
             } else {
-                loading.style.display = 'none';
+                seq.stop();
                 restoreSubmit();
                 errorMsg.innerText = data.message || 'An error occurred. Please try again.';
                 errorMsg.style.display = 'block';
             }
         } catch (err) {
-            loading.style.display = 'none';
+            seq.stop();
             restoreSubmit();
             errorMsg.innerText = 'Network error. Please try again.';
             errorMsg.style.display = 'block';

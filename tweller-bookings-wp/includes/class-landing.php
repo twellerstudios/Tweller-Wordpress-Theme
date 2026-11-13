@@ -32,6 +32,12 @@ class TwellerFlow2_Landing {
         add_action( 'tweller_flow_2_session_created', array( __CLASS__, 'note_early_bird' ), 20, 2 );
         add_filter( 'tweller_flow_2_booking_backdrops', array( __CLASS__, 'backdrops' ) );
         add_filter( 'tweller_flow_2_session_landings', array( __CLASS__, 'landings' ) );
+        // Serve the page on /christmas-photos/ (and every /book-us/christmas-photos/… address)
+        // without depending on WordPress rewrite rules, so no link can 404.
+        add_filter( 'request', array( __CLASS__, 'route' ), 1 );
+        add_filter( 'query_vars', function ( $v ) { $v[] = 'tw_xmas'; return $v; } );
+        add_filter( 'redirect_canonical', array( __CLASS__, 'no_canonical' ), 5 );
+        add_shortcode( 'tweller_christmas', '__return_empty_string' );
         add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ), 20 );
         add_action( 'admin_init', array( __CLASS__, 'admin_save' ) );
         add_action( 'admin_post_tweller_flow_2_apply_theme', array( __CLASS__, 'admin_apply_theme' ) );
@@ -82,6 +88,7 @@ class TwellerFlow2_Landing {
             'faq'              => self::faq_defaults(),
             'og_image_id'      => 0,
             'theme'            => 'classic',
+            'as_home'          => 0,
         );
     }
 
@@ -186,11 +193,59 @@ class TwellerFlow2_Landing {
 
     // ── Is this the landing page? ────────────────────
 
+    /** The path of this request relative to the site, no slashes at the ends. */
+    private static function request_path() {
+        $uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+        $path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+        $home = trim( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ), '/' );
+        $path = trim( $path, '/' );
+        if ( $home !== '' && strpos( $path, $home ) === 0 ) $path = trim( substr( $path, strlen( $home ) ), '/' );
+        return strtolower( $path );
+    }
+
+    private static function landing_slug() {
+        return str_replace( '_', '-', sanitize_key( self::settings()['session_key'] ) );
+    }
+
+    /**
+     * /christmas-photos/, /book-us/christmas-photos/ and anything under it
+     * (/book-us/christmas-photos/xmas-mini/, ?utm_… addresses, a reload of any
+     * of them) open the page. With "Use as homepage" the site's front page does too.
+     */
+    public static function route( $vars ) {
+        if ( is_admin() ) return $vars;
+        $s = self::settings();
+        if ( empty( $s['enabled'] ) ) return $vars;
+        $path = self::request_path();
+        $slug = self::landing_slug();
+        $hit  = false;
+        if ( $path === $slug || strpos( $path, $slug . '/' ) === 0 ) $hit = true;
+        if ( ! $hit && class_exists( 'TwellerFlow2_Booking_Links' ) ) {
+            $page = TwellerFlow2_Booking_Links::page_id();
+            $uri  = $page ? trim( (string) get_page_uri( $page ), '/' ) : '';
+            if ( $uri !== '' && ( $path === $uri . '/' . $slug || strpos( $path, $uri . '/' . $slug . '/' ) === 0 ) ) $hit = true;
+        }
+        if ( ! $hit && ! empty( $s['as_home'] ) && $path === '' && empty( $_GET['s'] ) ) $hit = true;
+        if ( $hit ) return array( 'tw_xmas' => '1' );
+        return $vars;
+    }
+
+    /** WordPress must not "correct" these addresses to some other page. */
+    public static function no_canonical( $redirect ) {
+        return self::is_landing() ? false : $redirect;
+    }
+
     public static function is_landing() {
         static $is = null;
         if ( $is !== null ) return $is;
         $s = self::settings();
         if ( empty( $s['enabled'] ) || is_admin() || ! class_exists( 'TwellerFlow2_Booking_Links' ) ) return $is = false;
+        if ( get_query_var( 'tw_xmas' ) || ! empty( $GLOBALS['wp']->query_vars['tw_xmas'] ) ) return $is = true;
+        // Any page carrying [tweller_christmas] (e.g. one set as the homepage in Settings → Reading).
+        if ( is_singular() ) {
+            $post = get_queried_object();
+            if ( $post && ! empty( $post->post_content ) && has_shortcode( $post->post_content, 'tweller_christmas' ) ) return $is = true;
+        }
         $page = TwellerFlow2_Booking_Links::page_id();
         return $is = ( $page && is_page( $page ) && TwellerFlow2_Booking_Links::requested_key() === $s['session_key'] );
     }
@@ -343,8 +398,7 @@ class TwellerFlow2_Landing {
     public static function landings( $all ) {
         $s = self::settings();
         if ( ! empty( $s['enabled'] ) ) {
-            $url = TwellerFlow2_Booking_Links::link_for( $s['session_key'] );
-            if ( $url ) $all[ $s['session_key'] ] = $url;
+            $all[ $s['session_key'] ] = home_url( '/' . self::landing_slug() . '/' );
         }
         return $all;
     }
@@ -465,7 +519,7 @@ class TwellerFlow2_Landing {
         $html = preg_replace( '#<link\s+rel=["\']canonical["\'][^>]*>\s*#i', '', $html );
         $html = preg_replace( '#<title>.*?</title>\s*#is', '', $html );
 
-        $url  = TwellerFlow2_Booking_Links::link_for( self::settings()['session_key'] );
+        $url  = ! empty( self::settings()['as_home'] ) && is_front_page() ? home_url( '/' ) : home_url( '/' . self::landing_slug() . '/' );
         $og   = self::og_image();
         $tags  = '<title>' . esc_html( self::share_title() . ' | Tweller Studios' ) . "</title>\n";
         $tags .= '<meta name="description" content="' . esc_attr( self::share_desc() ) . "\">\n";
@@ -584,6 +638,7 @@ class TwellerFlow2_Landing {
             'faq'             => $faq ?: self::faq_defaults(),
             'og_image_id'     => absint( $p['og_image_id'] ?? 0 ),
             'theme'           => $old['theme'],
+            'as_home'         => empty( $p['as_home'] ) ? 0 : 1,
         ) );
 
         $tr = TwellerFlow2_Booking_API::transport();

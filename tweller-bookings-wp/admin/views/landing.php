@@ -65,6 +65,8 @@ $thumb = function ( $id ) {
         <div class="tf2-card tf2-mb-6">
             <h2 style="margin-top:0;">Page</h2>
             <label style="display:block;margin-bottom:14px;"><input type="checkbox" name="enabled" value="1" <?php checked( $s['enabled'] ); ?>> Use the Christmas landing page (off = the normal Book Us page opened on Christmas)</label>
+            <label style="display:block;margin-bottom:6px;"><input type="checkbox" name="as_home" value="1" <?php checked( ! empty( $s['as_home'] ) ); ?>> Show the Christmas page as the site's homepage</label>
+            <p class="tf2-description" style="margin:0 0 14px 24px;">The page is always available at <code><?php echo esc_html( home_url( '/' . str_replace( '_', '-', $s['session_key'] ) . '/' ) ); ?></code> (also at <code>/book-us/christmas-photos/</code>). To use it as a normal page, add <code>[tweller_christmas]</code> to any WordPress page; that page can then be chosen as the homepage in Settings → Reading.</p>
             <div class="tf2-off-grid">
                 <label>WhatsApp number (with country code)<input type="text" name="whatsapp" value="<?php echo esc_attr( $s['whatsapp'] ); ?>"></label>
                 <label>Call number (with country code)<input type="text" name="phone" value="<?php echo esc_attr( $s['phone'] ); ?>"></label>
