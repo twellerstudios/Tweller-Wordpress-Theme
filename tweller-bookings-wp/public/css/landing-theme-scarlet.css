@@ -1,0 +1,51 @@
+/* Christmas page style: Scarlet & Snow
+   Cinzel (engraved capitals) + Lato. Snow white, scarlet, wine and silver. Solid buttons. */
+@font-face { font-family: "CinzelTW"; src: url("../landing/fonts/cinzel-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "CinzelTW"; src: url("../landing/fonts/cinzel-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "LatoTW"; src: url("../landing/fonts/lato-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "LatoTW"; src: url("../landing/fonts/lato-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+.tw-xmas.tw-theme-scarlet {
+    --ink: #2b1316;
+    --ink-2: #3c2427;
+    --paper: #ffffff;
+    --cream: #f7f3f0;
+    --line: #ebe3df;
+    --muted: #6a5f61;
+    --red: #b1122d;
+    --red-hi: #930e24;
+    --green: #8e0f23;
+    --gold: #f1e6d6;
+    --gold-ink: #b1122d;
+    --serif: "CinzelTW", "Cinzel", "Trajan Pro", Georgia, serif;
+    --sans: "LatoTW", "Lato", "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--sans);
+}
+/* Cinzel is all capitals: a little smaller, a little more air. */
+.tw-theme-scarlet .tw-h2 { font-weight: 600; font-size: clamp(28px, 6.6vw, 46px); line-height: 1.12; letter-spacing: .02em; }
+.tw-theme-scarlet .tw-hero__title { font-weight: 600; font-size: clamp(32px, 9vw, 70px); line-height: 1.08; letter-spacing: .01em; max-width: 15ch; }
+.tw-theme-scarlet .tw-final__title { font-weight: 600; font-size: clamp(28px, 7.5vw, 50px); letter-spacing: .02em; }
+.tw-theme-scarlet :is(.tw-slide__name, .tw-option__title, .tw-steps h3, .tw-digital b, .tw-scene__name) { font-size: 21px; letter-spacing: .03em; }
+.tw-theme-scarlet .tw-q summary { font-family: var(--sans); font-weight: 700; font-size: 17px; }
+.tw-theme-scarlet .tw-review blockquote p { font-family: var(--sans); font-size: 17px; line-height: 1.55; font-style: italic; }
+.tw-theme-scarlet .tw-kicker,
+.tw-theme-scarlet .tw-eyebrow { font-family: var(--sans); font-weight: 700; letter-spacing: .22em; }
+.tw-theme-scarlet .tw-hero .tw-eyebrow { color: #f6d3d9; }
+.tw-theme-scarlet .tw-btn { font-family: var(--sans); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: 14px; }
+.tw-theme-scarlet .tw-btn--primary { background: var(--red); }
+.tw-theme-scarlet .tw-digital__n,
+.tw-theme-scarlet .tw-steps__n { background: var(--red); color: #fff; }
+.tw-theme-scarlet .tw-ba { background: var(--ink); }
+.tw-xmas.tw-theme-scarlet .tw-ba__tab.is-active { background: #fff; color: var(--red); border-color: #fff; }
+.tw-theme-scarlet .tw-compare__tag--after { background: var(--red); }
+.tw-theme-scarlet .tw-packages .tw-kicker { color: #f6d3d9; }
+.tw-theme-scarlet .tw-early { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .35); }
+.tw-theme-scarlet .tw-early__tag { background: #fff; color: var(--red); }
+.tw-theme-scarlet .tw-early__offer strong { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
+.tw-xmas.tw-theme-scarlet .tweller-booking h3 { font-size: 22px; letter-spacing: .03em; }
+.tw-xmas.tw-theme-scarlet .tf2-pkg-title { font-size: 22px; letter-spacing: .03em; }
+.tw-xmas.tw-theme-scarlet .tf2-top-booked { background: var(--red); color: #fff; }
+.tw-xmas.tw-theme-scarlet .tf2-package-card:nth-child(2) .tf2-top-booked { background: var(--ink); color: #fff; }
+.tw-xmas.tw-theme-scarlet .tf2-package-card:nth-child(3) .tf2-top-booked { background: #1d5a3f; color: #fff; }
+.tw-theme-scarlet .tw-trust__years span { color: var(--red); font-family: var(--serif); }
+.tw-theme-scarlet .tw-auth li::before { background-color: #fff; }

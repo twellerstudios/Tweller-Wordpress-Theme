@@ -473,3 +473,19 @@ body.tw-xmas-page { overflow-x: hidden; }
 .tw-auth li { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; color: #fff; }
 .tw-auth li::before { content: ""; width: 20px; height: 20px; border-radius: 50%; flex: none;
     background: var(--gold) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2315110e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center / 12px no-repeat; }
+
+
+/* ── Ease-in animations (all styles; off for "reduce motion") ── */
+@keyframes twUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.tw-anim .tw-hero__body > * { animation: twUp .95s cubic-bezier(.22, .61, .36, 1) both; }
+.tw-anim .tw-hero__body > :nth-child(2) { animation-delay: .08s; }
+.tw-anim .tw-hero__body > :nth-child(3) { animation-delay: .18s; }
+.tw-anim .tw-hero__body > :nth-child(4) { animation-delay: .28s; }
+.tw-anim .tw-hero__body > :nth-child(5) { animation-delay: .38s; }
+.tw-anim .tw-hero__scene { animation: twUp .9s cubic-bezier(.22, .61, .36, 1) .45s both; }
+.tw-anim .tw-rv { opacity: 0; transform: translateY(24px);
+    transition: opacity .9s cubic-bezier(.22, .61, .36, 1), transform .9s cubic-bezier(.22, .61, .36, 1);
+    transition-delay: var(--rd, 0s); }
+.tw-anim .tw-rv.is-in { opacity: 1; transform: none; }
+.tw-anim .tw-slider.tw-rv .tw-slide__img img { transform: scale(1.05); transition: transform 1.6s cubic-bezier(.22, .61, .36, 1); }
+.tw-anim .tw-slider.tw-rv.is-in .tw-slide__img img { transform: none; }

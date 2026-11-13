@@ -52,7 +52,7 @@ class TwellerFlow2_Landing {
     public static function faq_defaults() {
         return array(
             array( 'q' => 'Studio or my home?', 'a' => 'Either. Every package works in our studio or at your home or another location. For digital scenes we bring a portable white backdrop to you. Home and location shoots beyond Couva in the south, Curepe in the north, Macoya in the east or San Juan in the west have a TT$60 transport fee.' ),
-            array( 'q' => 'Are the 4 scenes real sets?', 'a' => 'No, they are digital backdrops. We photograph your family on a white backdrop, in studio or at your home, then place the backdrop you choose in, matching the light and colour so it looks natural. Only the background changes: you are not altered, so your photos stay authentic. Prefer a real setting? Choose your own decor at home or a location instead.' ),
+            array( 'q' => 'How do the 4 Christmas scenes work?', 'a' => 'They are digital backdrops. We photograph your family on a white backdrop, in studio or at your home, then our editors professionally place the backdrop you choose in, matching the light and colour so it looks natural. Only the background changes: you are not altered, so your photos stay authentic. Prefer your own setting? Choose your own decor at home or a location instead.' ),
             array( 'q' => 'Can we use our own tree and decor?', 'a' => 'Yes. We shoot at your home with your own tree and Christmas setup, styled and lit so it looks its best.' ),
             array( 'q' => 'What do we wear on a white backdrop?', 'a' => 'Rich, solid colours look best in the scenes: deep red, evergreen, cream, gold, navy or burgundy. Avoid all-white outfits and large logos. Coordinate, don\'t match. Send us your options on WhatsApp and we\'ll help you choose.' ),
             array( 'q' => 'Can we bring the dog?', 'a' => 'Of course. Pets are family. Let us know in your booking notes so we plan the time for them.' ),
@@ -90,6 +90,15 @@ class TwellerFlow2_Landing {
         $s = wp_parse_args( is_array( $s ) ? $s : array(), self::defaults() );
         if ( empty( $s['scenes'] ) || ! is_array( $s['scenes'] ) ) $s['scenes'] = self::scene_defaults();
         if ( empty( $s['faq'] ) || ! is_array( $s['faq'] ) ) $s['faq'] = self::faq_defaults();
+        // Questions whose wording changed: saved copies follow the new default.
+        $renamed = array( 'Are the 4 scenes real sets?' => 'How do the 4 Christmas scenes work?' );
+        foreach ( $s['faq'] as $i => $f ) {
+            if ( isset( $renamed[ $f['q'] ?? '' ] ) ) {
+                foreach ( self::faq_defaults() as $d ) {
+                    if ( $d['q'] === $renamed[ $f['q'] ] ) { $s['faq'][ $i ] = $d; break; }
+                }
+            }
+        }
         return $s;
     }
 
@@ -234,8 +243,9 @@ class TwellerFlow2_Landing {
         wp_enqueue_script( 'tweller-flow-2-booking' );
         wp_enqueue_style( 'tweller-landing', $base . 'css/landing.css', array( 'tweller-flow-2-booking' ), TWELLER_FLOW_2_VERSION );
         wp_enqueue_script( 'tweller-landing', $base . 'js/landing.js', array(), TWELLER_FLOW_2_VERSION, true );
-        if ( self::current_theme() !== 'classic' ) {
-            wp_enqueue_style( 'tweller-landing-modern', $base . 'css/landing-modern.css', array( 'tweller-landing' ), TWELLER_FLOW_2_VERSION );
+        $theme = self::current_theme();
+        if ( $theme !== 'classic' ) {
+            wp_enqueue_style( 'tweller-landing-theme', $base . 'css/landing-theme-' . $theme . '.css', array( 'tweller-landing' ), TWELLER_FLOW_2_VERSION );
         }
 
         $s = self::settings();
@@ -463,18 +473,21 @@ class TwellerFlow2_Landing {
 
     public static function themes() {
         return array(
-            'classic' => array( 'name' => 'Classic', 'desc' => 'Warm Christmas: serif headings, cream, evergreen and red (as it is now).' ),
-            'modern'  => array( 'name' => 'Modern', 'desc' => 'Apple-clean: system type, white space, glass and big rounded cards.' ),
-            'festive' => array( 'name' => 'Modern Festive', 'desc' => 'Modern, with Stripe-style navy sections and soft red, gold and green gradients.' ),
+            'classic'     => array( 'name' => 'Classic', 'desc' => 'Cormorant Garamond. Cream, evergreen and Christmas red (as it is now).' ),
+            'evergreen'   => array( 'name' => 'Evergreen & Gold (matches the ads)', 'desc' => 'Same look as the ads: deep evergreen, red ribbon banners with gold trim and holly, gold-foil Playfair lettering.' ),
+            'scarlet'     => array( 'name' => 'Scarlet & Snow', 'desc' => 'Cinzel engraved capitals + Lato. Snow white, scarlet and wine.' ),
+            'candlelight' => array( 'name' => 'Candlelight', 'desc' => 'Bodoni Moda + Montserrat. Warm dark tones, champagne gold, burgundy.' ),
         );
     }
 
-    /** The style in use; a logged-in admin can preview another with ?tw_theme=modern. */
+    /** The style in use; a logged-in admin can preview another with ?tw_theme=evergreen. */
     public static function current_theme() {
         $t = self::settings()['theme'] ?? 'classic';
         if ( isset( $_GET['tw_theme'] ) && current_user_can( 'manage_options' ) ) {
             $t = sanitize_key( wp_unslash( $_GET['tw_theme'] ) );
         }
+        $legacy = array( 'modern' => 'evergreen', 'festive' => 'scarlet' );
+        if ( isset( $legacy[ $t ] ) ) $t = $legacy[ $t ];
         return isset( self::themes()[ $t ] ) ? $t : 'classic';
     }
 

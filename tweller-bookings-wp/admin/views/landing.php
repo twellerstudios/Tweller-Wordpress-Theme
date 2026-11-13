@@ -30,15 +30,15 @@ $thumb = function ( $id ) {
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;">
         <?php
         $tw_sw = array(
-            'classic' => 'background:linear-gradient(135deg,#173a2e 0 45%,#f7f0e4 45% 75%,#9a1b23 75%);',
-            'modern'  => 'background:linear-gradient(135deg,#ffffff 0 55%,#f5f5f7 55% 80%,#e0244d 80%);border:1px solid #e3e8ee;',
-            'festive' => 'background:radial-gradient(60% 70% at 15% 10%,rgba(224,36,77,.75),transparent 70%),radial-gradient(55% 60% at 90% 20%,rgba(255,150,61,.7),transparent 70%),radial-gradient(60% 60% at 60% 110%,rgba(14,124,102,.8),transparent 70%),#0a2540;',
+            'classic'     => array( 'linear-gradient(135deg,#173a2e 0 45%,#f7f0e4 45% 75%,#9a1b23 75%)', 'Georgia, serif', '#fff', '600 24px' ),
+            'evergreen'   => array( 'radial-gradient(ellipse 90% 70% at 50% 0%,#21473a,#12281f 70%)', '"Playfair Display", Georgia, serif', '#e2c27e', '800 22px' ),
+            'scarlet'     => array( 'linear-gradient(135deg,#b1122d 0 55%,#ffffff 55% 80%,#2b1316 80%)', 'Cinzel, "Trajan Pro", Georgia, serif', '#fff', '600 18px' ),
+            'candlelight' => array( 'linear-gradient(135deg,#1a130e 0 60%,#d9b77a 60% 72%,#7a1e2b 72%)', '"Bodoni Moda", Didot, Georgia, serif', '#f4e8d4', '500 22px' ),
         );
-        $tw_font = array( 'classic' => 'Georgia, serif', 'modern' => '-apple-system, BlinkMacSystemFont, Inter, Segoe UI, sans-serif', 'festive' => '-apple-system, BlinkMacSystemFont, Inter, Segoe UI, sans-serif' );
         foreach ( TwellerFlow2_Landing::themes() as $tk => $th ) : $on = ( $tk === $tw_cur ); ?>
             <div style="border:<?php echo $on ? '2px solid #2271b1' : '1px solid #dcdcde'; ?>;border-radius:12px;padding:14px;background:#fff;">
-                <div style="height:96px;border-radius:8px;<?php echo $tw_sw[ $tk ]; ?>display:flex;align-items:flex-end;padding:10px;">
-                    <span style="font:<?php echo $tk === 'classic' ? '600 22px' : '700 20px'; ?>/1 <?php echo esc_attr( $tw_font[ $tk ] ); ?>;letter-spacing:<?php echo $tk === 'classic' ? '0' : '-.03em'; ?>;color:<?php echo $tk === 'modern' ? '#0a2540' : '#fff'; ?>;">Christmas Minis</span>
+                <div style="height:96px;border-radius:8px;background:<?php echo $tw_sw[ $tk ][0]; ?>;display:flex;align-items:flex-end;padding:10px;">
+                    <span style="font:<?php echo $tw_sw[ $tk ][3]; ?>/1 <?php echo esc_attr( $tw_sw[ $tk ][1] ); ?>;color:<?php echo $tw_sw[ $tk ][2]; ?>;<?php echo $tk === 'scarlet' ? 'text-transform:uppercase;letter-spacing:.04em;' : ''; ?>">Christmas Minis</span>
                 </div>
                 <p style="margin:10px 0 2px;font-weight:600;"><?php echo esc_html( $th['name'] ); ?><?php echo $on ? ' <span style="color:#2271b1;">· In use</span>' : ''; ?></p>
                 <p class="tf2-description" style="margin:0 0 10px;min-height:38px;"><?php echo esc_html( $th['desc'] ); ?></p>

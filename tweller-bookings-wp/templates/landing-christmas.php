@@ -77,9 +77,10 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <section class="tw-sec tw-ba" aria-labelledby="tw-ba-title">
     <div class="tw-wrap">
         <p class="tw-kicker">What to expect</p>
-        <h2 id="tw-ba-title" class="tw-h2">Original &amp; after</h2>
+        <h2 id="tw-ba-title" class="tw-h2"><span class="tw-h2__t">Original &amp; after</span></h2>
         <p class="tw-lede">Real Tweller Studios sessions. Drag the slider: on the left, the original photo as we shot it; on the right, the finished photo with the digital backdrop placed in. Only the background changes. You are not altered, so your photos stay authentic.</p>
         <ul class="tw-auth" aria-label="What changes and what doesn't">
+            <li>Backgrounds done professionally</li>
             <li>Only the background changes</li>
             <li>No changes to faces or bodies</li>
             <li>Authentic, natural you</li>
@@ -107,8 +108,8 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <section class="tw-sec tw-scenes" aria-labelledby="tw-scenes-title">
     <div class="tw-wrap">
         <p class="tw-kicker">Digital backdrops</p>
-        <h2 id="tw-scenes-title" class="tw-h2">Pick your digital scene</h2>
-        <p class="tw-lede">These are digital backdrops, not physical sets: we photograph your family on a white backdrop, then place the backdrop you choose in. Only the background changes; you stay exactly as photographed.</p>
+        <h2 id="tw-scenes-title" class="tw-h2"><span class="tw-h2__t">Pick your digital scene</span></h2>
+        <p class="tw-lede">These are digital backdrops: we photograph your family on a white backdrop, then place the backdrop you choose in. Only the background changes; you stay exactly as photographed.</p>
         <ol class="tw-digital" aria-label="How digital backdrops work">
             <li><span class="tw-digital__n">1</span><b>We photograph you on white</b><small>In studio, or at your home with our portable backdrop</small></li>
             <li><span class="tw-digital__n">2</span><b>You choose your scene</b><small>Any of the 4 below (book early for a second one free)</small></li>
@@ -148,12 +149,12 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
     </div>
 </section>
 
-<!-- 3 · Or keep it real -->
+<!-- 3 · Or keep it home -->
 <section class="tw-sec tw-real" aria-labelledby="tw-real-title">
     <div class="tw-wrap">
         <p class="tw-kicker">Your own setting</p>
-        <h2 id="tw-real-title" class="tw-h2">Or keep it real</h2>
-        <p class="tw-lede">Prefer the tree you decorated yourselves? We'll come to you.</p>
+        <h2 id="tw-real-title" class="tw-h2"><span class="tw-h2__t">Or keep it home</span></h2>
+        <p class="tw-lede">Love the tree you decorated together? We'll bring the camera and lights to you and photograph your family at home, with your own decor.</p>
         <?php if ( $gallery ) : ?>
             <div class="tw-real__photos">
                 <?php foreach ( array_slice( $gallery, 0, 2 ) as $g ) echo '<figure>' . $g['img'] . '</figure>'; // phpcs:ignore -- wp_get_attachment_image ?>
@@ -176,7 +177,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <section class="tw-sec tw-how" aria-labelledby="tw-how-title">
     <div class="tw-wrap">
         <p class="tw-kicker">How it works</p>
-        <h2 id="tw-how-title" class="tw-h2">Three easy steps</h2>
+        <h2 id="tw-how-title" class="tw-h2"><span class="tw-h2__t">Three easy steps</span></h2>
         <ol class="tw-steps">
             <li><span class="tw-steps__n">1</span><div><h3>Choose your package, date &amp; scene</h3><p>Pick a time and your backdrop online, and secure it with a deposit.</p></div></li>
             <li><span class="tw-steps__n">2</span><div><h3>Shoot in studio or at your home</h3><p>30 minutes to 2 hours, relaxed and guided, little ones included.</p></div></li>
@@ -189,7 +190,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <section class="tw-sec tw-packages" id="packages" aria-labelledby="tw-pk-title" tabindex="-1">
     <div class="tw-wrap">
         <p class="tw-kicker">Packages</p>
-        <h2 id="tw-pk-title" class="tw-h2">Choose your package</h2>
+        <h2 id="tw-pk-title" class="tw-h2"><span class="tw-h2__t">Choose your package</span></h2>
         <p class="tw-lede">Every package: studio or on location · digital scene or your own decor.</p>
 
         <?php if ( $eb_on ) : ?>
@@ -223,7 +224,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <section class="tw-sec tw-gallery" aria-labelledby="tw-gallery-title">
     <div class="tw-wrap">
         <p class="tw-kicker">Real families</p>
-        <h2 id="tw-gallery-title" class="tw-h2">Recent Christmas sessions</h2>
+        <h2 id="tw-gallery-title" class="tw-h2"><span class="tw-h2__t">Recent Christmas sessions</span></h2>
         <div class="tw-gallery__grid">
             <?php foreach ( $gallery as $g ) : ?>
                 <figure class="tw-gallery__item"><?php echo $g['img']; // phpcs:ignore -- wp_get_attachment_image ?></figure>
@@ -237,7 +238,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <section class="tw-sec tw-trust" aria-labelledby="tw-trust-title">
     <div class="tw-wrap">
         <p class="tw-trust__years"><span>10</span> years</p>
-        <h2 id="tw-trust-title" class="tw-h2">photographing T&amp;T families</h2>
+        <h2 id="tw-trust-title" class="tw-h2"><span class="tw-h2__t">photographing T&amp;T families</span></h2>
         <?php if ( $reviews ) : ?>
         <div class="tw-reviews">
             <?php foreach ( $reviews as $r ) : ?>
@@ -258,7 +259,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <!-- 8 · FAQ -->
 <section class="tw-sec tw-faq" aria-labelledby="tw-faq-title">
     <div class="tw-wrap tw-wrap--narrow">
-        <h2 id="tw-faq-title" class="tw-h2">Questions</h2>
+        <h2 id="tw-faq-title" class="tw-h2"><span class="tw-h2__t">Questions</span></h2>
         <?php foreach ( $s['faq'] as $f ) : ?>
         <details class="tw-q">
             <summary><?php echo esc_html( $f['q'] ); ?></summary>

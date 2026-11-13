@@ -7,6 +7,35 @@
     var $ = function (sel, root) { return (root || document).querySelector(sel); };
     var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
 
+
+    // ── Ease-in reveal as sections scroll into view ──
+    var xm = document.getElementById('tw-xmas');
+    if (xm && !reduce && 'IntersectionObserver' in window) {
+        xm.classList.add('tw-anim');
+        var sel = [
+            '.tw-sec .tw-kicker', '.tw-sec .tw-h2', '.tw-sec .tw-lede', '.tw-auth', '.tw-ba__tabs',
+            '.tw-digital li', '.tw-slider', '.tw-option', '.tw-real__photos', '.tw-steps li',
+            '.tw-early', '.tw-deposit', '.tw-gallery__item', '.tw-trust__years',
+            '.tw-review', '.tw-trust__link', '.tw-q', '.tw-final__body > *'
+        ].join(',');
+        var targets = $$(sel, xm);
+        targets.forEach(function (el) {
+            el.classList.add('tw-rv');
+            // stagger siblings of the same kind
+            var i = 0, n = el;
+            while ((n = n.previousElementSibling)) { if (n.classList.contains('tw-rv') || n.matches(sel)) i++; }
+            el.style.setProperty('--rd', Math.min(i * 0.08, 0.4) + 's');
+        });
+        var rio = new IntersectionObserver(function (ents) {
+            ents.forEach(function (e) {
+                if (e.isIntersecting) { e.target.classList.add('is-in'); rio.unobserve(e.target); }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+        targets.forEach(function (el) { rio.observe(el); });
+        // Anything already on screen (or jumped to) shows straight away.
+        window.addEventListener('hashchange', function () { targets.forEach(function (el) { el.classList.add('is-in'); }); });
+    }
+
     // ── Smooth scroll to the packages ─────────────────
     function goToPackages(e) {
         var target = document.getElementById('packages');

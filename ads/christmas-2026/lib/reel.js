@@ -124,12 +124,11 @@
 
   // Caption 1 + mosaic of all four scenes
   const mosaic = el('div', 'layer mosaic');
-  const cap1 = el('div', 'block caption', mosaic, '<div class="ribbon">' + HOLLY + '<span class="foil">4 scenes to choose from</span></div><br><p class="caption__note">Digital backdrops: we photograph you on white, then place the backdrop in</p>');
+  const cap1 = el('div', 'block caption', mosaic, '<div class="ribbon">' + HOLLY + '<span class="foil">4 scenes to choose from</span></div><br><p class="caption__note">Backdrop placed in professionally.<br><b>Only the background changes. You&rsquo;re not altered.</b></p>');
   cap1.style.top = px(SAFE_T + 6);
-  const grid = el('div', 'grid', mosaic);
-  const gW = W * 0.86, tileW = (gW - 18) / 2, tileH = tileW / 1.5;
-  const gridTop = Math.max(SAFE_T + H * 0.2, (SAFE_B - (tileH * 2 + 18)) - 10);
-  Object.assign(grid.style, { left: px((W - gW) / 2), top: px(gridTop), width: px(gW) });
+  const grid = el('div', 'grid', cap1);          // flows under the caption, never overlaps it
+  const gW = W * 0.76, tileW = (gW - 18) / 2, tileH = tileW / 1.5;
+  Object.assign(grid.style, { position: 'relative', left: 'auto', top: 'auto', width: px(gW), margin: '30px auto 0' });
   const tiles = SCENES.map((sc) => {
     const t = el('figure', 'tile', grid, '<img src="assets/scenes/' + sc.slug + '.jpg" alt=""><figcaption>' + sc.name + '</figcaption>');
     Object.assign(t.style, { width: px(tileW), height: px(tileH) });

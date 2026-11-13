@@ -1,0 +1,143 @@
+/* Christmas page style: Evergreen & Gold — matches the ads.
+   Deep evergreen with a soft glow, red satin ribbon banners with gold trim and
+   a holly sprig, gold-foil Playfair Display lettering, Cormorant italic for the
+   softer lines, Inter for reading text, gold hairline frames, red pill buttons. */
+@font-face { font-family: "PlayfairTW"; src: url("../landing/fonts/playfair-display-latin-800-normal.woff2") format("woff2"); font-weight: 800; font-display: swap; }
+@font-face { font-family: "PlayfairTW"; src: url("../landing/fonts/playfair-display-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "PlayfairTW"; src: url("../landing/fonts/playfair-display-latin-500-italic.woff2") format("woff2"); font-weight: 500; font-style: italic; font-display: swap; }
+@font-face { font-family: "InterTW"; src: url("../landing/fonts/inter-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "InterTW"; src: url("../landing/fonts/inter-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "InterTW"; src: url("../landing/fonts/inter-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+.tw-xmas.tw-theme-evergreen {
+    --ink: #f7efdc;
+    --ink-2: #efe4cc;
+    --paper: #12281f;
+    --cream: #173327;
+    --line: rgba(226, 194, 126, .30);
+    --muted: rgba(247, 240, 228, .76);
+    --red: #a01d26;
+    --red-hi: #b8242e;
+    --green: #0e2119;
+    --gold: #e2c27e;
+    --gold-ink: #e2c27e;
+    --foil: linear-gradient(180deg, #fff8df 0%, #f7df9b 34%, #dcae52 58%, #b98530 72%, #f6dfa0 100%);
+    --serif: "PlayfairTW", "Playfair Display", Georgia, serif;
+    --italic: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+    --sans: "InterTW", "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-family: var(--sans);
+    color: var(--muted);
+    background: var(--paper);
+}
+
+/* Every section: evergreen with the ads' soft glow from the top */
+.tw-theme-evergreen .tw-sec,
+.tw-theme-evergreen .tw-packages,
+.tw-theme-evergreen .tw-ba {
+    background: radial-gradient(ellipse 90% 55% at 50% 0%, #21473a 0%, rgba(33, 71, 58, 0) 70%), var(--paper);
+}
+.tw-theme-evergreen :is(.tw-real, .tw-trust) {
+    background: radial-gradient(ellipse 90% 55% at 50% 0%, #24503f 0%, rgba(36, 80, 63, 0) 70%), var(--cream);
+}
+
+/* ── Type ── */
+.tw-theme-evergreen .tw-kicker,
+.tw-theme-evergreen .tw-eyebrow { font: 600 13px/1.3 var(--sans); letter-spacing: .3em; color: var(--gold); }
+.tw-theme-evergreen .tw-lede { color: var(--muted); }
+.tw-theme-evergreen .tw-hero__title,
+.tw-theme-evergreen .tw-final__title {
+    font-family: var(--serif); font-weight: 800; letter-spacing: -.01em; line-height: 1.04;
+    background: var(--foil); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 3px 0 rgba(40, 6, 10, .55)) drop-shadow(0 10px 22px rgba(0, 0, 0, .45));
+    text-shadow: none;
+}
+.tw-theme-evergreen .tw-hero__sub { font-family: var(--sans); }
+.tw-theme-evergreen .tw-hero__sub strong { color: var(--gold); }
+
+/* Section headings: red satin ribbon, gold trim, notched tails, holly sprig, foil letters */
+.tw-theme-evergreen .tw-h2 {
+    position: relative; display: inline-block; max-width: calc(100% - 64px); margin: 30px 32px 22px;
+    padding: 18px 30px 22px; border-radius: 6px;
+    font: 800 clamp(26px, 6.4vw, 44px)/1.08 var(--serif); letter-spacing: -.005em;
+    background: linear-gradient(180deg, #c42a33 0%, #a01d26 46%, #7c121b 100%);
+    box-shadow: inset 0 0 0 4px #8e1820, inset 0 0 0 6px #e6c47c, inset 0 12px 20px -10px rgba(255, 255, 255, .35),
+                0 22px 44px -16px rgba(0, 0, 0, .75);
+}
+.tw-theme-evergreen .tw-h2::before,
+.tw-theme-evergreen .tw-h2::after { content: ""; position: absolute; bottom: -18px; width: 54px; height: 70%; z-index: -1;
+    background: linear-gradient(180deg, #8a1720, #5e0d14); }
+.tw-theme-evergreen .tw-h2::before { left: -30px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 30% 50%); }
+.tw-theme-evergreen .tw-h2::after { right: -30px; clip-path: polygon(0 0, 100% 0, 70% 50%, 100% 100%, 0 100%); }
+.tw-theme-evergreen .tw-h2__t {
+    background: var(--foil); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 2px 0 rgba(66, 6, 12, .9));
+}
+.tw-theme-evergreen .tw-h2__t::before {
+    content: ""; position: absolute; left: 50%; top: -24px; width: 76px; height: 40px; transform: translateX(-50%);
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 64"><path d="M58 40 C40 18 18 14 4 24 C14 26 16 34 10 40 C22 36 28 44 26 52 C38 42 50 46 58 40Z" fill="%231f5a3a" stroke="%230f3322" stroke-width="2"/><path d="M62 40 C80 18 102 14 116 24 C106 26 104 34 110 40 C98 36 92 44 94 52 C82 42 70 46 62 40Z" fill="%23256b45" stroke="%230f3322" stroke-width="2"/><circle cx="52" cy="40" r="9" fill="%23c8202b"/><circle cx="68" cy="40" r="9" fill="%23d4262f"/><circle cx="60" cy="30" r="9" fill="%23e0353d"/><circle cx="57" cy="27" r="2.5" fill="%23fff" opacity=".6"/></svg>') center / contain no-repeat;
+}
+.tw-theme-evergreen .tw-trust .tw-h2 { margin-left: auto; margin-right: auto; }
+/* Softer lines in Cormorant italic, as on the ads */
+.tw-theme-evergreen :is(.tw-slide__desc, .tw-scene__desc, .tw-trust__years) { font-family: var(--italic); font-style: italic; font-size: 19px; }
+.tw-theme-evergreen .tw-trust__years { color: var(--muted); }
+.tw-theme-evergreen .tw-trust__years span { font-family: var(--serif); font-style: normal; font-weight: 800;
+    background: var(--foil); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* ── Buttons: solid red pills, as on the ads ── */
+.tw-theme-evergreen .tw-btn { font: 700 16px/1.2 var(--sans); }
+.tw-theme-evergreen .tw-btn--primary { background: var(--red); color: #fff; box-shadow: 0 14px 30px -14px rgba(0, 0, 0, .7); }
+.tw-theme-evergreen .tw-btn--primary:hover { background: var(--red-hi); }
+.tw-theme-evergreen .tw-sticky { background: rgba(14, 33, 25, .95); border-top-color: var(--line); }
+.tw-theme-evergreen .tw-sticky__book { background: var(--red); }
+.tw-theme-evergreen .tw-sticky__icon { color: var(--ink); }
+.tw-theme-evergreen .tw-sticky__icon:first-of-type { color: #7fd8a2; }
+
+/* ── Cards and frames: gold hairlines ── */
+.tw-theme-evergreen :is(.tw-option, .tw-digital li, .tw-review) { background: rgba(255, 255, 255, .04); border: 1px solid var(--line); }
+.tw-theme-evergreen :is(.tw-option__title, .tw-digital b, .tw-steps h3, .tw-slide__name) { font-family: var(--serif); font-weight: 600; color: var(--ink); }
+.tw-theme-evergreen :is(.tw-option p, .tw-digital small, .tw-steps p, .tw-q__a) { color: var(--muted); }
+.tw-theme-evergreen .tw-digital__n,
+.tw-theme-evergreen .tw-steps__n { background: var(--red); color: var(--gold); box-shadow: inset 0 0 0 2px #e6c47c; }
+.tw-theme-evergreen :is(.tw-slide__img, .tw-compare, .tw-real__photos figure, .tw-gallery__item) { box-shadow: 0 0 0 1px rgba(226, 194, 126, .55), 0 22px 40px -22px rgba(0, 0, 0, .8); }
+.tw-xmas.tw-theme-evergreen .tw-slide__img { background: var(--cream); }
+.tw-theme-evergreen .tw-slide__no { color: var(--gold); }
+.tw-xmas.tw-theme-evergreen .tw-slide__pick { border-color: var(--gold); color: var(--gold); }
+.tw-xmas.tw-theme-evergreen .tw-slide__pick:hover { background: var(--red); border-color: var(--red); color: #fff; }
+.tw-xmas.tw-theme-evergreen .tw-thumb { color: var(--muted); }
+.tw-xmas.tw-theme-evergreen .tw-thumb.is-active { color: var(--ink); }
+.tw-theme-evergreen .tw-thumb.is-active img { border-color: var(--gold); }
+.tw-theme-evergreen .tw-scene__badge { background: rgba(14, 33, 25, .78); color: var(--gold); }
+
+/* Original & after */
+.tw-xmas.tw-theme-evergreen .tw-ba__tab { border-color: var(--line); color: var(--ink); }
+.tw-xmas.tw-theme-evergreen .tw-ba__tab.is-active { background: var(--gold); color: #12281f; border-color: var(--gold); }
+.tw-theme-evergreen .tw-compare__tag--after { background: var(--red); }
+
+/* Packages */
+.tw-theme-evergreen .tw-early { background: rgba(255, 255, 255, .05); border-color: var(--line); }
+.tw-theme-evergreen .tw-early__tag { background: var(--gold); color: #12281f; }
+.tw-theme-evergreen .tw-deposit { color: var(--muted); }
+/* The booking form stays an easy-to-read ivory card, framed in gold */
+.tw-xmas.tw-theme-evergreen .tweller-booking {
+    --tf-primary: #12281f; --tf-text-dark: #12281f; --tf-text: #4b5a51; --tf-border: #e4dccb; --tf-accent: #94722a;
+    background: #fbf8f1; color: #4b5a51; box-shadow: 0 0 0 1px rgba(226, 194, 126, .7), 0 30px 60px -30px rgba(0, 0, 0, .8);
+}
+.tw-xmas.tw-theme-evergreen .tweller-booking :is(h3, .tf2-pkg-price, .tf2-bd__title, .tf2-bd__name, .tf2-where__name) { color: #12281f; }
+.tw-xmas.tw-theme-evergreen .tweller-booking :is(.tf2-pkg-features, .tf2-ask, .tf2-bd__intro, .tf2-where__help, .tf2-map__lead, label) { color: #3f4c44; }
+.tw-xmas.tw-theme-evergreen .tweller-booking h3 { font-family: var(--serif); font-weight: 600; }
+.tw-xmas.tw-theme-evergreen .tf2-pkg-title { font-family: var(--serif); font-weight: 600; color: #12281f; }
+.tw-xmas.tw-theme-evergreen .tf2-pkg-cta { background: #12281f; }
+.tw-xmas.tw-theme-evergreen .tf2-package-card:first-child .tf2-pkg-cta,
+.tw-xmas.tw-theme-evergreen .tf2-btn-submit#tf2-submit-btn { background: var(--red); }
+.tw-xmas.tw-theme-evergreen .tf2-top-booked { background: var(--red); color: #fff; box-shadow: inset 0 0 0 1px #e6c47c; }
+.tw-xmas.tw-theme-evergreen .tf2-package-card:nth-child(2) .tf2-top-booked { background: #12281f; color: var(--gold); }
+.tw-xmas.tw-theme-evergreen .tf2-package-card:nth-child(3) .tf2-top-booked { background: var(--gold); color: #12281f; }
+.tw-xmas.tw-theme-evergreen .tf2-package-card--badged:first-child { border-color: var(--red); box-shadow: 0 0 0 1px var(--red) inset; }
+
+/* FAQ, trust */
+.tw-theme-evergreen .tw-q { border-color: var(--line); }
+.tw-theme-evergreen .tw-q summary { font: 600 20px/1.25 var(--serif); color: var(--ink); }
+.tw-theme-evergreen .tw-q summary::after { border-color: var(--gold); }
+.tw-theme-evergreen :is(.tw-q__a a, .tw-trust__link a, .tw-review figcaption) { color: var(--gold); }
+.tw-theme-evergreen .tw-review blockquote p { font-family: var(--italic); font-style: italic; color: var(--ink); }
+.tw-theme-evergreen .tw-wrap { position: relative; z-index: 0; }
