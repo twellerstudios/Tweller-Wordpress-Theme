@@ -84,7 +84,7 @@ async function stills() {
     await page.screenshot({ path: png, clip: { x: 0, y: 0, width: j.w, height: j.h } });
     // Highest JPEG quality that stays under 1 MB.
     for (const q of [2, 3, 4, 5, 6]) {
-      ff(['-i', png, '-q:v', String(q), join(OUT, j.file)]);
+      ff(['-i', png, '-pix_fmt', 'yuvj420p', '-q:v', String(q), join(OUT, j.file)]);
       if (statSync(join(OUT, j.file)).size < 1000 * 1024) break;
     }
   }
