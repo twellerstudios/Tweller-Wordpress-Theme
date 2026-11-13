@@ -213,11 +213,14 @@ class TwellerFlow2_Landing {
         $dir  = TWELLER_FLOW_2_PLUGIN_DIR . 'public/landing/christmas/before-after/';
         $base = TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/christmas/before-after/';
         $v    = '?v=' . self::ASSET_VER;
+        // Display order: set number => backdrop name.
         $sets = apply_filters( 'tweller_flow_2_christmas_before_after_sets', array(
-            2 => 'Champagne Gold',
+            6 => 'Snowy Window',
             3 => 'Fireside Library',
             5 => 'Champagne Gold',
-            6 => 'Snowy Window',
+            2 => 'Champagne Gold',
+            4 => 'Classic Red Hearth',
+            1 => 'Snowy Window',
         ) );
         $scenes = array();
         foreach ( self::settings()['scenes'] as $sc ) $scenes[ sanitize_title( $sc['name'] ) ] = $sc;
