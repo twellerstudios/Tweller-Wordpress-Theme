@@ -24,10 +24,11 @@ html, body { margin: 0; background: var(--ink); }
 .collage { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; background: var(--cream); }
 .collage img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .fmt-4x5 .collage { bottom: 330px; }
-.hook-plate { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 700px; padding: 46px 50px 42px; text-align: center;
+.hook-plate { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 760px; padding: 46px 50px 42px; text-align: center;
   background: rgba(21, 17, 14, .82); border: 2px solid rgba(226, 191, 116, .7); border-radius: 28px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.7); }
 .fmt-4x5 .hook-plate { top: 510px; }
-.hook-plate h1 { margin: 0; font: 600 84px/1.0 var(--serif); }
+.hook-plate h1 { margin: 0; font: 600 62px/1.05 var(--serif); }
+.hook-plate .hook-note { margin: 16px 0 0; font: 600 18px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: rgba(247, 240, 228, .75); }
 .hook-plate h1 em { display: block; font-style: italic; font-weight: 500; color: var(--gold); margin-top: 8px; }
 .swipe { position: absolute; right: var(--m); bottom: var(--m); padding: 16px 26px; border-radius: 999px; background: var(--red);
   font: 700 26px/1 var(--sans); letter-spacing: .04em; box-shadow: 0 12px 30px -10px rgba(0,0,0,.6); }
@@ -40,7 +41,7 @@ html, body { margin: 0; background: var(--ink); }
 .offer .o2 { font: 600 28px/1.2 var(--sans); color: rgba(247, 240, 228, .85); }
 
 /* Cards 2–5 — one scene */
-.scene-label { position: absolute; left: var(--m); bottom: var(--m); padding: 18px 26px 18px 22px; border-radius: 16px;
+.scene-label { position: absolute; left: var(--m); bottom: var(--m); padding: 16px 26px 18px 22px; border-radius: 16px; flex-direction: column; align-items: flex-start !important; gap: 10px !important;
   background: rgba(21, 17, 14, .62); backdrop-filter: blur(8px); display: flex; align-items: baseline; gap: 16px; }
 .scene-label span { font: 700 22px/1 var(--sans); letter-spacing: .2em; color: var(--gold); }
 .scene-label b { font: italic 500 58px/1 var(--serif); }
@@ -56,6 +57,8 @@ html, body { margin: 0; background: var(--ink); }
 .c2 { font: 700 104px/1 var(--sans); color: var(--gold); letter-spacing: -.02em; }
 .c2 i { font: italic 500 64px/1 var(--serif); color: #fff; letter-spacing: 0; margin-right: 8px; }
 .c3 { font: 600 32px/1.3 var(--sans); color: rgba(247, 240, 228, .88); margin-top: 8px !important; }
+.c2 i { display: block; margin: 0 0 8px; font-size: 46px; }
+.c5 { font: italic 500 46px/1 var(--serif); color: var(--gold); }
 .c4 { margin-top: 26px !important; padding: 22px 40px; border-radius: 999px; background: var(--red); font: 700 34px/1 var(--sans); }
 </style>
 </head>
@@ -79,7 +82,7 @@ html, body { margin: 0; background: var(--ink); }
   if (n === 1) {
     html = `<div class="card">
       <div class="collage">${S.map((s) => img(s)).join('')}</div>
-      <div class="hook-plate"><h1>4 Christmas scenes.<em>Which one is your family?</em></h1></div>
+      <div class="hook-plate"><h1>Thinking about Christmas photos of you &amp; your family?<em>4 scenes to choose from</em></h1><p class="hook-note">Digital backdrops, edited in</p></div>
       ${fmt === '4x5'
         ? `<div class="offer"><p class="o1">Christmas Minis <b>from TTD 550</b></p><p class="o2">Studio or at your home &nbsp;•&nbsp; Your scene or your decor</p></div>`
         : `<div class="swipe">swipe →</div>`}
@@ -90,15 +93,16 @@ html, body { margin: 0; background: var(--ink); }
       <div class="shade" style="background:linear-gradient(180deg, rgba(12,9,7,.35), rgba(12,9,7,0) 25%, rgba(12,9,7,0) 70%, rgba(12,9,7,.35))"></div>
       ${photo ? `<img class="photo" src="${photo}" alt="">` : ''}
       <div class="brand">Tweller Studios</div>
-      <div class="scene-label"><span>0${n - 1}</span><b>${s.name}</b></div>
+      <div class="scene-label"><span>Digital scene 0${n - 1}</span><b>${s.name}</b></div>
     </div>`;
   } else {
     html = `<div class="card cta">${img(S[0], "bg")}<div class="shade"></div>
       <div class="cta-body">
         <img class="logo" src="assets/logo-cream.png" alt="Tweller Studios">
-        <p class="c1">Christmas Minis</p>
-        <p class="c2"><i>from</i>TTD 550</p>
-        <p class="c3">Studio or at your home &nbsp;•&nbsp; Your scene or your decor</p>
+        <p class="c1">Book us now!</p>
+        <p class="c2"><i>Christmas Minis from</i>TTD 550</p>
+        <p class="c5">Limited spaces available</p>
+        <p class="c3">Studio or at your home &nbsp;•&nbsp; 4 digital scenes or your own decor</p>
         <p class="c4">Tap to see all packages →</p>
       </div></div>`;
   }

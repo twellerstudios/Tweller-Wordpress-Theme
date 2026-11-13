@@ -78,11 +78,11 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
             </div>
         <?php endforeach; ?>
     </div>
-    <p class="tw-hero__scene" aria-live="off"><span>Scene</span> <b data-hero-name><?php echo esc_html( $scenes[0]['name'] ); ?></b></p>
+    <p class="tw-hero__scene" aria-live="off"><span>Digital scene</span> <b data-hero-name><?php echo esc_html( $scenes[0]['name'] ); ?></b></p>
     <div class="tw-hero__body">
-        <p class="tw-eyebrow">Christmas sessions · Trinidad &amp; Tobago</p>
+        <p class="tw-eyebrow">Digital Christmas scenes · Trinidad &amp; Tobago</p>
         <h1 id="tw-hero-title" class="tw-hero__title">Your Christmas photos, in a scene like&nbsp;this.</h1>
-        <p class="tw-hero__sub">Studio or at your home <i>•</i> 4 Christmas scenes or your own decor <i>•</i> <strong>Minis from TTD&nbsp;<?php echo esc_html( $from ); ?></strong></p>
+        <p class="tw-hero__sub">Studio or at your home <i>•</i> 4 digital Christmas scenes or your own decor <i>•</i> <strong>Minis from TTD&nbsp;<?php echo esc_html( $from ); ?></strong></p>
         <div class="tw-actions">
             <a class="tw-btn tw-btn--primary" href="#packages" data-scroll>See Packages &amp; Book</a>
             <div class="tw-actions__pair">
@@ -99,15 +99,21 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <!-- 2 · Pick your scene -->
 <section class="tw-sec tw-scenes" aria-labelledby="tw-scenes-title">
     <div class="tw-wrap">
-        <p class="tw-kicker">01 · Digital scenes</p>
-        <h2 id="tw-scenes-title" class="tw-h2">Pick your scene</h2>
-        <p class="tw-lede">Shot on a white backdrop, then we place your family in the scene you choose.</p>
+        <p class="tw-kicker">01 · Digital backdrops</p>
+        <h2 id="tw-scenes-title" class="tw-h2">Pick your digital scene</h2>
+        <p class="tw-lede">These are digital backdrops, not physical sets: we photograph your family on a white backdrop, then edit you into the scene you choose.</p>
+        <ol class="tw-digital" aria-label="How digital backdrops work">
+            <li><span class="tw-digital__n">1</span><b>We photograph you on white</b><small>In studio, or at your home with our portable backdrop</small></li>
+            <li><span class="tw-digital__n">2</span><b>You choose your scene</b><small>Any of the 4 below (book early for a second one free)</small></li>
+            <li><span class="tw-digital__n">3</span><b>We edit you in</b><small>Light and colour matched so it looks natural</small></li>
+        </ol>
     </div>
     <ul class="tw-scenes__row" role="list">
         <?php foreach ( $scenes as $i => $scene ) : $img = $L::scene_images( $scene ); ?>
         <li class="tw-scene">
             <button type="button" class="tw-scene__btn" data-scene="<?php echo (int) $i; ?>" aria-label="View <?php echo esc_attr( $scene['name'] ); ?> full screen">
                 <img src="<?php echo esc_url( $img['sm'] ); ?>" srcset="<?php echo esc_url( $img['sm'] ); ?> <?php echo (int) $img['sm_w']; ?>w, <?php echo esc_url( $img['md'] ); ?> <?php echo (int) $img['md_w']; ?>w" sizes="(min-width: 900px) 45vw, 80vw" width="<?php echo (int) $img['sm_w']; ?>" height="<?php echo (int) $img['sm_h']; ?>" alt="<?php echo esc_attr( $scene['name'] . ' Christmas scene' ); ?>" loading="lazy" decoding="async">
+                <span class="tw-scene__badge">Digital backdrop</span>
                 <span class="tw-scene__expand" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span>
             </button>
             <h3 class="tw-scene__name"><?php echo esc_html( $scene['name'] ); ?></h3>
@@ -150,7 +156,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
         <ol class="tw-steps">
             <li><span class="tw-steps__n">1</span><div><h3>Choose your package, date &amp; scene</h3><p>Pick a time and your backdrop online, and secure it with a deposit.</p></div></li>
             <li><span class="tw-steps__n">2</span><div><h3>Shoot in studio or at your home</h3><p>30 minutes to 2 hours, relaxed and guided, little ones included.</p></div></li>
-            <li><span class="tw-steps__n">3</span><div><h3>Get your edited photos</h3><p>Delivered to your online gallery, ready for cards, prints and the family chat. Shoot early to have them before Christmas.</p></div></li>
+            <li><span class="tw-steps__n">3</span><div><h3>We edit you into your scene</h3><p>Your digital Christmas scene, finished and delivered to your online gallery, ready for cards, prints and the family chat. Shoot early to have them before Christmas.</p></div></li>
         </ol>
     </div>
 </section>
@@ -276,7 +282,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
     </div>
     <div class="tw-viewer__bar">
         <button type="button" class="tw-viewer__nav" data-viewer-prev aria-label="Previous scene">←</button>
-        <p class="tw-viewer__name" data-viewer-name></p>
+        <p class="tw-viewer__name"><span data-viewer-name></span><small>Digital backdrop: we edit your family into this scene</small></p>
         <button type="button" class="tw-viewer__nav" data-viewer-next aria-label="Next scene">→</button>
     </div>
     <div class="tw-viewer__actions">

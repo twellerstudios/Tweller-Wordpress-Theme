@@ -50,6 +50,7 @@ class TwellerFlow2_Landing {
     public static function faq_defaults() {
         return array(
             array( 'q' => 'Studio or my home?', 'a' => 'Either. Every package works in our studio or at your home or another location. For digital scenes we bring a portable white backdrop to you. Home and location shoots beyond Couva in the south, Curepe in the north, Macoya in the east or San Juan in the west have a TT$60 transport fee.' ),
+            array( 'q' => 'Are the 4 scenes real sets?', 'a' => 'No, they are digital backdrops. We photograph your family on a white backdrop, in studio or at your home, and our editors place you into the scene you choose, matching the light and colour so it looks natural. Prefer a real setting? Choose your own decor at home or a location instead.' ),
             array( 'q' => 'Can we use our own tree and decor?', 'a' => 'Yes. We shoot at your home with your own tree and Christmas setup, styled and lit so it looks its best.' ),
             array( 'q' => 'What do we wear on a white backdrop?', 'a' => 'Rich, solid colours look best in the scenes: deep red, evergreen, cream, gold, navy or burgundy. Avoid all-white outfits and large logos. Coordinate, don\'t match. Send us your options on WhatsApp and we\'ll help you choose.' ),
             array( 'q' => 'Can we bring the dog?', 'a' => 'Of course. Pets are family. Let us know in your booking notes so we plan the time for them.' ),
@@ -237,7 +238,7 @@ class TwellerFlow2_Landing {
         $choices[] = array( 'key' => 'on-location', 'name' => 'On location', 'thumb' => '', 'kind' => 'location', 'note' => 'A place you choose' );
         $all[ $s['session_key'] ] = array(
             'title'       => 'Choose your backdrop',
-            'intro'       => 'Digital scenes are shot on a white backdrop in studio or at your home, then we place your family in the scene.',
+            'intro'       => 'The 4 scenes are digital backdrops: we photograph you on white (in studio or at your home), then edit you into the scene you pick.',
             'choices'     => $choices,
             'extra'       => self::early_bird_active(),
             'extra_label' => 'Early bird: pick your free extra scene',
@@ -341,7 +342,7 @@ class TwellerFlow2_Landing {
     }
 
     public static function share_desc() {
-        return 'Studio or at your home. 4 Christmas scenes or your own decor. Pick your package and book online with a deposit.';
+        return 'Studio or at your home. 4 digital Christmas scenes (edited in) or your own decor. Pick your package and book online with a deposit.';
     }
 
     /**

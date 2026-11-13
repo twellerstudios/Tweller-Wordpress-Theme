@@ -18,7 +18,7 @@
   const SAFE_B = H * (1 - +(root.dataset.safeBottom || 0.35));
   const vars = Object.assign({
     price: '550',
-    early_bird: 'Book by Nov 30 → extra scene FREE',
+    urgency: 'Limited spaces available',
     cta: 'Tap Book Now to see packages'
   }, (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {});
 
@@ -28,7 +28,7 @@
     { slug: 'snowy-window',       name: 'Snowy Window',       fx: 0.48, fy: 0.52, glow: null },
     { slug: 'champagne-gold',     name: 'Champagne Gold',     fx: 0.47, fy: 0.55, glow: null }
   ];
-  const T = { s2: 1.5, s3: 3.65, s4: 5.8, cap1: 8.0, cap2: 9.6, end: 11.0, total: 15 };
+  const T = { s2: 2.2, s3: 4.0, s4: 5.8, cap1: 7.6, cap2: 9.6, end: 11.0, total: 15 };
 
   const el = (tag, cls, parent, html) => {
     const e = document.createElement(tag);
@@ -98,22 +98,22 @@
 
   // ── Text ────────────────────────────────────────
   const hook = el('div', 'block hook', root,
-    '<p class="hook__text">Imagine your family’s Christmas photo here… <span class="emoji">🎄</span></p>');
+    '<p class="hook__text">Thinking about Christmas photos of you and your family? <span class="emoji">🎄</span></p>');
   hook.style.top = px(SAFE_T + 10);
 
   const labels = SCENES.slice(1).map((sc, i) => {
-    const l = el('div', 'label', root, '<span class="label__no">Scene 0' + (i + 2) + '</span><span class="label__name">' + sc.name + '</span>');
+    const l = el('div', 'label', root, '<span class="label__no">Digital scene 0' + (i + 2) + '</span><span class="label__name">' + sc.name + '</span>');
     l.style.top = px(SAFE_T + 6);
     return l;
   });
 
   // Caption 1 + mosaic of all four scenes
   const mosaic = el('div', 'layer mosaic');
-  const cap1 = el('div', 'block caption', mosaic, '<p class="caption__big">Pick your scene</p><p class="caption__small">— or use your own decor</p>');
+  const cap1 = el('div', 'block caption', mosaic, '<p class="caption__big">4 scenes to choose from</p><p class="caption__note">Digital backdrops: we photograph you on white, then edit you into your scene</p>');
   cap1.style.top = px(SAFE_T + 6);
   const grid = el('div', 'grid', mosaic);
   const gW = W * 0.86, tileW = (gW - 18) / 2, tileH = tileW / 1.5;
-  const gridTop = Math.max(SAFE_T + H * 0.15, (SAFE_B - (tileH * 2 + 18)) - 10);
+  const gridTop = Math.max(SAFE_T + H * 0.2, (SAFE_B - (tileH * 2 + 18)) - 10);
   Object.assign(grid.style, { left: px((W - gW) / 2), top: px(gridTop), width: px(gW) });
   const tiles = SCENES.map((sc) => {
     const t = el('figure', 'tile', grid, '<img src="assets/scenes/' + sc.slug + '.jpg" alt=""><figcaption>' + sc.name + '</figcaption>');
@@ -131,9 +131,9 @@
   const endBg = el('img', 'end__bg', end); endBg.src = 'assets/scenes/fireside-library.jpg'; endBg.alt = '';
   const endBody = el('div', 'end__body', end,
     '<div class="anlogo" aria-label="Tweller Studios"></div>' +
-    '<p class="end__kicker">Christmas Minis</p>' +
-    '<p class="end__price"><span>from</span> TTD ' + vars.price + '</p>' +
-    '<p class="end__eb">' + vars.early_bird + '</p>' +
+    '<p class="end__kicker">Book us now!</p>' +
+    '<p class="end__price"><span>Christmas Minis from</span> TTD ' + vars.price + '</p>' +
+    '<p class="end__eb">' + vars.urgency + '</p>' +
     '<p class="end__cta">' + vars.cta + '</p>');
   // Animated logo: built from the logo's own parts (assets/logo-parts).
   const logoBox = endBody.querySelector('.anlogo');

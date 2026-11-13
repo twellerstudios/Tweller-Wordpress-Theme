@@ -63,12 +63,21 @@ function renderReel(fmt) {
 }
 
 // Music bed at -16 LUFS (Meta's recommended loudness for Reels).
+// music.json picks the track and where the 15 s cut starts; falls back to
+// the self-made arrangement (music/make-music.py) when that file is absent.
 function addMusic(silent) {
-  const music = join(HERE, 'assets', 'music', 'jingle-bells-15s.wav');
-  if (!existsSync(music)) run('python3', [join(HERE, 'music', 'make-music.py')]);
+  let cfg = {};
+  try { cfg = JSON.parse(readFileSync(join(HERE, 'music.json'), 'utf8')); } catch {}
+  let music = cfg.file ? join(HERE, cfg.file) : '';
+  let start = Number(cfg.start) || 0;
+  if (!music || !existsSync(music)) {
+    music = join(HERE, 'assets', 'music', 'jingle-bells-15s.wav');
+    start = 0;
+    if (!existsSync(music)) run('python3', [join(HERE, 'music', 'make-music.py')]);
+  }
   const out = silent.replace(/_silent\.mp4$/, '.mp4');
-  ff(['-i', silent, '-i', music, '-map', '0:v', '-map', '1:a', '-c:v', 'copy',
-    '-af', 'afade=t=in:d=0.05,loudnorm=I=-16:TP=-1.5:LRA=9', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out]);
+  ff(['-i', silent, '-ss', String(start), '-t', '15', '-i', music, '-map', '0:v', '-map', '1:a', '-c:v', 'copy',
+    '-af', 'afade=t=in:d=0.04,afade=t=out:st=14.4:d=0.6,loudnorm=I=-16:TP=-1.5:LRA=9', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out]);
   return out;
 }
 

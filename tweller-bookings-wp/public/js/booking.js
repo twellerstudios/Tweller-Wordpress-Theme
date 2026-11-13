@@ -742,7 +742,7 @@ const tfBooking = {
                     : '<svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M12 13l-2.2 4h4.4L12 13Z"/></svg>'}</span>`;
             return `<label class="tf2-bd__opt${c.thumb ? '' : ' tf2-bd__opt--plain'}">
                 <input type="radio" name="tf2_backdrop" value="${esc(c.key)}"${c.key === this.selectedBackdrop ? ' checked' : ''}>
-                <span class="tf2-bd__art">${art}<span class="tf2-bd__tick" aria-hidden="true"></span></span>
+                <span class="tf2-bd__art">${art}${c.kind === 'scene' ? '<span class="tf2-bd__badge">Digital</span>' : ''}<span class="tf2-bd__tick" aria-hidden="true"></span></span>
                 <span class="tf2-bd__name">${esc(c.name)}</span>
                 ${c.note ? `<span class="tf2-bd__note">${esc(c.note)}</span>` : ''}
             </label>`;

@@ -419,3 +419,18 @@ html:has(body.tw-xmas) { margin-top: 0 !important; }
 .tw-xmas .tf2-bd__title { font: 600 28px/1.1 var(--serif); color: var(--ink); }
 .tw-xmas .tf2-bd__opt input:checked + .tf2-bd__art { border-color: var(--red); box-shadow: 0 0 0 2px var(--red); }
 .tw-xmas .tf2-bd__opt input:checked + .tf2-bd__art .tf2-bd__tick { background: var(--red); border-color: var(--red); }
+
+/* Digital backdrops: how it works, and badges */
+.tw-digital { list-style: none; margin: 0 0 30px; padding: 0; display: grid; gap: 10px; }
+.tw-digital li { display: grid; grid-template-columns: 40px 1fr; column-gap: 12px; align-items: center;
+    padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--cream); }
+.tw-digital__n { grid-row: span 2; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--green); color: var(--gold); font: 600 21px/1 var(--serif); }
+.tw-digital b { font: 600 21px/1.15 var(--serif); color: var(--ink); }
+.tw-digital small { font-size: 14px; color: var(--muted); }
+@media (min-width: 700px) { .tw-digital { grid-template-columns: repeat(3, 1fr); gap: 14px; } }
+.tw-scene__badge { position: absolute; left: 10px; top: 10px; padding: 6px 10px; border-radius: 999px;
+    background: rgba(21, 17, 14, .72); color: #fff; font: 600 11px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; backdrop-filter: blur(4px); }
+.tw-viewer__name span { display: block; }
+.tw-viewer__name small { display: block; margin-top: 6px; font: 500 13px/1.3 var(--sans); letter-spacing: .02em; color: rgba(255, 255, 255, .72); }
+.tw-digital__n, .tw-steps__n { font-variant-numeric: lining-nums; font-family: var(--sans); font-weight: 700; font-size: 18px; }

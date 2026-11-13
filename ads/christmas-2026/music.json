@@ -1,0 +1,5 @@
+{
+  "file": "assets/music/jingle-bells-track.mp3",
+  "start": 60.03,
+  "note": "Owner-supplied royalty-free Jingle Bells track (not committed: the repo is public). start = a bar line 15 s before the song's last hit, so the reel ends on the real ending. Without the file, music/make-music.py's own arrangement is used."
+}

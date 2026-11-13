@@ -20,26 +20,29 @@
 html, body { margin: 0; background: var(--green); }
 .ad { position: relative; width: 1080px; height: 1350px; overflow: hidden; color: var(--cream);
   background: radial-gradient(ellipse 90% 60% at 50% 0%, #21473a 0%, var(--green) 62%), var(--green);
-  display: flex; flex-direction: column; align-items: center; padding: 52px 64px 64px; text-align: center; }
+  display: flex; flex-direction: column; align-items: center; padding: 50px 64px 56px; text-align: center; }
 /* faint inner frame */
 .ad::before { content: ""; position: absolute; inset: 22px; border: 1px solid rgba(226, 194, 126, .28); border-radius: 6px; pointer-events: none; }
 
-.logo { width: 118px; height: auto; opacity: .96; }
-.eyebrow { margin: 18px 0 0; font: 600 17px/1 var(--sans); letter-spacing: .34em; text-transform: uppercase; color: var(--gold); }
-.title { margin: 18px 0 0; font: 600 114px/.92 var(--serif); letter-spacing: -.012em; }
+.logo { width: 100px; height: auto; opacity: .96; }
+.eyebrow { display: none; margin: 18px 0 0; font: 600 17px/1 var(--sans); letter-spacing: .34em; text-transform: uppercase; color: var(--gold); }
+.ask { margin: 16px 0 0; max-width: 760px; text-wrap: balance; font: italic 500 40px/1.15 var(--serif); color: rgba(247, 240, 228, .92); }
+.choose { margin: 20px 0 0; font: 600 17px/1 var(--sans); letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
+.digital { margin: 14px 0 0; font: 400 18px/1.35 var(--sans); color: rgba(247, 240, 228, .7); letter-spacing: .01em; }
+.title { margin: 10px 0 0; font: 600 114px/.92 var(--serif); letter-spacing: -.012em; }
 .price { margin: 10px 0 0; display: flex; align-items: baseline; justify-content: center; gap: 14px; }
-.price i { font: italic 500 58px/1 var(--serif); color: var(--cream); }
-.price b { font: 700 80px/1 var(--sans); letter-spacing: -.025em; color: var(--gold); }
+.price i { font: italic 500 46px/1 var(--serif); color: var(--cream); }
+.price b { font: 700 66px/1 var(--sans); letter-spacing: -.025em; color: var(--gold); }
 
-.grid { margin-top: 32px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.tile { position: relative; margin: 0; aspect-ratio: 3 / 2; border-radius: 10px; overflow: hidden;
+.grid { margin-top: 16px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tile { position: relative; margin: 0; aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden;
   box-shadow: 0 0 0 1px var(--gold-line), 0 22px 40px -22px rgba(0, 0, 0, .8); }
 .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .tile figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 34px 16px 12px; text-align: left;
   font: italic 500 30px/1 var(--serif); color: #fff; background: linear-gradient(transparent, rgba(8, 6, 5, .72)); }
 .tile figcaption span { font: 700 13px/1 var(--sans); letter-spacing: .2em; color: var(--gold); margin-right: 10px; vertical-align: 4px; font-style: normal; }
 
-.facts { margin: 28px 0 0; padding: 0; list-style: none; width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); }
+.facts { margin: 24px 0 0; padding: 0; list-style: none; width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); }
 .facts li { padding: 4px 18px; font: 400 21px/1.35 var(--sans); color: rgba(247, 240, 228, .9); }
 .facts li + li { border-left: 1px solid var(--gold-line); }
 .facts strong { display: block; margin-bottom: 4px; font: 600 28px/1.05 var(--serif); color: #fff; letter-spacing: .005em; }
@@ -55,15 +58,18 @@ html, body { margin: 0; background: var(--green); }
 .fmt-1x1 .cta { margin-top: 30px; padding-top: 0; }
 .fmt-1x1 .logo { width: 92px; }
 .fmt-1x1 .eyebrow { margin-top: 12px; font-size: 14px; }
-.fmt-1x1 .title { margin-top: 14px; font-size: 98px; }
+.fmt-1x1 .title { margin-top: 6px; font-size: 92px; }
+.fmt-1x1 .ask { margin-top: 12px; font-size: 32px; }
+.fmt-1x1 .choose { margin-top: 18px; font-size: 14px; }
+.fmt-1x1 .digital { margin-top: 12px; font-size: 16px; }
 .fmt-1x1 .price { margin-top: 6px; }
-.fmt-1x1 .price i { font-size: 46px; }
-.fmt-1x1 .price b { font-size: 68px; }
-.fmt-1x1 .grid { margin-top: 26px; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.fmt-1x1 .price i { font-size: 38px; }
+.fmt-1x1 .price b { font-size: 56px; }
+.fmt-1x1 .grid { margin-top: 14px; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .fmt-1x1 .tile { aspect-ratio: 2 / 3; }
 .fmt-1x1 .tile figcaption { font-size: 22px; padding: 30px 10px 10px; text-align: center; }
 .fmt-1x1 .tile figcaption span { display: block; margin: 0 0 6px; vertical-align: 0; }
-.fmt-1x1 .facts { margin-top: 26px; }
+.fmt-1x1 .facts { margin-top: 18px; }
 .fmt-1x1 .facts li { font-size: 18px; padding: 2px 14px; }
 .fmt-1x1 .facts strong { font-size: 24px; }
 .fmt-1x1 .cta__pill { font-size: 24px; padding: 15px 30px; }
@@ -72,6 +78,9 @@ html, body { margin: 0; background: var(--green); }
 .fmt-9x16 .ad { height: 1920px; padding: 268px 64px 384px; justify-content: flex-start; }
 .fmt-9x16 .ad::before { inset: 22px; }
 .fmt-9x16 .title { font-size: 132px; }
+.fmt-9x16 .eyebrow { display: block; }
+.fmt-9x16 .logo { width: 118px; }
+.fmt-9x16 .tile { aspect-ratio: 3 / 2; }
 .fmt-9x16 .grid { margin-top: 44px; }
 .fmt-9x16 .facts { margin-top: 40px; }
 .fmt-9x16 .cta { margin-top: 44px; padding-top: 0; }
@@ -96,17 +105,19 @@ html, body { margin: 0; background: var(--green); }
   <div class="ad">
     <img class="logo" src="assets/logo-cream.png" alt="Tweller Studios">
     <p class="eyebrow">Christmas 2026 · Trinidad &amp; Tobago</p>
-    <h1 class="title">Christmas Minis</h1>
-    <p class="price"><i>from</i><b>TTD 550</b></p>
+    <p class="ask">Thinking about Christmas photos of you and your family?</p>
+    <h1 class="title">Book us now!</h1>
+    <p class="price"><i>Christmas Minis from</i><b>TTD 550</b></p>
+    <p class="choose">4 scenes to choose from</p>
     <div class="grid">${tiles}</div>
+    <p class="digital">Digital backdrops: we photograph you on white, then edit you into your scene.</p>
     <ul class="facts">
       <li><strong>Studio or at home</strong>We bring the backdrop</li>
-      <li><strong>4 scenes or your decor</strong>Pick a scene, or keep it real</li>
+      <li><strong>Limited spaces</strong>Last shoot date Dec 24</li>
       <li><strong>Book by Nov 30</strong>Get an extra scene free</li>
     </ul>
     <div class="cta">
       <span class="cta__pill">Book online · twellerstudios.com</span>
-      <span class="cta__small">Last shoot date <b>Dec 24</b></span>
     </div>
   </div>`;
 })();
