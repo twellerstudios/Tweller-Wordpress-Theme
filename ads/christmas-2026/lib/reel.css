@@ -54,7 +54,12 @@ html, body { margin: 0; background: #15110e; }
 .end::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(23, 58, 46, .25), rgba(12, 9, 7, .7)); }
 .end__body { position: absolute; left: 0; right: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: calc(26px * var(--u)); }
 .end__body p { margin: 0; }
-.end__logo { width: calc(250px * var(--u)); height: auto; opacity: .95; }
+.anlogo { position: relative; width: calc(360px * var(--u)); aspect-ratio: var(--logo-aspect); }
+.anlogo__part { position: absolute; display: block; max-width: none; transform-origin: 50% 50%; }
+.anlogo__rule-left { transform-origin: 100% 50%; }
+.anlogo__rule-right { transform-origin: 0% 50%; }
+.anlogo__flash { position: absolute; width: 60%; aspect-ratio: 1; border-radius: 50%; opacity: 0; pointer-events: none;
+  background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,240,200,.85) 18%, rgba(255,220,150,.25) 45%, rgba(255,220,150,0) 70%); mix-blend-mode: screen; }
 .end__kicker { font: 600 calc(150px * var(--u))/.95 var(--serif); letter-spacing: -.01em; }
 .end__price { font: 700 calc(140px * var(--u))/1 var(--sans); color: var(--gold); letter-spacing: -.02em; }
 .end__price span { font: italic 500 calc(84px * var(--u))/1 var(--serif); color: #fff; letter-spacing: 0; margin-right: 6px; }

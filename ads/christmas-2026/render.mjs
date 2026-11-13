@@ -5,6 +5,7 @@
 //   *_vo.mp4                                     only with --vo (voiceover from vo-script.txt)
 //   xmas_scene_tour_thumb.jpg                    1080x1920 hook frame
 //   xmas_carousel_01..06.jpg, xmas_pick_scene_4x5.jpg
+//   xmas_image_ad_4x5 / 1x1 / 9x16 .jpg (+ _HQ 2x masters)
 //
 //   node render.mjs            everything
 //   node render.mjs --stills   carousel + fallback only
@@ -83,11 +84,18 @@ async function stills() {
   try { pw = await import('playwright'); } catch { pw = createRequire(import.meta.url)('playwright'); }
   const { chromium } = pw;
   const b = await chromium.launch();
-  const page = await b.newPage({ deviceScaleFactor: 1 });
-  const url = pathToFileURL(join(HERE, 'carousel.html')).href;
+  const pages = {};
+  const pageFor = async (scale) => (pages[scale] = pages[scale] || await b.newPage({ deviceScaleFactor: scale }));
   const jobs = [1, 2, 3, 4, 5, 6].map((n) => ({ q: `card=${n}`, w: 1080, h: 1080, file: `xmas_carousel_0${n}.jpg` }));
   jobs.push({ q: 'card=1&fmt=4x5', w: 1080, h: 1350, file: 'xmas_pick_scene_4x5.jpg' });
+  // Image ad: standard 1080-wide and a 2x high-resolution master of each.
+  for (const [fmt, h] of [['4x5', 1350], ['1x1', 1080], ['9x16', 1920]]) {
+    jobs.push({ page: 'image-ad.html', q: `fmt=${fmt}`, w: 1080, h, file: `xmas_image_ad_${fmt}.jpg` });
+    jobs.push({ page: 'image-ad.html', q: `fmt=${fmt}`, w: 1080, h, scale: 2, file: `xmas_image_ad_${fmt}_HQ.jpg`, maxKb: 4000 });
+  }
   for (const j of jobs) {
+    const page = await pageFor(j.scale || 1);
+    const url = pathToFileURL(join(HERE, j.page || 'carousel.html')).href;
     await page.setViewportSize({ width: j.w, height: j.h });
     await page.goto(`${url}?${j.q}`, { waitUntil: 'load' });
     await page.evaluate(() => document.fonts.ready);
@@ -96,7 +104,7 @@ async function stills() {
     // Highest JPEG quality that stays under 1 MB.
     for (const q of [2, 3, 4, 5, 6]) {
       ff(['-i', png, '-pix_fmt', 'yuvj420p', '-q:v', String(q), join(OUT, j.file)]);
-      if (statSync(join(OUT, j.file)).size < 1000 * 1024) break;
+      if (statSync(join(OUT, j.file)).size < (j.maxKb || 1000) * 1024) break;
     }
   }
   await b.close();

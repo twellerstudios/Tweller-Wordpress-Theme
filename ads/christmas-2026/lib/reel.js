@@ -130,11 +130,27 @@
   const end = el('div', 'layer end');
   const endBg = el('img', 'end__bg', end); endBg.src = 'assets/scenes/fireside-library.jpg'; endBg.alt = '';
   const endBody = el('div', 'end__body', end,
-    '<img class="end__logo" src="assets/logo-cream.png" alt="Tweller Studios">' +
+    '<div class="anlogo" aria-label="Tweller Studios"></div>' +
     '<p class="end__kicker">Christmas Minis</p>' +
     '<p class="end__price"><span>from</span> TTD ' + vars.price + '</p>' +
     '<p class="end__eb">' + vars.early_bird + '</p>' +
     '<p class="end__cta">' + vars.cta + '</p>');
+  // Animated logo: built from the logo's own parts (assets/logo-parts).
+  const logoBox = endBody.querySelector('.anlogo');
+  const LG = window.TW_LOGO;
+  const logoParts = {};
+  Object.keys(LG.parts).forEach((name) => {
+    const p = LG.parts[name];
+    const im = el('img', 'anlogo__part anlogo__' + name.replace(/-\d+$/, ''), logoBox);
+    im.src = 'assets/logo-parts/' + name + '.png'; im.alt = '';
+    Object.assign(im.style, { left: (p.x * 100) + '%', top: (p.y * 100) + '%', width: (p.w * 100) + '%', height: (p.h * 100) + '%' });
+    logoParts[name] = im;
+  });
+  const cam = LG.parts.camera;
+  const lensFlash = el('div', 'anlogo__flash', logoBox);
+  Object.assign(lensFlash.style, { left: ((cam.x + cam.w * 0.5) * 100) + '%', top: ((cam.y + cam.h * 0.5) * 100) + '%' });
+  root.style.setProperty('--logo-aspect', LG.aspect);
+
   const endSpan = SAFE_B - SAFE_T;
   Object.assign(endBody.style, { top: px(SAFE_T), height: px(endSpan) });
   root.style.setProperty('--u', (Math.min(W, endSpan * 1.05) / 1080).toFixed(4));
@@ -221,12 +237,30 @@
   tl.set(end, { opacity: 1 }, T.end);
   tl.fromTo(endBg, { scale: 1.15 }, { scale: 1.05, duration: T.total - T.end, ease: 'none' }, T.end);
   const eb = endBody.children;
-  tl.fromTo(eb[0], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, T.end + 0.05);
-  tl.fromTo(eb[1], { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, T.end + 0.2);
-  tl.fromTo(eb[2], { opacity: 0, y: 24, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: 'back.out(1.4)' }, T.end + 0.35);
-  tl.fromTo(eb[3], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, T.end + 0.9);
-  tl.fromTo(eb[4], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, T.end + 1.3);
-  for (let t = T.end + 1.9; t < T.total - 0.3; t += 0.9) {
+  // Logo build: camera drops in, the lens fires a flash, bow tie pops,
+  // rules draw out, TWELLER rises letter by letter, STUDIOS settles.
+  const L0 = T.end + 0.05;
+  tl.set(lensFlash, { xPercent: -50, yPercent: -50 }, 0);
+  const P = logoParts;
+  tl.fromTo(P.camera, { opacity: 0, y: -40, scale: 0.7 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'back.out(1.8)' }, L0);
+  tl.fromTo(lensFlash, { opacity: 0, scale: 0.2 }, { opacity: 1, scale: 1, duration: 0.12, ease: 'power2.out' }, L0 + 0.4);
+  tl.to(lensFlash, { opacity: 0, scale: 2.6, duration: 0.45, ease: 'power2.out' }, L0 + 0.52);
+  tl.fromTo(flash, { opacity: 0 }, { opacity: 0.35, duration: 0.06 }, L0 + 0.42);
+  tl.to(flash, { opacity: 0, duration: 0.35, ease: 'power2.out' }, L0 + 0.48);
+  tl.fromTo(P.bowtie, { opacity: 0, scale: 0, rotation: -25 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.45, ease: 'back.out(2.4)' }, L0 + 0.5);
+  tl.fromTo(P['rule-left'], { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: 'power3.out' }, L0 + 0.6);
+  tl.fromTo(P['rule-right'], { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: 'power3.out' }, L0 + 0.6);
+  for (let i = 1; i <= 7; i++) {
+    tl.fromTo(P['letter-' + i], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out' }, L0 + 0.65 + (i - 1) * 0.055);
+  }
+  tl.fromTo(P.studios, { opacity: 0, scaleX: 1.25 }, { opacity: 1, scaleX: 1, duration: 0.5, ease: 'power3.out' }, L0 + 1.05);
+  tl.fromTo(P['rule-bottom'], { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: 'power3.out' }, L0 + 1.2);
+  tl.set(eb[0], { opacity: 1 }, 0);
+  tl.fromTo(eb[1], { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, T.end + 1.3);
+  tl.fromTo(eb[2], { opacity: 0, y: 24, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: 'back.out(1.4)' }, T.end + 1.45);
+  tl.fromTo(eb[3], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, T.end + 1.9);
+  tl.fromTo(eb[4], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, T.end + 2.2);
+  for (let t = T.end + 2.7; t < T.total - 0.3; t += 0.9) {
     tl.to(eb[4], { y: 8, duration: 0.45, ease: 'sine.inOut' }, t);
     tl.to(eb[4], { y: 0, duration: 0.45, ease: 'sine.inOut' }, t + 0.45);
   }
