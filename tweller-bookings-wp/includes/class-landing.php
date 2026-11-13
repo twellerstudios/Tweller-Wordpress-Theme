@@ -105,25 +105,32 @@ class TwellerFlow2_Landing {
     // ── Packages ─────────────────────────────────────
 
     public static function package_defaults() {
-        $common = array( 'All digital copies', 'Studio or on location', 'Digital scene or your own decor' );
+        $common = array( 'Studio or on location', 'Digital scene or your own decor' );
+        $last   = 'Digital images, no prints';
         return array(
             'xmas_mini' => array(
-                'name' => 'Christmas Mini', 'duration' => 30, 'images' => 10, 'members' => 4,
+                'name' => 'Christmas Mini', 'duration' => 30, 'images' => 5, 'members' => 4,
                 'price' => 550, 'old_price' => 650, 'badge' => 'Top Booked',
-                'features' => array_merge( array( 'Up to 30 minutes', '5–10 edited images' ), $common ),
+                'features' => array_merge( array( 'Up to 30 minutes', '5 edited images' ), $common, array( $last ) ),
             ),
             'xmas_full' => array(
-                'name' => 'Christmas Full', 'duration' => 60, 'images' => 20, 'members' => 8,
-                'price' => 700, 'old_price' => 850, 'badge' => 'Best Value',
-                'features' => array_merge( array( 'Up to 1 hour', '10–20 edited images', 'Outfit change' ), $common ),
+                'name' => 'Christmas Full', 'duration' => 60, 'images' => 10, 'members' => 8,
+                'price' => 750, 'old_price' => 850, 'badge' => 'Best Value',
+                'features' => array_merge( array( 'Up to 1 hour', '10 edited images', 'Outfit change' ), $common, array( $last ) ),
             ),
             'xmas_extended' => array(
-                'name' => 'Christmas Extended', 'duration' => 120, 'images' => 999, 'members' => 10,
-                'price' => 1000, 'old_price' => 0, 'badge' => 'Unlimited images',
-                'features' => array_merge( array( 'Up to 2 hours', 'Unlimited edited images', 'Multiple outfit changes' ), $common ),
+                'name' => 'Christmas Extended', 'duration' => 120, 'images' => 30, 'members' => 10,
+                'price' => 1200, 'old_price' => 0, 'badge' => '30 images',
+                'features' => array_merge(
+                    array( 'Up to 2 hours', '30 edited images', 'Includes white edited backgrounds', 'Different variations of backdrops', 'Multiple outfit changes' ),
+                    $common, array( $last )
+                ),
             ),
         );
     }
+
+    /** One-time update of the stored Christmas packages to the current offer (bump to re-apply). */
+    const PKG_REV = 2;
 
     /**
      * Add the Christmas packages once and point the Christmas session type
@@ -131,7 +138,19 @@ class TwellerFlow2_Landing {
      * package; this never overwrites those edits.
      */
     public static function maybe_seed_packages() {
-        if ( get_option( self::SEEDED ) ) return;
+        if ( get_option( self::SEEDED ) ) {
+            if ( (int) get_option( 'tweller_flow_2_xmas_pkg_rev', 1 ) < self::PKG_REV ) {
+                $packages = get_option( 'tweller_flow_2_packages', array() );
+                if ( is_array( $packages ) && $packages ) {
+                    foreach ( self::package_defaults() as $key => $pkg ) {
+                        $packages[ $key ] = isset( $packages[ $key ] ) ? array_merge( $packages[ $key ], $pkg ) : $pkg;
+                    }
+                    update_option( 'tweller_flow_2_packages', $packages );
+                    update_option( 'tweller_flow_2_xmas_pkg_rev', self::PKG_REV );
+                }
+            }
+            return;
+        }
 
         $packages = get_option( 'tweller_flow_2_packages', array() );
         $types    = get_option( 'tweller_flow_2_session_types', array() );
@@ -150,6 +169,7 @@ class TwellerFlow2_Landing {
         update_option( 'tweller_flow_2_packages', $packages );
         update_option( 'tweller_flow_2_session_types', $types );
         update_option( self::SEEDED, TWELLER_FLOW_2_VERSION );
+        update_option( 'tweller_flow_2_xmas_pkg_rev', self::PKG_REV );
     }
 
     /** The packages offered on the page, in order. */

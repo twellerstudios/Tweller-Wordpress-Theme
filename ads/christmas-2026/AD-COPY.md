@@ -10,6 +10,7 @@ utm_source=facebook&utm_medium=paid_social&utm_campaign=xmas-2026&utm_content={{
 **Call to action button:** Book Now
 **Optimise for:** Leads (the pixel's `Lead` event fires on bookings, WhatsApp and Call taps).
 **Placements:** Advantage+ placements.
+**Audience:** Trinidad & Tobago, **women only** for now (Ad set → Audience → Gender: Women), mobile.
 
 ---
 
