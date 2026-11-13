@@ -47,7 +47,7 @@ html, body { margin: 0; background: var(--ink); }
 .photo { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); height: 62%; }
 
 /* Card 6 — call to action */
-.cta .bg { filter: blur(10px) brightness(.4); transform: scale(1.08); }
+.cta .bg { filter: blur(8px) brightness(.5) saturate(1.15); transform: scale(1.08); }
 .cta .shade { background: radial-gradient(ellipse at 50% 45%, rgba(23, 58, 46, .35), rgba(12, 9, 7, .75)); }
 .cta-body { position: absolute; inset: var(--m); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 22px; }
 .cta-body p { margin: 0; }
@@ -93,7 +93,7 @@ html, body { margin: 0; background: var(--ink); }
       <div class="scene-label"><span>0${n - 1}</span><b>${s.name}</b></div>
     </div>`;
   } else {
-    html = `<div class="card cta">${img(S[3], 'bg')}<div class="shade"></div>
+    html = `<div class="card cta">${img(S[0], "bg")}<div class="shade"></div>
       <div class="cta-body">
         <img class="logo" src="assets/logo-cream.png" alt="Tweller Studios">
         <p class="c1">Christmas Minis</p>
