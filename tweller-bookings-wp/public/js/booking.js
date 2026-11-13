@@ -12,6 +12,10 @@ const tfBooking = {
 
     init() {
         if (!window.twellerBooking) return;
+        const app = document.getElementById('tweller-booking-app');
+        // A landing page that sells one kind of shoot hides the session list.
+        this.locked = !!(app && app.dataset.lock === '1' && app.dataset.session);
+        if (this.locked) app.classList.add('tf2-locked');
         this.renderSessionTypes();
 
         document.getElementById('tf2-booking-date').addEventListener('change', (e) => {
@@ -28,6 +32,12 @@ const tfBooking = {
         this.captureAttribution();
         this.restoreState();
         this.applyDeepLink();
+        // A locked landing page counts as one ViewContent per visit, even when
+        // a saved draft (not the deep link) is what opened it.
+        if (this.locked && !this.viewSent) {
+            const t = (window.twellerBooking.sessionTypes || {})[app.dataset.session];
+            if (t) this.trackView(t);
+        }
         this.wireGiftCard();
         if (new URLSearchParams(location.search).get('buy') === 'gift') this.openGift();
     },
@@ -241,9 +251,67 @@ const tfBooking = {
     },
 
     // Meta Pixel / Google tag, only if the site has them installed.
-    trackEvent(name, params) {
-        try { if (typeof window.fbq === 'function') window.fbq('track', name, params || {}); } catch (e) {}
+    //
+    // Every Meta event carries an eventID. With opts.relay the same ID goes
+    // to /pixel, which sends the server copy (Conversions API) — Meta keeps
+    // one. opts.eventID reuses an ID the server already knows (booking Lead).
+    // Returns the ID used.
+    trackEvent(name, params, opts) {
+        opts = opts || {};
+        const eventID = opts.eventID || this.newEventId(name);
+        try { if (typeof window.fbq === 'function') window.fbq('track', name, params || {}, { eventID }); } catch (e) {}
         try { if (typeof window.gtag === 'function') window.gtag('event', name, params || {}); } catch (e) {}
+        if (opts.relay) this.relayEvent(name, eventID, opts.relay);
+        return eventID;
+    },
+
+    newEventId(name) {
+        let rnd = '';
+        try { rnd = crypto.randomUUID(); } catch (e) { rnd = Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+        return String(name).toLowerCase() + '-' + rnd;
+    },
+
+    relayEvent(name, eventID, extra) {
+        try {
+            const tb = window.twellerBooking;
+            const attr = this.readAttribution() || {};
+            const body = JSON.stringify(Object.assign({
+                event: name,
+                event_id: eventID,
+                source_url: location.href.split('#')[0],
+                fbclid: attr.fbclid || ''
+            }, extra || {}));
+            const url = tb.restUrl + 'pixel';
+            // keepalive: a WhatsApp / Call tap navigates away immediately.
+            fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true, credentials: 'same-origin' }).catch(() => {});
+        } catch (e) {}
+    },
+
+    // At most once per visit (browser tab session) for each key.
+    onceThisVisit(key) {
+        try {
+            const k = 'tf_px_once_' + key;
+            if (sessionStorage.getItem(k)) return false;
+            sessionStorage.setItem(k, '1');
+        } catch (e) {}
+        return true;
+    },
+
+    trackView(type) {
+        this.viewSent = true;
+        const params = { content_name: type.name, content_category: 'Session' };
+        this.trackEvent('ViewContent', params, { relay: { content_name: type.name } });
+    },
+
+    // WhatsApp / Call taps — anywhere on the page. Lead (what the ads
+    // optimise for) at most once per visit per method, plus Contact for
+    // reporting. Exposed as window.tfTrackContact for the landing page.
+    trackContact(method) {
+        if (!this.onceThisVisit('lead_' + method)) return;
+        const type = this.selectedSessionData ? this.selectedSessionData.name : '';
+        const extra = { method, content_name: type };
+        this.trackEvent('Lead', { content_name: type, method }, { relay: extra });
+        this.trackEvent('Contact', { method }, { relay: extra });
     },
 
     // ── "Why is there a privacy fee?" ──────────────────
@@ -504,7 +572,7 @@ const tfBooking = {
         this.renderPackages();
         this.goToStep(2);
         this.saveState();
-        this.trackEvent('ViewContent', { content_name: type.name, content_category: 'Session' });
+        if (!this.locked || !this.viewSent) this.trackView(type);
     },
 
     renderPackages() {
@@ -521,17 +589,23 @@ const tfBooking = {
             const el = document.createElement('div');
             el.className = 'tf2-package-card';
             
-            let topBooked = key === 'mini' ? '<div class="tf2-top-booked">Top Booked</div>' : '';
+            // Badge from Offerings ("Top Booked", "Best Value"…); Mini keeps
+            // its long-standing "Top Booked" when none is set.
+            const badgeText = pkg.badge || (key === 'mini' ? 'Top Booked' : '');
+            const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+            let topBooked = badgeText ? `<div class="tf2-top-booked">${esc(badgeText)}</div>` : '';
+            if (badgeText) el.classList.add('tf2-package-card--badged');
             
             let html = `
                 ${topBooked}
                 <div class="tf2-pkg-title">${pkg.name}</div>
             `;
             
-            if (pkg.old_price) {
-                html += `<div class="tf2-pkg-price" style="display:flex; align-items:center; gap:8px;"><span style="text-decoration:line-through; font-size:16px; color:#A3A3A3; font-weight:500;">TTD ${pkg.old_price}</span> <span>TTD ${pkg.price}</span></div>`;
+            const money = (n) => Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
+            if (Number(pkg.old_price)) {
+                html += `<div class="tf2-pkg-price" style="display:flex; align-items:center; gap:8px;"><span style="text-decoration:line-through; font-size:16px; color:#A3A3A3; font-weight:500;">TTD ${money(pkg.old_price)}</span> <span>TTD ${money(pkg.price)}</span></div>`;
             } else {
-                html += `<div class="tf2-pkg-price">TTD ${pkg.price}</div>`;
+                html += `<div class="tf2-pkg-price">TTD ${money(pkg.price)}</div>`;
             }
             
             if (pkg.features && Array.isArray(pkg.features)) {
@@ -548,17 +622,35 @@ const tfBooking = {
                 `;
             }
             
+            const cta = (document.getElementById('tweller-booking-app') || {}).dataset || {};
+            if (cta.cardCta) html += `<span class="tf2-pkg-cta">${esc(cta.cardCta)}</span>`;
+
             el.innerHTML = html;
+            el.setAttribute('role', 'button');
+            el.tabIndex = 0;
             el.onclick = () => this.selectPackage(key, pkg);
+            el.addEventListener('keydown', (e) => {
+                if (e.target === el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); this.selectPackage(key, pkg); }
+            });
             container.appendChild(el);
         }
     },
 
     selectPackage(key, pkg) {
+        const changed = this.selectedPackageKey !== key;
         this.selectedPackageKey = key;
         this.selectedPackageData = pkg;
         this.goToStep(3);
         this.saveState();
+        if (changed) {
+            this.trackEvent('AddToCart', {
+                content_name: pkg.name,
+                content_ids: [key],
+                content_type: 'product',
+                value: Number(pkg.price) || 0,
+                currency: 'TTD'
+            }, { relay: { package: key } });
+        }
 
         // if date already selected, refetch to apply correct duration
         if (this.selectedDate) {
@@ -681,6 +773,7 @@ const tfBooking = {
     },
 
     prevStep() {
+        if (this.locked && this.step <= 2) return;
         if (this.step > 1) {
             this.goToStep(this.step - 1);
         }
@@ -702,6 +795,7 @@ const tfBooking = {
     },
 
     sendWhatsApp() {
+        this.trackContact('whatsapp');
         const msg = encodeURIComponent(this.buildInquiryMessage());
         // User requested number: 18683422948
         window.open(`https://wa.me/18683422948?text=${msg}`, '_blank');
@@ -732,6 +826,11 @@ const tfBooking = {
             attribution: this.readAttribution() || {},
             gift_code: this.gift ? this.gift.code : ''
         };
+        // One Lead per visit for the form: the server sends its copy with
+        // this ID (POST /book), the browser fires with it on success.
+        let leadId = '';
+        try { if (!sessionStorage.getItem('tf_px_once_lead_form')) leadId = this.newEventId('lead'); } catch (e) { leadId = this.newEventId('lead'); }
+        if (leadId) payload.event_id = leadId;
 
         const loading = document.getElementById('tf2-booking-loading');
         const errorMsg = document.getElementById('tf2-booking-error');
@@ -766,14 +865,20 @@ const tfBooking = {
             if (data.success) {
                 this.clearState();
                 try { localStorage.removeItem(this.attrKey()); } catch (e) {}
-                this.trackEvent('Lead', {
-                    content_name: (this.selectedSessionData ? this.selectedSessionData.name : '') +
-                        (this.selectedPackageData ? ' — ' + this.selectedPackageData.name : '')
-                });
+                if (leadId && this.onceThisVisit('lead_form')) {
+                    this.trackEvent('Lead', {
+                        content_name: (this.selectedSessionData ? this.selectedSessionData.name : '') +
+                            (this.selectedPackageData ? ' — ' + this.selectedPackageData.name : ''),
+                        value: this.selectedPackageData ? Number(this.selectedPackageData.price) || 0 : 0,
+                        currency: 'TTD',
+                        method: 'booking_form'
+                    }, { eventID: leadId });
+                }
                 // Redirect to tracker page!
                 let tUrl = window.twellerBooking.trackerUrl;
                 let sep = tUrl.includes('?') ? '&' : '?';
-                window.location.href = tUrl + sep + 'code=' + data.tracking_code;
+                // A moment for the pixel's Lead request to leave before the page unloads.
+                setTimeout(() => { window.location.href = tUrl + sep + 'code=' + data.tracking_code; }, leadId ? 300 : 0);
             } else {
                 loading.style.display = 'none';
                 restoreSubmit();
@@ -798,3 +903,8 @@ document.addEventListener('tgc:step', (e) => { if (tfBooking.giftMode) tfBooking
 document.addEventListener('DOMContentLoaded', () => {
     tfBooking.init();
 });
+
+// For pages around the wizard (the Christmas landing page's WhatsApp / Call
+// buttons): same once-per-visit Lead + Contact as the wizard's own button.
+window.tfTrackContact = (method) => tfBooking.trackContact(method);
+window.tfBooking = tfBooking;

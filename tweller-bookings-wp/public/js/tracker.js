@@ -4,6 +4,24 @@
 (function() {
     'use strict';
 
+    // ── Meta pixel: Schedule / Purchase for this booking, once per browser ──
+    // The server sent the same events (same IDs) when the payment was
+    // confirmed; Meta keeps one of each.
+    (function() {
+        var evs = window.twellerFlow2TrackerPixel;
+        if (!evs || !evs.length) return;
+        function fire() {
+            if (typeof window.fbq !== 'function') return;
+            evs.forEach(function(ev) {
+                var k = 'tf_px_sent_' + ev.id;
+                try { if (localStorage.getItem(k)) return; } catch (e) {}
+                try { window.fbq('track', ev.name, ev.params || {}, { eventID: ev.id }); } catch (e) {}
+                try { localStorage.setItem(k, '1'); } catch (e) {}
+            });
+        }
+        if (document.readyState === 'complete') fire(); else window.addEventListener('load', fire);
+    })();
+
     var tracker = document.querySelector('.tf2-tracker[data-code]');
     if (!tracker) return;
 

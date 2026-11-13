@@ -62,6 +62,17 @@ class TwellerFlow2_Tracker_Shortcode {
             if ( ! $session ) {
                 self::render_not_found( $code );
             } else {
+                // Browser half of Schedule / Purchase (Meta pixel), with the
+                // same event IDs the server sent — fired once per browser.
+                if ( class_exists( 'TwellerFlow2_Meta_Events' ) ) {
+                    $tf2_px = TwellerFlow2_Meta_Events::tracker_events( $session );
+                    // Printed inline (not wp_add_inline_script) so it is in
+                    // the page whatever order the theme renders content and
+                    // scripts in; tracker.js reads it on window load.
+                    if ( $tf2_px ) {
+                        echo '<script>window.twellerFlow2TrackerPixel = ' . wp_json_encode( $tf2_px ) . ';</script>';
+                    }
+                }
                 // Print store rides along with the delivered gallery
                 if ( class_exists( 'TwellerFlow2_Prints' )
                     && in_array( $session->current_stage, array( 'uploaded', 'delivered' ), true ) ) {

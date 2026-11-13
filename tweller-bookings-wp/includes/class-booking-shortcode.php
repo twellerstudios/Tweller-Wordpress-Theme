@@ -72,7 +72,22 @@ class TwellerFlow2_Booking_Shortcode {
 
         // [tweller_booking session="grads" package="full"] — for a dedicated
         // landing page (e.g. an ad's own page) that should open pre-chosen.
-        $atts = shortcode_atts( array( 'session' => '', 'package' => '' ), $atts, 'tweller_booking' );
+        // lock="1" hides the session list (a page that only sells one kind of
+        // shoot); max_date caps the calendar; submit / card_cta relabel the
+        // buttons; confirm="0" drops the "I have confirmed availability" tick.
+        $atts = shortcode_atts( array(
+            'session'  => '',
+            'package'  => '',
+            'lock'     => '',
+            'max_date' => '',
+            'submit'   => '',
+            'card_cta' => '',
+            'confirm'  => '1',
+        ), $atts, 'tweller_booking' );
+        $locked     = ! empty( $atts['lock'] );
+        $max_date   = preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) $atts['max_date'] ) ? $atts['max_date'] : '';
+        $submit_lbl = $atts['submit'] !== '' ? $atts['submit'] : 'Reserve Booking · Continue to Payment';
+        $confirm    = $atts['confirm'] !== '0';
         $sc_session = TwellerFlow2_Booking_Links::key_for( $atts['session'] );
         $sc_package = $sc_session ? TwellerFlow2_Booking_Links::package_key_for( $atts['package'] ) : '';
 
@@ -81,6 +96,9 @@ class TwellerFlow2_Booking_Shortcode {
         <div id="tweller-booking-app" class="tweller-booking"<?php
             if ( $sc_session ) echo ' data-session="' . esc_attr( $sc_session ) . '"';
             if ( $sc_package ) echo ' data-package="' . esc_attr( $sc_package ) . '"';
+            if ( $sc_session && $locked ) echo ' data-lock="1"';
+            if ( $max_date ) echo ' data-max-date="' . esc_attr( $max_date ) . '"';
+            if ( $atts['card_cta'] !== '' ) echo ' data-card-cta="' . esc_attr( $atts['card_cta'] ) . '"';
         ?>>
             <div class="tweller-booking__header">
                 <h2>Book A Session</h2>
@@ -134,7 +152,7 @@ class TwellerFlow2_Booking_Shortcode {
                 <h3>Select Date & Time</h3>
                 <div class="tf2-datetime-layout">
                     <div class="tf2-calendar">
-                        <input type="date" id="tf2-booking-date" class="tf2-input-field" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
+                        <input type="date" id="tf2-booking-date" class="tf2-input-field" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>"<?php if ( $max_date ) echo ' max="' . esc_attr( $max_date ) . '"'; ?>>
                     </div>
                     <div class="tf2-slots" id="tf2-slots-container">
                         <p class="tf2-slots-empty">Please select a date first.</p>
@@ -237,6 +255,7 @@ class TwellerFlow2_Booking_Shortcode {
                     </div>
                     <?php endif; ?>
 
+                    <?php if ( $confirm ) : ?>
                     <div class="tf2-field tf2-confirm-availability" style="background:#F9FAFB; padding:12px; border:1px solid #E5E7EB; border-radius:6px; margin-bottom:15px;">
                         <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-weight:normal; margin:0;">
                             <input type="checkbox" id="tf2-client-confirmed" required style="width:18px;height:18px; margin-top:3px; flex-shrink:0;">
@@ -248,8 +267,14 @@ class TwellerFlow2_Booking_Shortcode {
                             <button type="button" class="tf2-btn-submit" style="background:#4F46E5; padding:8px 12px; font-size:13px; flex:1;" onclick="tfBooking.sendEmail()">Email Inquiry</button>
                         </div>
                     </div>
+                    <?php else : ?>
+                    <div class="tf2-ask">
+                        <span>Questions about a date first?</span>
+                        <button type="button" class="tf2-ask__btn" onclick="tfBooking.sendWhatsApp()">Ask on WhatsApp</button>
+                    </div>
+                    <?php endif; ?>
 
-                    <button type="submit" class="tf2-btn-submit" id="tf2-submit-btn">Reserve Booking &middot; Continue to Payment</button>
+                    <button type="submit" class="tf2-btn-submit" id="tf2-submit-btn"><?php echo esc_html( $submit_lbl ); ?></button>
                     <p class="tf2-submit-hint">This step reserves your session &mdash; nothing is charged yet. On the next screen you&rsquo;ll pay by debit/credit card or bank transfer.</p>
                     <div id="tf2-booking-error" class="tf2-error-msg" style="display:none;"></div>
                 </form>

@@ -311,6 +311,7 @@ class TwellerFlow2_Admin {
                     'members'   => intval( $row['members'] ?? 1 ),
                     'price'     => floatval( $row['price'] ?? 0 ),
                     'old_price' => floatval( $row['old_price'] ?? 0 ),
+                    'badge'     => substr( sanitize_text_field( $row['badge'] ?? '' ), 0, 30 ),
                     'features'  => array_values( $features ),
                 );
             }

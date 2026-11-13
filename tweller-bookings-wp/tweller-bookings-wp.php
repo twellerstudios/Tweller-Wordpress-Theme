@@ -3,7 +3,7 @@
  * Plugin Name: Tweller Bookings WP
  * Plugin URI: https://twellerstudios.com
  * Description: Photography session workflow — booking, pipeline tracking, client proof uploads, photo selection portal, gallery delivery, and WiPay payment integration.
- * Version: 3.58.1
+ * Version: 3.59.0
  * Author: Tweller Studios
  * Author URI: https://twellerstudios.com
  * License: GPL v2 or later
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TWELLER_FLOW_2_VERSION', '3.58.1' );
+define( 'TWELLER_FLOW_2_VERSION', '3.59.0' );
 define( 'TWELLER_FLOW_2_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TWELLER_FLOW_2_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'TWELLER_FLOW_2_TABLE_SESSIONS', 'tweller_sessions' );
@@ -46,6 +46,8 @@ require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-prints.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-print-fulfillment.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-print-providers.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-wipay.php';
+require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-meta-events.php';
+require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-landing.php';
 
 if ( is_admin() ) {
     require_once TWELLER_FLOW_2_PLUGIN_DIR . 'admin/class-admin.php';
@@ -260,6 +262,8 @@ function tweller_flow_2_init() {
     TwellerFlow2_Print_Fulfillment::init();
     TwellerFlow2_Print_Providers::init();
     TwellerFlow2_WiPay::init();
+    TwellerFlow2_Meta_Events::init();
+    TwellerFlow2_Landing::init();
 
     // Auto-upgrade: create tables if missing
     $db_version = get_option( 'tweller_flow_2_db_version', '2.1.2' );

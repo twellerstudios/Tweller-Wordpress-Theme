@@ -47,6 +47,9 @@
                             <label>Old price (strikethrough, 0 = none)
                                 <input type="number" step="0.01" min="0" name="pk[<?php echo esc_attr( $key ); ?>][old_price]" value="<?php echo esc_attr( $pkg['old_price'] ?? 0 ); ?>">
                             </label>
+                            <label>Badge (e.g. Top Booked, Best Value — blank = none)
+                                <input type="text" maxlength="30" name="pk[<?php echo esc_attr( $key ); ?>][badge]" value="<?php echo esc_attr( $pkg['badge'] ?? '' ); ?>">
+                            </label>
                             <label>Duration (minutes)
                                 <input type="number" min="5" name="pk[<?php echo esc_attr( $key ); ?>][duration]" value="<?php echo esc_attr( $pkg['duration'] ?? 60 ); ?>">
                             </label>
@@ -246,6 +249,7 @@
                         '<label>Name<input type="text" name="pk[' + id + '][name]" value="" required></label>' +
                         '<label>Price (TTD)<input type="number" step="0.01" min="0" name="pk[' + id + '][price]" value="0"></label>' +
                         '<label>Old price (strikethrough, 0 = none)<input type="number" step="0.01" min="0" name="pk[' + id + '][old_price]" value="0"></label>' +
+                        '<label>Badge (e.g. Top Booked, Best Value — blank = none)<input type="text" maxlength="30" name="pk[' + id + '][badge]" value=""></label>' +
                         '<label>Duration (minutes)<input type="number" min="5" name="pk[' + id + '][duration]" value="60"></label>' +
                         '<label>Edited images (999 = unlimited)<input type="number" min="0" name="pk[' + id + '][images]" value="10"></label>' +
                         '<label>Max people<input type="number" min="1" name="pk[' + id + '][members]" value="4"></label>' +

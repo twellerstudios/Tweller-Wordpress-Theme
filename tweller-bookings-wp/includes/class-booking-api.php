@@ -294,6 +294,11 @@ class TwellerFlow2_Booking_API {
 
         $session = TwellerFlow2_Session::get( $session_id );
 
+        // Server half of the browser's Lead (same event ID → Meta counts one).
+        if ( class_exists( 'TwellerFlow2_Meta_Events' ) && ! empty( $data['event_id'] ) ) {
+            TwellerFlow2_Meta_Events::booking_lead( $session_id, $data['event_id'] );
+        }
+
         // The single welcome email (payment details + calendar hold attached)
         // is sent by TwellerFlow2_Session::create() — nothing extra here.
 
