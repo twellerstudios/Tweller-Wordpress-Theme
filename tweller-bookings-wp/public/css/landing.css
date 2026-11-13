@@ -49,6 +49,9 @@
 :where(.tw-xmas) a { color: inherit; }
 .tw-xmas :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
 
+/* No admin bar on the ad landing page (it only shows to logged-in staff). */
+html:has(body.tw-xmas) { margin-top: 0 !important; }
+.tw-xmas #wpadminbar { display: none !important; }
 .tw-skip { position: absolute; left: -999px; top: 8px; z-index: 100; background: var(--ink); color: #fff; padding: 10px 14px; border-radius: 8px; }
 .tw-skip:focus { left: 8px; }
 
@@ -122,7 +125,7 @@
 .tw-hero::after {
     content: ""; position: absolute; inset: 0; z-index: -1;
     background:
-        linear-gradient(180deg, rgba(21, 17, 14, .25) 0%, rgba(21, 17, 14, 0) 28%, rgba(21, 17, 14, .15) 45%, rgba(21, 17, 14, .82) 72%, rgba(21, 17, 14, .94) 100%);
+        linear-gradient(180deg, rgba(21, 17, 14, .3) 0%, rgba(21, 17, 14, 0) 22%, rgba(21, 17, 14, .35) 40%, rgba(21, 17, 14, .86) 58%, rgba(21, 17, 14, .95) 100%);
 }
 .tw-hero__scene {
     position: absolute; top: 14px; right: var(--gut); margin: 0;
@@ -132,7 +135,7 @@
 }
 .tw-hero__scene span { opacity: .7; text-transform: uppercase; letter-spacing: .14em; font-size: 10px; margin-right: 4px; }
 .tw-hero__body { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 var(--gut) 28px; }
-.tw-hero .tw-eyebrow { color: var(--gold); }
+.tw-hero .tw-eyebrow { color: var(--gold); text-shadow: 0 1px 12px rgba(0, 0, 0, .7); }
 .tw-hero__title {
     margin: 0 0 14px; max-width: 13ch; color: #fff;
     font: 600 clamp(40px, 11.5vw, 84px)/.98 var(--serif);
@@ -397,6 +400,13 @@
     .tw-hero__body { padding-bottom: 56px; }
     .tw-hero__sub { font-size: 18px; }
     .tw-hero__scene { top: 22px; }
+    /* Wide screens: darken behind the words, keep the scene bright. */
+    .tw-hero::after {
+        background:
+            linear-gradient(90deg, rgba(21, 17, 14, .88) 0%, rgba(21, 17, 14, .7) 30%, rgba(21, 17, 14, .15) 58%, rgba(21, 17, 14, 0) 75%),
+            linear-gradient(180deg, rgba(21, 17, 14, .25) 0%, rgba(21, 17, 14, 0) 20%, rgba(21, 17, 14, 0) 75%, rgba(21, 17, 14, .55) 100%);
+    }
+    .tw-hero__body { max-width: 1280px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -404,3 +414,8 @@
     .tw-hero__slide.is-active img { animation: none; }
     .tw-xmas * { scroll-behavior: auto !important; }
 }
+
+/* Backdrop picker inside the booking form */
+.tw-xmas .tf2-bd__title { font: 600 28px/1.1 var(--serif); color: var(--ink); }
+.tw-xmas .tf2-bd__opt input:checked + .tf2-bd__art { border-color: var(--red); box-shadow: 0 0 0 2px var(--red); }
+.tw-xmas .tf2-bd__opt input:checked + .tf2-bd__art .tf2-bd__tick { background: var(--red); border-color: var(--red); }

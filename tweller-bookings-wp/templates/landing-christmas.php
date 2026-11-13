@@ -148,7 +148,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
         <p class="tw-kicker">03 · How it works</p>
         <h2 id="tw-how-title" class="tw-h2">Three easy steps</h2>
         <ol class="tw-steps">
-            <li><span class="tw-steps__n">1</span><div><h3>Choose your package &amp; date</h3><p>Pick a time online and secure it with a deposit.</p></div></li>
+            <li><span class="tw-steps__n">1</span><div><h3>Choose your package, date &amp; scene</h3><p>Pick a time and your backdrop online, and secure it with a deposit.</p></div></li>
             <li><span class="tw-steps__n">2</span><div><h3>Shoot in studio or at your home</h3><p>30 minutes to 2 hours, relaxed and guided, little ones included.</p></div></li>
             <li><span class="tw-steps__n">3</span><div><h3>Get your edited photos</h3><p>Delivered to your online gallery, ready for cards, prints and the family chat. Shoot early to have them before Christmas.</p></div></li>
         </ol>
@@ -283,7 +283,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
 <script type="application/json" id="tw-scenes-data"><?php
     echo wp_json_encode( array_map( function ( $sc ) use ( $L ) {
         $im = $L::scene_images( $sc );
-        return array( 'name' => $sc['name'], 'src' => $im['lg'] );
+        return array( 'key' => sanitize_key( $sc['slug'] ), 'name' => $sc['name'], 'src' => $im['lg'] );
     }, $scenes ) );
 ?></script>
 

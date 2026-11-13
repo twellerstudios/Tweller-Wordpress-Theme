@@ -234,6 +234,31 @@ class TwellerFlow2_Booking_API {
             }
         }
 
+        // Backdrop (Christmas scene, own decor…): required when the session
+        // offers a picker; written at the top of the notes so the studio
+        // sees it on the booking, in the admin and in the new-booking email.
+        $backdrop_note = '';
+        $session_key   = self::valid_session_type( $data['session_type'] ?? '' );
+        $bd_cfg        = TwellerFlow2_Booking_Shortcode::backdrops()[ $session_key ] ?? null;
+        if ( $bd_cfg && ! empty( $bd_cfg['choices'] ) ) {
+            $names = array();
+            foreach ( $bd_cfg['choices'] as $c ) $names[ $c['key'] ] = $c['name'];
+            $pick  = sanitize_key( $data['backdrop'] ?? '' );
+            if ( ! isset( $names[ $pick ] ) ) {
+                if ( $gift_take > 0 ) {
+                    $gc = TwellerFlow2_Gift_Cards::get_by_code( $gift_code );
+                    if ( $gc ) TwellerFlow2_Gift_Cards::credit( $gc->id, $gift_take, 'Refunded — booking not completed' );
+                }
+                return new WP_Error( 'backdrop', 'Please choose your backdrop.', array( 'status' => 400 ) );
+            }
+            $backdrop_note = 'Backdrop: ' . $names[ $pick ];
+            $extra = sanitize_key( $data['backdrop_extra'] ?? '' );
+            if ( ! empty( $bd_cfg['extra'] ) && $extra !== '' && $extra !== $pick && isset( $names[ $extra ] ) ) {
+                $backdrop_note .= "\nFree extra scene (early bird): " . $names[ $extra ];
+            }
+        }
+        $client_notes = sanitize_textarea_field( $data['notes'] ?? '' );
+
         $session_data = array(
             'client_name' => sanitize_text_field( $data['client_name'] ),
             'client_email' => $client_email,
@@ -244,7 +269,8 @@ class TwellerFlow2_Booking_API {
             'session_date' => sanitize_text_field( $data['session_date'] ),
             'session_time' => sanitize_text_field( $data['session_time'] ),
             'location' => sanitize_text_field( $data['location'] ?? '' ),
-            'notes' => sanitize_textarea_field( $data['notes'] ?? '' ),
+            'notes' => trim( $backdrop_note . ( $backdrop_note && $client_notes ? "\n\n" : '' ) . $client_notes ),
+            'backdrop' => $backdrop_note,
             'payment_status' => 'pending',
             'deposit_amount' => $gift_take, // gift card, if any; bank transfer / card to follow
             'total_amount' => $pricing['total'],

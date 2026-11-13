@@ -945,3 +945,33 @@
 
 /* The gift steps live in the same card as the session steps. */
 .tweller-booking__step--gift .tgc-form { margin: 0; }
+
+/* ── Backdrop picker (Christmas scenes…) ─────────── */
+.tf2-backdrop { margin: 0 0 22px; scroll-margin-top: 20px; }
+.tf2-bd { border: 0; margin: 0; padding: 0; min-width: 0; }
+.tf2-bd__title { padding: 0; margin: 0 0 4px; font-size: 18px; font-weight: 700; color: var(--tf-text-dark); }
+.tf2-bd__intro { margin: 0 0 14px; font-size: 14px; color: var(--tf-text); }
+.tf2-bd__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (min-width: 640px) { .tf2-bd__grid { grid-template-columns: repeat(3, 1fr); } }
+.tf2-bd__opt { position: relative; display: flex; flex-direction: column; gap: 6px; cursor: pointer; min-width: 0; }
+.tf2-bd__opt input { position: absolute; opacity: 0; pointer-events: none; }
+.tf2-bd__art { position: relative; display: block; aspect-ratio: 3 / 2; border-radius: 10px; overflow: hidden;
+    border: 2px solid var(--tf-border); background: #F4EFE6; transition: border-color .15s, box-shadow .15s; }
+.tf2-bd__art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tf2-bd__icon { position: absolute; inset: 0; display: grid; place-items: center; color: #7A6A58; }
+.tf2-bd__icon svg { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.tf2-bd__tick { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(255,255,255,.92); border: 2px solid rgba(0,0,0,.15); }
+.tf2-bd__name { font-size: 14px; font-weight: 600; line-height: 1.25; color: var(--tf-text-dark); }
+.tf2-bd__note { font-size: 12px; color: var(--tf-text); margin-top: -4px; }
+.tf2-bd__opt:hover .tf2-bd__art { border-color: #B9AA95; }
+.tf2-bd__opt input:focus-visible + .tf2-bd__art { outline: 3px solid var(--tf-accent); outline-offset: 2px; }
+.tf2-bd__opt input:checked + .tf2-bd__art { border-color: var(--tf-primary); box-shadow: 0 0 0 2px var(--tf-primary); }
+.tf2-bd__opt input:checked + .tf2-bd__art .tf2-bd__tick { background: var(--tf-primary); border-color: var(--tf-primary); }
+.tf2-bd__opt input:checked + .tf2-bd__art .tf2-bd__tick::after { content: ""; position: absolute; left: 7px; top: 3px; width: 6px; height: 11px;
+    border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+.tf2-bd__extra { display: grid; gap: 6px; margin-top: 16px; font-size: 14px; font-weight: 600; color: var(--tf-text-dark); }
+.tf2-bd__extra select { min-height: 46px; padding: 0 12px; font-size: 16px; border: 1px solid var(--tf-border); border-radius: 8px; background: #fff; }
+.tf2-bd__error { display: none; margin: 10px 0 0; font-size: 14px; font-weight: 600; color: #B42318; }
+.tf2-backdrop--missing .tf2-bd__error { display: block; }
+.tf2-backdrop--missing .tf2-bd__art { border-color: #E8A39B; }

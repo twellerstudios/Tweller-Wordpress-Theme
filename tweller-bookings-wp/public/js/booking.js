@@ -9,6 +9,8 @@ const tfBooking = {
     selectedDate: null,
     selectedTimeStr: null,
     selectedTimeDisplay: null,
+    selectedBackdrop: '',
+    selectedBackdropExtra: '',
 
     init() {
         if (!window.twellerBooking) return;
@@ -397,7 +399,9 @@ const tfBooking = {
                 name:  el('tf2-client-name')  ? el('tf2-client-name').value  : '',
                 email: el('tf2-client-email') ? el('tf2-client-email').value : '',
                 phone: el('tf2-client-phone') ? el('tf2-client-phone').value : '',
-                notes: el('tf2-client-notes') ? el('tf2-client-notes').value : ''
+                notes: el('tf2-client-notes') ? el('tf2-client-notes').value : '',
+                backdrop: this.selectedBackdrop,
+                backdropExtra: this.selectedBackdropExtra
             }));
         } catch (e) { /* private mode / quota — never block the booking */ }
     },
@@ -445,7 +449,10 @@ const tfBooking = {
         // booking that cannot be completed.
         this.selectedSessionTypeKey = s.sessionTypeKey;
         this.selectedSessionData = type;
+        this.selectedBackdrop = s.backdrop || '';
+        this.selectedBackdropExtra = s.backdropExtra || '';
         this.renderPackages();
+        this.renderBackdrops();
         let target = 2;
 
         const pkg = s.packageKey ? pkgs[s.packageKey] : null;
@@ -511,6 +518,74 @@ const tfBooking = {
         }
     },
 
+    // ── Backdrop picker ────────────────────────────────
+    // Sessions with backdrops (Christmas scenes) ask "which one?" at the top
+    // of the details step, as pictures. The choice goes on the booking so the
+    // studio knows which scene to edit in.
+
+    backdropConfig() {
+        const all = window.twellerBooking.backdrops || {};
+        const cfg = this.selectedSessionTypeKey ? all[this.selectedSessionTypeKey] : null;
+        return cfg && cfg.choices && cfg.choices.length ? cfg : null;
+    },
+
+    renderBackdrops() {
+        const box = document.getElementById('tf2-backdrop');
+        if (!box) return;
+        const cfg = this.backdropConfig();
+        if (!cfg) { box.hidden = true; box.innerHTML = ''; this.selectedBackdrop = ''; this.selectedBackdropExtra = ''; return; }
+        const keys = cfg.choices.map((c) => c.key);
+        if (!keys.includes(this.selectedBackdrop)) this.selectedBackdrop = '';
+        const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+        const tiles = cfg.choices.map((c) => {
+            const art = c.thumb
+                ? `<img src="${esc(c.thumb)}" alt="" loading="lazy" decoding="async">`
+                : `<span class="tf2-bd__icon" aria-hidden="true">${c.kind === 'location'
+                    ? '<svg viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>'
+                    : '<svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M12 13l-2.2 4h4.4L12 13Z"/></svg>'}</span>`;
+            return `<label class="tf2-bd__opt${c.thumb ? '' : ' tf2-bd__opt--plain'}">
+                <input type="radio" name="tf2_backdrop" value="${esc(c.key)}"${c.key === this.selectedBackdrop ? ' checked' : ''}>
+                <span class="tf2-bd__art">${art}<span class="tf2-bd__tick" aria-hidden="true"></span></span>
+                <span class="tf2-bd__name">${esc(c.name)}</span>
+                ${c.note ? `<span class="tf2-bd__note">${esc(c.note)}</span>` : ''}
+            </label>`;
+        }).join('');
+
+        let extra = '';
+        if (cfg.extra) {
+            const opts = cfg.choices.filter((c) => c.thumb).map((c) =>
+                `<option value="${esc(c.key)}"${c.key === this.selectedBackdropExtra ? ' selected' : ''}>${esc(c.name)}</option>`).join('');
+            extra = `<label class="tf2-bd__extra"><span>${esc(cfg.extra_label || 'Your free extra scene')}</span>
+                <select id="tf2-backdrop-extra"><option value="">Decide later</option>${opts}</select></label>`;
+        }
+
+        box.innerHTML = `<fieldset class="tf2-bd">
+            <legend class="tf2-bd__title">${esc(cfg.title || 'Choose your backdrop')}</legend>
+            ${cfg.intro ? `<p class="tf2-bd__intro">${esc(cfg.intro)}</p>` : ''}
+            <div class="tf2-bd__grid">${tiles}</div>
+            ${extra}
+            <p class="tf2-bd__error" role="alert">Please choose a backdrop to continue.</p>
+        </fieldset>`;
+        box.hidden = false;
+
+        box.querySelectorAll('input[name="tf2_backdrop"]').forEach((r) => r.addEventListener('change', () => {
+            this.selectedBackdrop = r.value;
+            box.classList.remove('tf2-backdrop--missing');
+            this.saveState();
+        }));
+        const ex = document.getElementById('tf2-backdrop-extra');
+        if (ex) ex.addEventListener('change', () => { this.selectedBackdropExtra = ex.value; this.saveState(); });
+    },
+
+    /** Pre-select a backdrop from outside the wizard (the landing page's scene viewer). */
+    chooseBackdrop(key) {
+        this.selectedBackdrop = key;
+        const r = document.querySelector('input[name="tf2_backdrop"][value="' + key + '"]');
+        if (r) { r.checked = true; document.getElementById('tf2-backdrop').classList.remove('tf2-backdrop--missing'); }
+        this.saveState();
+    },
+
     renderSessionTypes() {
         const container = document.getElementById('tf2-sessions-container');
         if (!container) return;
@@ -570,6 +645,7 @@ const tfBooking = {
         this.selectedPackageKey = null;
         this.selectedPackageData = null;
         this.renderPackages();
+        this.renderBackdrops();
         this.goToStep(2);
         this.saveState();
         if (!this.locked || !this.viewSent) this.trackView(type);
@@ -824,8 +900,21 @@ const tfBooking = {
             session_time: this.selectedTimeStr,
             image_consent: (document.querySelector('input[name="tf2_image_consent"]:checked') || {}).value || 'limited',
             attribution: this.readAttribution() || {},
-            gift_code: this.gift ? this.gift.code : ''
+            gift_code: this.gift ? this.gift.code : '',
+            backdrop: this.selectedBackdrop,
+            backdrop_extra: this.selectedBackdropExtra
         };
+        // A session with a backdrop picker needs a choice before booking.
+        if (this.backdropConfig() && !this.selectedBackdrop) {
+            const box = document.getElementById('tf2-backdrop');
+            if (box) {
+                box.classList.add('tf2-backdrop--missing');
+                box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const first = box.querySelector('input[name="tf2_backdrop"]');
+                if (first) first.focus({ preventScroll: true });
+            }
+            return;
+        }
         // One Lead per visit for the form: the server sends its copy with
         // this ID (POST /book), the browser fires with it on success.
         let leadId = '';

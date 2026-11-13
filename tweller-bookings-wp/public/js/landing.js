@@ -155,15 +155,9 @@
             if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
             x0 = null;
         });
-        // "Book this scene": note the scene on the booking, then go to packages.
+        // "Book this scene": pre-select it in the booking form's backdrop picker, then go to packages.
         $('[data-viewer-book]', viewer).addEventListener('click', function () {
-            var notes = document.getElementById('tf2-client-notes');
-            var line = 'Scene: ' + scenes[cur].name;
-            if (notes) {
-                var v = notes.value.replace(/^Scene: .*(\n|$)/, '');
-                notes.value = line + (v ? '\n' + v : '');
-                try { if (window.tfBooking) window.tfBooking.saveState(); } catch (x) {}
-            }
+            try { if (window.tfBooking) window.tfBooking.chooseBackdrop(scenes[cur].key); } catch (x) {}
             viewer.close();
             goToPackages();
         });

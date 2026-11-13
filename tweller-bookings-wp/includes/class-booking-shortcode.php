@@ -54,7 +54,19 @@ class TwellerFlow2_Booking_Shortcode {
             'preselect' => TwellerFlow2_Booking_Links::requested_key(),
             'preselectPackage' => TwellerFlow2_Booking_Links::requested_package(),
             'gift' => array( 'enabled' => self::gifts_on() ),
+            // Visual backdrop picker per session type (Christmas scenes…),
+            // supplied by TwellerFlow2_Landing; empty = no picker.
+            'backdrops' => self::backdrops(),
         ));
+    }
+
+    /**
+     * Backdrop choices by session type:
+     * { christmas_photos: { choices: [ {key, name, thumb, kind} ], extra: bool, extra_label } }
+     */
+    public static function backdrops() {
+        $b = apply_filters( 'tweller_flow_2_booking_backdrops', array() );
+        return is_array( $b ) ? $b : array();
     }
 
     /** Gift cards are sold from this page too (a tile in the session list). */
@@ -170,6 +182,8 @@ class TwellerFlow2_Booking_Shortcode {
                 </div>
 
                 <form id="tf2-booking-form" onsubmit="event.preventDefault(); tfBooking.submitBooking();">
+                    <!-- Backdrop picker (filled by booking.js when the session offers backdrops) -->
+                    <div class="tf2-backdrop" id="tf2-backdrop" hidden></div>
                     <div class="tf2-form-row">
                         <div class="tf2-field">
                             <label>Full Name *</label>

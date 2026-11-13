@@ -30,6 +30,7 @@ class TwellerFlow2_Landing {
         add_filter( 'template_include', array( __CLASS__, 'template' ), 99 );
         add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue' ), 20 );
         add_action( 'tweller_flow_2_session_created', array( __CLASS__, 'note_early_bird' ), 20, 2 );
+        add_filter( 'tweller_flow_2_booking_backdrops', array( __CLASS__, 'backdrops' ) );
         add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ), 20 );
         add_action( 'admin_init', array( __CLASS__, 'admin_save' ) );
         add_action( 'admin_enqueue_scripts', array( __CLASS__, 'admin_assets' ) );
@@ -220,11 +221,35 @@ class TwellerFlow2_Landing {
         return $t ? date_i18n( 'M j', $t ) : '';
     }
 
+    /**
+     * The visual backdrop picker in the booking form for Christmas: the four
+     * scenes, plus own decor at home and on location. Shown on this page and
+     * on the main Book Us page whenever Christmas is the session.
+     */
+    public static function backdrops( $all ) {
+        $s = self::settings();
+        $choices = array();
+        foreach ( $s['scenes'] as $sc ) {
+            $img = self::scene_images( $sc );
+            $choices[] = array( 'key' => sanitize_key( $sc['slug'] ), 'name' => $sc['name'], 'thumb' => $img['sm'], 'kind' => 'scene' );
+        }
+        $choices[] = array( 'key' => 'own-decor', 'name' => 'Our own decor, at home', 'thumb' => '', 'kind' => 'home', 'note' => 'Your tree, your living room' );
+        $choices[] = array( 'key' => 'on-location', 'name' => 'On location', 'thumb' => '', 'kind' => 'location', 'note' => 'A place you choose' );
+        $all[ $s['session_key'] ] = array(
+            'title'       => 'Choose your backdrop',
+            'intro'       => 'Digital scenes are shot on a white backdrop in studio or at your home, then we place your family in the scene.',
+            'choices'     => $choices,
+            'extra'       => self::early_bird_active(),
+            'extra_label' => 'Early bird: pick your free extra scene',
+        );
+        return $all;
+    }
+
     /** Early-bird bookings carry the bonus on the session's history, so the studio sees it. */
     public static function note_early_bird( $session_id, $data ) {
         $s = self::settings();
         if ( ( $data['session_type'] ?? '' ) !== $s['session_key'] || ! self::early_bird_active() ) return;
-        TwellerFlow2_Session::record_stage_history( $session_id, 'booked', 0, 'Early-bird booking: ' . $s['early_bird_text'] . ' (booked before ' . self::short_date( $s['early_bird_end'] ) . ').' );
+        TwellerFlow2_Session::record_stage_history( $session_id, 'booked', 0, 'Early-bird booking: ' . $s['early_bird_text'] . ' (booked before ' . self::short_date( $s['early_bird_end'] ) . ').' . ( ! empty( $data['backdrop'] ) ? ' ' . str_replace( "\n", ' · ', $data['backdrop'] ) : '' ) );
     }
 
     // ── Media ────────────────────────────────────────

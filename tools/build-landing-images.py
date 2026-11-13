@@ -57,10 +57,10 @@ def crop_to(img: Image.Image, ratio: float, focus) -> Image.Image:
 
 def save_webp(img: Image.Image, path: Path, max_kb: int):
     """Highest quality that fits under max_kb."""
-    for q in (82, 78, 74, 70, 66, 62, 58, 54, 50):
+    for q in (82, 78, 74, 70, 66, 62, 58, 54, 50, 46, 42, 40):
         buf = io.BytesIO()
         img.save(buf, "WEBP", quality=q, method=6)
-        if buf.tell() <= max_kb * 1024 or q == 50:
+        if buf.tell() <= max_kb * 1024 or q == 40:
             path.write_bytes(buf.getvalue())
             return q, buf.tell()
 
