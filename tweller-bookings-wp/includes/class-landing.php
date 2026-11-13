@@ -449,7 +449,16 @@ class TwellerFlow2_Landing {
             'enabled' => empty( $p['transport_enabled'] ) ? 0 : 1,
             'fee'     => max( 0, (float) ( $p['transport_fee'] ?? $tr['fee'] ) ),
             'area'    => sanitize_text_field( $p['transport_area'] ?? '' ) ?: $tr['area'],
+            'polygon' => sanitize_textarea_field( $p['transport_polygon'] ?? '' ) ?: $tr['polygon'],
         ) );
+
+        $wa = TwellerFlow2_Booking_Alerts::settings();
+        $wa_key = trim( (string) ( $p['wa_apikey'] ?? '' ) );
+        update_option( TwellerFlow2_Booking_Alerts::OPT, array(
+            'enabled' => empty( $p['wa_enabled'] ) ? 0 : 1,
+            'phone'   => preg_replace( '/\D/', '', $p['wa_phone'] ?? '' ) ?: $wa['phone'],
+            'apikey'  => $wa_key !== '' ? sanitize_text_field( $wa_key ) : $wa['apikey'],
+        ), false );
 
         $m = TwellerFlow2_Meta_Events::settings();
         $token = trim( (string) ( $p['meta_access_token'] ?? '' ) );

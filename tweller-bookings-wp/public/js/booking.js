@@ -79,6 +79,7 @@ const tfBooking = {
         this.giftMode = false;
         document.getElementById('tf2-step-gift').style.display = 'none';
         document.getElementById(`tf2-step-${this.step}`).style.display = 'block';
+        if (this.map) setTimeout(() => this.map.invalidateSize(), 50);
         const h = document.querySelector('.tweller-booking__header h2');
         const p = document.querySelector('.tweller-booking__header p');
         if (this.giftHeader) {
@@ -402,7 +403,8 @@ const tfBooking = {
                 notes: el('tf2-client-notes') ? el('tf2-client-notes').value : '',
                 backdrop: this.selectedBackdrop,
                 backdropExtra: this.selectedBackdropExtra,
-                shootLocation: (document.querySelector('input[name="tf2_shoot_location"]:checked') || {}).value || ''
+                shootLocation: this.shootType(),
+                shootPoint: this.shootPoint
             }));
         } catch (e) { /* private mode / quota — never block the booking */ }
     },
@@ -435,12 +437,12 @@ const tfBooking = {
         });
         document.querySelectorAll('input[name="tf2_shoot_location"]').forEach((el) => {
             el.addEventListener('change', () => {
-                const w = document.getElementById('tf2-where');
-                if (w) w.classList.remove('tf2-where--missing');
+                this.showMapPicker(this.shootType() === 'location');
                 if (this.step === 4 && this.selectedPackageData && this.selectedDate) this.renderSummary();
                 this.saveState();
             });
         });
+        this.wireMapPicker();
     },
 
     restoreState() {
@@ -501,6 +503,8 @@ const tfBooking = {
         if (s.shootLocation) {
             const loc = document.querySelector('input[name="tf2_shoot_location"][value="' + s.shootLocation + '"]');
             if (loc) loc.checked = true;
+            if (s.shootPoint && typeof s.shootPoint.lat === 'number') this.shootPoint = s.shootPoint;
+            if (s.shootLocation === 'location') this.showMapPicker(true);
         }
 
         if (s.consent) {
@@ -530,6 +534,184 @@ const tfBooking = {
                 window.location.reload();
             });
         }
+    },
+
+    // ── Shoot location: studio, or a pin on the map ─────
+    // Home and location shoots are pinned on an OpenStreetMap map (search an
+    // address, tap the map, or use the phone's location). A pin outside the
+    // shaded central area adds the transport fee; the server re-checks it.
+
+    shootPoint: null,   // { lat, lng, address, outside }
+    map: null,
+    marker: null,
+
+    shootType() {
+        const el = document.querySelector('input[name="tf2_shoot_location"]:checked');
+        return el ? el.value : '';
+    },
+
+    centralArea() {
+        try { return JSON.parse(document.getElementById('tf2-where').dataset.area || '[]'); } catch (e) { return []; }
+    },
+
+    inCentral(lat, lng) {
+        const poly = this.centralArea();
+        if (poly.length < 3) return true;
+        let inside = false;
+        for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+            const [yi, xi] = poly[i], [yj, xj] = poly[j];
+            if ((yi > lat) !== (yj > lat) && lng < (xj - xi) * (lat - yi) / ((yj - yi) || 1e-12) + xi) inside = !inside;
+        }
+        return inside;
+    },
+
+    mapStatus(text, kind) {
+        const el = document.getElementById('tf2-map-status');
+        if (!el) return;
+        el.textContent = text || '';
+        el.className = 'tf2-map__status' + (kind ? ' tf2-map__status--' + kind : '');
+    },
+
+    feeText() {
+        const fee = parseFloat((document.getElementById('tf2-where') || {}).dataset.fee) || 0;
+        return 'TT$' + fee.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    },
+
+    paintPointStatus() {
+        const p = this.shootPoint;
+        if (!p) { this.mapStatus(''); return; }
+        const where = p.address || 'Pinned location';
+        this.mapStatus(p.outside
+            ? `📍 ${where} — outside the central area: +${this.feeText()} transport.`
+            : `📍 ${where} — in the central area, no transport fee.`, p.outside ? 'fee' : 'ok');
+    },
+
+    showMapPicker(show) {
+        const wrap = document.getElementById('tf2-map-wrap');
+        if (!wrap) return;
+        wrap.hidden = !show;
+        if (show) this.loadMap();
+    },
+
+    loadMap() {
+        if (this.map || this.mapLoading) return;
+        const box = document.getElementById('tf2-where');
+        const start = () => this.initMap();
+        if (window.L) { start(); return; }
+        this.mapLoading = true;
+        const css = document.createElement('link');
+        css.rel = 'stylesheet'; css.href = box.dataset.leafletCss;
+        document.head.appendChild(css);
+        const js = document.createElement('script');
+        js.src = box.dataset.leafletJs; js.async = true;
+        js.onload = start;
+        js.onerror = () => this.mapStatus('The map could not load. Please type the full address in the notes below.', 'error');
+        document.head.appendChild(js);
+    },
+
+    initMap() {
+        const el = document.getElementById('tf2-map');
+        if (!el || this.map || !window.L) return;
+        const L = window.L;
+        const icons = (document.getElementById('tf2-where').dataset.leafletJs || '').replace(/leaflet\.js.*$/, 'images/');
+        L.Icon.Default.imagePath = icons;
+        this.map = L.map(el, { scrollWheelZoom: false, tap: true }).setView([10.52, -61.41], 10);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
+        }).addTo(this.map);
+        const area = this.centralArea();
+        if (area.length >= 3) {
+            L.polygon(area, { color: '#173a2e', weight: 2, dashArray: '6 6', fillColor: '#2f7a55', fillOpacity: 0.12, interactive: false }).addTo(this.map);
+        }
+        this.map.on('click', (e) => this.setPoint(e.latlng.lat, e.latlng.lng, '', true));
+        if (this.shootPoint) {
+            this.setPoint(this.shootPoint.lat, this.shootPoint.lng, this.shootPoint.address, false);
+            this.map.setView([this.shootPoint.lat, this.shootPoint.lng], 14);
+        }
+        setTimeout(() => this.map.invalidateSize(), 60);
+    },
+
+    setPoint(lat, lng, address, lookup) {
+        const L = window.L;
+        lat = Math.round(lat * 1e6) / 1e6; lng = Math.round(lng * 1e6) / 1e6;
+        this.shootPoint = { lat, lng, address: address || '', outside: !this.inCentral(lat, lng) };
+        if (this.map && L) {
+            if (!this.marker) {
+                this.marker = L.marker([lat, lng], { draggable: true, keyboard: true, title: 'Shoot location' }).addTo(this.map);
+                this.marker.on('dragend', () => { const ll = this.marker.getLatLng(); this.setPoint(ll.lat, ll.lng, '', true); });
+            } else {
+                this.marker.setLatLng([lat, lng]);
+            }
+        }
+        const wrap = document.getElementById('tf2-map-wrap');
+        if (wrap) wrap.classList.remove('tf2-map--missing');
+        this.paintPointStatus();
+        if (this.step === 4 && this.selectedPackageData && this.selectedDate) this.renderSummary();
+        this.saveState();
+        if (lookup) this.reverseGeocode(lat, lng);
+    },
+
+    // OpenStreetMap Nominatim: search and reverse lookups happen only on a
+    // deliberate action (Search / a tap / a drag), well inside its usage policy.
+    async reverseGeocode(lat, lng) {
+        const seq = (this.geoSeq = (this.geoSeq || 0) + 1);
+        try {
+            const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=17&addressdetails=0&lat=${lat}&lon=${lng}`, { headers: { 'Accept-Language': 'en' } });
+            const d = await r.json();
+            if (seq !== this.geoSeq || !this.shootPoint || this.shootPoint.lat !== lat) return;
+            const name = (d.display_name || '').split(',').slice(0, 3).join(',').trim();
+            if (name) { this.shootPoint.address = name; this.paintPointStatus(); this.saveState(); }
+        } catch (e) { /* the pin is enough; the address is a nicety */ }
+    },
+
+    async searchAddress() {
+        const q = (document.getElementById('tf2-map-q').value || '').trim();
+        const list = document.getElementById('tf2-map-results');
+        if (q.length < 3) return;
+        this.loadMap();
+        list.hidden = false;
+        list.innerHTML = '<li class="tf2-map__hint">Searching…</li>';
+        try {
+            const r = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=tt&limit=5&q=${encodeURIComponent(q)}`, { headers: { 'Accept-Language': 'en' } });
+            const rows = await r.json();
+            if (!rows.length) { list.innerHTML = '<li class="tf2-map__hint">No match. Try a nearby landmark or area, or tap the map.</li>'; return; }
+            list.innerHTML = '';
+            rows.forEach((row) => {
+                const li = document.createElement('li');
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.textContent = row.display_name.split(',').slice(0, 4).join(',');
+                b.addEventListener('click', () => {
+                    list.hidden = true;
+                    const lat = parseFloat(row.lat), lng = parseFloat(row.lon);
+                    if (this.map) this.map.setView([lat, lng], 15);
+                    this.setPoint(lat, lng, row.display_name.split(',').slice(0, 3).join(',').trim(), false);
+                });
+                li.appendChild(b);
+                list.appendChild(li);
+            });
+        } catch (e) {
+            list.innerHTML = '<li class="tf2-map__hint">Search is unavailable right now. Tap the map instead.</li>';
+        }
+    },
+
+    wireMapPicker() {
+        const go = document.getElementById('tf2-map-go');
+        const q = document.getElementById('tf2-map-q');
+        const me = document.getElementById('tf2-map-me');
+        if (go) go.addEventListener('click', () => this.searchAddress());
+        if (q) q.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.searchAddress(); } });
+        if (me) me.addEventListener('click', () => {
+            if (!navigator.geolocation) { this.mapStatus('Your browser can’t share its location. Search or tap the map instead.', 'error'); return; }
+            this.mapStatus('Finding you…');
+            navigator.geolocation.getCurrentPosition((pos) => {
+                this.loadMap();
+                const { latitude, longitude } = pos.coords;
+                if (this.map) this.map.setView([latitude, longitude], 16);
+                this.setPoint(latitude, longitude, '', true);
+            }, () => this.mapStatus('Couldn’t get your location. Search or tap the map instead.', 'error'), { enableHighAccuracy: true, timeout: 10000 });
+        });
     },
 
     // ── Backdrop picker ────────────────────────────────
@@ -808,8 +990,8 @@ const tfBooking = {
 
         // Transport fee: shoots away from the studio, outside the central area.
         const where = document.getElementById('tf2-where');
-        const whereEl = document.querySelector('input[name="tf2_shoot_location"]:checked');
-        const transport = where && whereEl && whereEl.value === 'outside' ? (parseFloat(where.dataset.fee) || 0) : 0;
+        const transport = where && this.shootType() === 'location' && this.shootPoint && this.shootPoint.outside
+            ? (parseFloat(where.dataset.fee) || 0) : 0;
         if (transport > 0) {
             if (!lines.includes('Session')) {
                 lines = `<div style="display:flex; justify-content:space-between; opacity:0.9; font-size:14px; margin-top:8px;"><span>Session</span><span>TTD ${fmt(total)}</span></div>` + lines;
@@ -929,8 +1111,21 @@ const tfBooking = {
             gift_code: this.gift ? this.gift.code : '',
             backdrop: this.selectedBackdrop,
             backdrop_extra: this.selectedBackdropExtra,
-            shoot_location: (document.querySelector('input[name="tf2_shoot_location"]:checked') || {}).value || ''
+            shoot_location: this.shootType(),
+            shoot_lat: this.shootPoint ? this.shootPoint.lat : '',
+            shoot_lng: this.shootPoint ? this.shootPoint.lng : '',
+            shoot_address: this.shootPoint ? this.shootPoint.address : ''
         };
+        // A home / location shoot needs a pin on the map.
+        if (this.shootType() === 'location' && !this.shootPoint) {
+            const wrap = document.getElementById('tf2-map-wrap');
+            if (wrap) {
+                wrap.classList.add('tf2-map--missing');
+                this.mapStatus('Please search for the address or tap the map to drop a pin.', 'error');
+                wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
         // A session with a backdrop picker needs a choice before booking.
         if (this.backdropConfig() && !this.selectedBackdrop) {
             const box = document.getElementById('tf2-backdrop');

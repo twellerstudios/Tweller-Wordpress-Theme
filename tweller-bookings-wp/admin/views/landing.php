@@ -49,6 +49,27 @@ $thumb = function ( $id ) {
                 <label>Fee (TTD)<input type="number" step="1" min="0" name="transport_fee" value="<?php echo esc_attr( $tr['fee'] ); ?>"></label>
             </div>
             <label style="display:block;margin-top:10px;">"Outside the central area means …"<input type="text" class="large-text" name="transport_area" value="<?php echo esc_attr( $tr['area'] ); ?>"></label>
+            <label style="display:block;margin-top:10px;">Central area on the map (no fee): one <code>latitude,longitude</code> point per line, in order around the edge. Clients see it shaded; pins outside it pay the fee.
+                <textarea class="large-text code" rows="6" name="transport_polygon"><?php echo esc_textarea( $tr['polygon'] ); ?></textarea></label>
+        </div>
+
+        <?php $wa = TwellerFlow2_Booking_Alerts::settings(); ?>
+        <div class="tf2-card tf2-mb-6">
+            <h2 style="margin-top:0;">Booking alerts</h2>
+            <p class="tf2-description">Every new online booking is emailed to <?php echo esc_html( get_option( 'admin_email' ) ); ?> and <?php echo esc_html( TwellerFlow2_Notifications::STUDIO_EMAIL ); ?>, with the shoot location, map link and backdrop.
+                It can also go to your WhatsApp through the free CallMeBot service: on the phone with this number, follow the steps at
+                <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" rel="noopener">callmebot.com</a> (add their number, send them the activation message), then paste the API key they send back.</p>
+            <?php if ( isset( $_GET['wa_test'] ) ) : ?>
+                <div class="tf2-alert <?php echo $_GET['wa_test'] === 'ok' ? 'tf2-alert--success' : 'tf2-alert--error'; ?>"><?php echo $_GET['wa_test'] === 'ok' ? 'Test message sent — check WhatsApp.' : 'WhatsApp test failed: ' . esc_html( wp_unslash( $_GET['wa_msg'] ?? '' ) ); ?></div>
+            <?php endif; ?>
+            <label style="display:block;margin-bottom:10px;"><input type="checkbox" name="wa_enabled" value="1" <?php checked( $wa['enabled'] ); ?>> Send a WhatsApp for every new booking</label>
+            <div class="tf2-off-grid">
+                <label>Your WhatsApp number (with country code)<input type="text" name="wa_phone" value="<?php echo esc_attr( $wa['phone'] ); ?>"></label>
+                <label>CallMeBot API key <?php echo $wa['apikey'] ? '(saved, leave blank to keep)' : ''; ?><input type="password" autocomplete="off" name="wa_apikey" value=""></label>
+            </div>
+            <?php if ( TwellerFlow2_Booking_Alerts::ready() ) : ?>
+                <p style="margin:12px 0 0;"><a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=tweller_flow_2_test_whatsapp' ), 'tweller_flow_2_test_whatsapp' ) ); ?>">Send a test WhatsApp</a></p>
+            <?php endif; ?>
         </div>
 
         <div class="tf2-card tf2-mb-6">

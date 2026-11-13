@@ -199,23 +199,39 @@ class TwellerFlow2_Booking_Shortcode {
                         <input type="tel" id="tf2-client-phone" required>
                     </div>
                     <?php $tf2_tr = TwellerFlow2_Booking_API::transport(); if ( ! empty( $tf2_tr['enabled'] ) ) :
-                        $tf2_tr_fee = (float) $tf2_tr['fee']; ?>
-                    <fieldset class="tf2-where" id="tf2-where" data-fee="<?php echo esc_attr( $tf2_tr_fee ); ?>">
+                        $tf2_tr_fee = (float) $tf2_tr['fee'];
+                        $tf2_fee_txt = 'TT$' . number_format( $tf2_tr_fee, $tf2_tr_fee == (int) $tf2_tr_fee ? 0 : 2 ); ?>
+                    <fieldset class="tf2-where" id="tf2-where"
+                        data-fee="<?php echo esc_attr( $tf2_tr_fee ); ?>"
+                        data-area="<?php echo esc_attr( wp_json_encode( TwellerFlow2_Booking_API::central_polygon() ) ); ?>"
+                        data-leaflet-js="<?php echo esc_url( TWELLER_FLOW_2_PLUGIN_URL . 'public/vendor/leaflet/leaflet.js' ); ?>"
+                        data-leaflet-css="<?php echo esc_url( TWELLER_FLOW_2_PLUGIN_URL . 'public/vendor/leaflet/leaflet.css' ); ?>">
                         <legend class="tf2-where__title">Where's your shoot? *</legend>
-                        <label class="tf2-where__opt">
-                            <input type="radio" name="tf2_shoot_location" value="studio" required>
-                            <span class="tf2-where__name">In studio</span>
-                        </label>
-                        <label class="tf2-where__opt">
-                            <input type="radio" name="tf2_shoot_location" value="central">
-                            <span class="tf2-where__name">At home or on location, in the central area</span>
-                        </label>
-                        <label class="tf2-where__opt">
-                            <input type="radio" name="tf2_shoot_location" value="outside">
-                            <span class="tf2-where__name">At home or on location, outside the central area</span>
-                            <?php if ( $tf2_tr_fee > 0 ) : ?><span class="tf2-where__fee">+TT$<?php echo esc_html( number_format( $tf2_tr_fee, $tf2_tr_fee == (int) $tf2_tr_fee ? 0 : 2 ) ); ?> transport</span><?php endif; ?>
-                        </label>
-                        <p class="tf2-where__help">Outside the central area means <?php echo esc_html( $tf2_tr['area'] ); ?>.</p>
+                        <div class="tf2-where__choices">
+                            <label class="tf2-where__opt">
+                                <input type="radio" name="tf2_shoot_location" value="studio" required>
+                                <span class="tf2-where__name">In studio</span>
+                            </label>
+                            <label class="tf2-where__opt">
+                                <input type="radio" name="tf2_shoot_location" value="location">
+                                <span class="tf2-where__name">At my home or a location</span>
+                            </label>
+                        </div>
+                        <div class="tf2-map" id="tf2-map-wrap" hidden>
+                            <p class="tf2-map__lead">Search an address or area, or tap the map to drop a pin where the shoot will be.</p>
+                            <div class="tf2-map__search" role="search">
+                                <input type="search" id="tf2-map-q" placeholder="e.g. Chaguanas, or 12 Main Road Couva" autocomplete="street-address" enterkeyhint="search">
+                                <button type="button" id="tf2-map-go">Search</button>
+                            </div>
+                            <ul class="tf2-map__results" id="tf2-map-results" hidden></ul>
+                            <div class="tf2-map__canvas" id="tf2-map" aria-label="Map: tap to choose the shoot location"></div>
+                            <div class="tf2-map__bar">
+                                <button type="button" class="tf2-map__me" id="tf2-map-me">Use my current location</button>
+                                <span class="tf2-map__legend"><i></i> No transport fee</span>
+                            </div>
+                            <p class="tf2-map__status" id="tf2-map-status" aria-live="polite"></p>
+                            <p class="tf2-where__help">Outside the shaded central area (<?php echo esc_html( $tf2_tr['area'] ); ?>): +<?php echo esc_html( $tf2_fee_txt ); ?> transport.</p>
+                        </div>
                     </fieldset>
                     <?php endif; ?>
                     <div class="tf2-field">

@@ -128,6 +128,9 @@ class TwellerFlow2_Notifications {
             $rows .= self::email_detail_row( 'Total', 'TTD $' . number_format( $session->total_amount, 2 ) );
             $rows .= self::email_detail_row( 'Deposit to confirm (50%)', 'TTD $' . number_format( $session->total_amount / 2, 2 ) );
         }
+        if ( ! empty( $session->notes ) ) {
+            $rows .= self::email_detail_row( 'Notes', make_clickable( nl2br( esc_html( $session->notes ) ) ) );
+        }
         $rows .= self::email_detail_row( 'Shoot code', $session->tracking_code );
 
         $booking_details = self::email_card( 'Booking Details', $rows );

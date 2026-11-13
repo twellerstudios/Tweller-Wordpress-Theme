@@ -192,17 +192,38 @@ class TwellerFlow2_Booking_API {
             'enabled' => 1,
             'fee'     => 60,
             'area'    => 'beyond Couva in the south, Curepe in the north, Macoya in the east or San Juan in the west',
+            // Central area (no fee), one "lat,lng" per line, drawn on the map.
+            'polygon' => implode( "\n", array(
+                '10.660,-61.460', '10.660,-61.372', '10.600,-61.360', '10.520,-61.345', '10.440,-61.365',
+                '10.395,-61.385', '10.395,-61.480', '10.500,-61.485', '10.600,-61.470',
+            ) ),
         ) );
     }
 
-    /** Where-is-the-shoot choices: key => label. */
-    public static function shoot_locations() {
-        return array(
-            'studio'  => 'In studio',
-            'central' => 'At home / on location — central area',
-            'outside' => 'At home / on location — outside central area',
-        );
+    /** The central area as [[lat, lng], …]. */
+    public static function central_polygon() {
+        $pts = array();
+        foreach ( preg_split( '/\r\n|\r|\n/', (string) self::transport()['polygon'] ) as $line ) {
+            if ( preg_match( '/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/', $line, $m ) ) $pts[] = array( (float) $m[1], (float) $m[2] );
+        }
+        return count( $pts ) >= 3 ? $pts : array();
     }
+
+    /** Ray-casting point-in-polygon. */
+    public static function in_central_area( $lat, $lng ) {
+        $poly = self::central_polygon();
+        if ( ! $poly ) return true; // no area configured: never charge
+        $in = false;
+        for ( $i = 0, $j = count( $poly ) - 1; $i < count( $poly ); $j = $i++ ) {
+            list( $yi, $xi ) = $poly[ $i ];
+            list( $yj, $xj ) = $poly[ $j ];
+            if ( ( $yi > $lat ) !== ( $yj > $lat ) && $lng < ( $xj - $xi ) * ( $lat - $yi ) / ( ( $yj - $yi ) ?: 1e-12 ) + $xi ) $in = ! $in;
+        }
+        return $in;
+    }
+
+    /** Set while POST /book creates its session (for booking alerts). */
+    public static $public_booking = false;
 
     /** A configured session-type key, or '' — never free text from the client. */
     private static function valid_session_type( $key ) {
@@ -238,18 +259,36 @@ class TwellerFlow2_Booking_API {
         // Where the shoot is: away from the studio and outside the central
         // area adds the transport fee (after any discount — it is a cost,
         // not part of the session price).
+        // The fee is decided here from the pinned point, never by the browser.
         $transport = self::transport();
         $location  = sanitize_key( $data['shoot_location'] ?? '' );
         $location_note = '';
+        $location_text = '';
         if ( ! empty( $transport['enabled'] ) ) {
-            if ( ! isset( self::shoot_locations()[ $location ] ) ) {
+            if ( $location === 'studio' ) {
+                $location_note = 'Location: In studio';
+                $location_text = 'In studio';
+            } elseif ( $location === 'location' ) {
+                $lat = isset( $data['shoot_lat'] ) ? (float) $data['shoot_lat'] : 0;
+                $lng = isset( $data['shoot_lng'] ) ? (float) $data['shoot_lng'] : 0;
+                // Trinidad & Tobago, generously
+                if ( $lat < 10.0 || $lat > 11.4 || $lng < -62.0 || $lng > -60.4 ) {
+                    return new WP_Error( 'shoot_location', 'Please pin your shoot location on the map.', array( 'status' => 400 ) );
+                }
+                $addr    = substr( sanitize_text_field( $data['shoot_address'] ?? '' ), 0, 200 );
+                $inside  = self::in_central_area( $lat, $lng );
+                $map     = sprintf( 'https://www.google.com/maps?q=%.6f,%.6f', $lat, $lng );
+                $location_text = ( $addr ?: sprintf( '%.5f, %.5f', $lat, $lng ) );
+                $location_note = 'Location: ' . $location_text . ( $inside ? ' (central area)' : ' (outside central area)' );
+                if ( ! $inside && (float) $transport['fee'] > 0 ) {
+                    $pricing['transport'] = (float) $transport['fee'];
+                    $pricing['total']     = round( $pricing['total'] + (float) $transport['fee'], 2 );
+                    $location_note       .= ' +TT$' . number_format( (float) $transport['fee'], 0 ) . ' transport';
+                }
+                $location_note .= "\nMap: " . $map;
+                $location_text .= ' — ' . $map;
+            } else {
                 return new WP_Error( 'shoot_location', 'Please tell us where your shoot will be.', array( 'status' => 400 ) );
-            }
-            $location_note = 'Location: ' . self::shoot_locations()[ $location ];
-            if ( $location === 'outside' && (float) $transport['fee'] > 0 ) {
-                $pricing['transport'] = (float) $transport['fee'];
-                $pricing['total']     = round( $pricing['total'] + (float) $transport['fee'], 2 );
-                $location_note       .= ' (+TT$' . number_format( (float) $transport['fee'], 0 ) . ' transport)';
             }
         }
 
@@ -308,7 +347,7 @@ class TwellerFlow2_Booking_API {
             'attribution'  => TwellerFlow2_Booking_Links::sanitize_attribution( $data['attribution'] ?? array() ),
             'session_date' => sanitize_text_field( $data['session_date'] ),
             'session_time' => sanitize_text_field( $data['session_time'] ),
-            'location' => sanitize_text_field( $data['location'] ?? '' ),
+            'location' => $location_text !== '' ? $location_text : sanitize_text_field( $data['location'] ?? '' ),
             'notes' => trim( implode( "\n", array_filter( array( $location_note, $backdrop_note ) ) ) . ( ( $location_note || $backdrop_note ) && $client_notes ? "\n\n" : '' ) . $client_notes ),
             'backdrop' => $backdrop_note,
             'payment_status' => 'pending',
@@ -321,7 +360,9 @@ class TwellerFlow2_Booking_API {
             'skip_notifications' => $gift_take > 0,
         );
 
+        self::$public_booking = true;
         $session_id = TwellerFlow2_Session::create( $session_data );
+        self::$public_booking = false;
 
         if ( ! $session_id ) {
             if ( $gift_take > 0 ) {

@@ -48,6 +48,7 @@ require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-print-providers.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-wipay.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-meta-events.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-landing.php';
+require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-booking-alerts.php';
 
 if ( is_admin() ) {
     require_once TWELLER_FLOW_2_PLUGIN_DIR . 'admin/class-admin.php';
@@ -264,6 +265,7 @@ function tweller_flow_2_init() {
     TwellerFlow2_WiPay::init();
     TwellerFlow2_Meta_Events::init();
     TwellerFlow2_Landing::init();
+    TwellerFlow2_Booking_Alerts::init();
 
     // Auto-upgrade: create tables if missing
     $db_version = get_option( 'tweller_flow_2_db_version', '2.1.2' );
