@@ -60,6 +60,26 @@ html, body { margin: 0; background: var(--ink); }
 .c2 i { display: block; margin: 0 0 8px; font-size: 46px; }
 .c5 { font: italic 500 46px/1 var(--serif); color: var(--gold); }
 .c4 { margin-top: 26px !important; padding: 22px 40px; border-radius: 999px; background: var(--red); font: 700 34px/1 var(--sans); }
+
+@font-face { font-family: "Playfair"; src: url(assets/fonts/playfair-display-latin-800-normal.woff2) format("woff2"); font-weight: 800; }
+@font-face { font-family: "Playfair"; src: url(assets/fonts/playfair-display-latin-700-italic.woff2) format("woff2"); font-weight: 700; font-style: italic; }
+.ribbon { position: relative; display: inline-block; padding: 26px 50px 30px; border-radius: 8px;
+  background: linear-gradient(180deg, #c42a33 0%, #a01d26 46%, #7c121b 100%);
+  box-shadow: inset 0 0 0 5px #8e1820, inset 0 0 0 7px #e6c47c, inset 0 12px 20px -10px rgba(255,255,255,.35), 0 22px 44px -16px rgba(0,0,0,.75); }
+.ribbon::before, .ribbon::after { content: ""; position: absolute; bottom: -24px; width: 76px; height: 70%; z-index: -1; background: linear-gradient(180deg, #8a1720, #5e0d14); }
+.ribbon::before { left: -42px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 30% 50%); }
+.ribbon::after { right: -42px; clip-path: polygon(0 0, 100% 0, 70% 50%, 100% 100%, 0 100%); }
+.ribbon__holly { position: absolute; left: 50%; top: -28px; width: 96px; height: 52px; transform: translateX(-50%); }
+.foil { display: block; font-family: "Playfair", Georgia, serif; font-weight: 800; letter-spacing: -.005em; text-wrap: balance;
+  background: linear-gradient(180deg, #fff8df 0%, #f7df9b 34%, #dcae52 58%, #b98530 72%, #f6dfa0 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(66, 6, 12, .9)) drop-shadow(0 8px 14px rgba(0, 0, 0, .35)); }
+.c1.ribbon { margin-bottom: 18px !important; }
+.c1 .foil { font-size: 104px; line-height: 1; }
+.hook-plate.ribbon { padding: 40px 50px 34px; width: 800px; }
+.hook-plate.ribbon h1 .foil { font-size: 60px; line-height: 1.1; }
+.hook-plate.ribbon h1 em { font-family: "Playfair", Georgia, serif; font-weight: 700; font-style: italic; font-size: 44px; color: #fff4d6; }
+.hook-plate.ribbon .hook-note { color: rgba(255, 244, 214, .85); }
 </style>
 </head>
 <body>
@@ -82,7 +102,7 @@ html, body { margin: 0; background: var(--ink); }
   if (n === 1) {
     html = `<div class="card">
       <div class="collage">${S.map((s) => img(s)).join('')}</div>
-      <div class="hook-plate"><h1>Thinking about Christmas photos of you &amp; your family?<em>4 scenes to choose from</em></h1><p class="hook-note">Digital backdrops, edited in</p></div>
+      <div class="hook-plate ribbon"><svg class="ribbon__holly" viewBox="0 0 120 64" aria-hidden="true"><path d="M58 40 C40 18 18 14 4 24 C14 26 16 34 10 40 C22 36 28 44 26 52 C38 42 50 46 58 40Z" fill="#1f5a3a" stroke="#0f3322" stroke-width="2"/><path d="M62 40 C80 18 102 14 116 24 C106 26 104 34 110 40 C98 36 92 44 94 52 C82 42 70 46 62 40Z" fill="#256b45" stroke="#0f3322" stroke-width="2"/><circle cx="52" cy="40" r="9" fill="#c8202b"/><circle cx="68" cy="40" r="9" fill="#d4262f"/><circle cx="60" cy="30" r="9" fill="#e0353d"/><circle cx="57" cy="27" r="2.5" fill="#fff" opacity=".6"/></svg><h1><span class="foil">Thinking about Christmas photos of you &amp; your family?</span><em>4 scenes to choose from</em></h1><p class="hook-note">Digital backdrops, edited in</p></div>
       ${fmt === '4x5'
         ? `<div class="offer"><p class="o1">Christmas Minis <b>from TTD 550</b></p><p class="o2">Studio or at your home &nbsp;•&nbsp; Your scene or your decor</p></div>`
         : `<div class="swipe">swipe →</div>`}
@@ -99,7 +119,7 @@ html, body { margin: 0; background: var(--ink); }
     html = `<div class="card cta">${img(S[0], "bg")}<div class="shade"></div>
       <div class="cta-body">
         <img class="logo" src="assets/logo-cream.png" alt="Tweller Studios">
-        <p class="c1">Book us now!</p>
+        <p class="c1 ribbon"><svg class="ribbon__holly" viewBox="0 0 120 64" aria-hidden="true"><path d="M58 40 C40 18 18 14 4 24 C14 26 16 34 10 40 C22 36 28 44 26 52 C38 42 50 46 58 40Z" fill="#1f5a3a" stroke="#0f3322" stroke-width="2"/><path d="M62 40 C80 18 102 14 116 24 C106 26 104 34 110 40 C98 36 92 44 94 52 C82 42 70 46 62 40Z" fill="#256b45" stroke="#0f3322" stroke-width="2"/><circle cx="52" cy="40" r="9" fill="#c8202b"/><circle cx="68" cy="40" r="9" fill="#d4262f"/><circle cx="60" cy="30" r="9" fill="#e0353d"/><circle cx="57" cy="27" r="2.5" fill="#fff" opacity=".6"/></svg><span class="foil">Book us now!</span></p>
         <p class="c2"><i>Christmas Minis from</i>TTD 550</p>
         <p class="c5">Limited spaces available</p>
         <p class="c3">Studio or at your home &nbsp;•&nbsp; 4 digital scenes or your own decor</p>

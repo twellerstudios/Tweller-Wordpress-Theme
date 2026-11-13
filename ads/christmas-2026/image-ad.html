@@ -35,7 +35,7 @@ html, body { margin: 0; background: var(--green); }
 .price b { font: 700 66px/1 var(--sans); letter-spacing: -.025em; color: var(--gold); }
 
 .grid { margin-top: 16px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.tile { position: relative; margin: 0; aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden;
+.tile { position: relative; margin: 0; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden;
   box-shadow: 0 0 0 1px var(--gold-line), 0 22px 40px -22px rgba(0, 0, 0, .8); }
 .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .tile figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 34px 16px 12px; text-align: left;
@@ -84,6 +84,26 @@ html, body { margin: 0; background: var(--green); }
 .fmt-9x16 .grid { margin-top: 44px; }
 .fmt-9x16 .facts { margin-top: 40px; }
 .fmt-9x16 .cta { margin-top: 44px; padding-top: 0; }
+
+@font-face { font-family: "Playfair"; src: url(assets/fonts/playfair-display-latin-800-normal.woff2) format("woff2"); font-weight: 800; }
+@font-face { font-family: "Playfair"; src: url(assets/fonts/playfair-display-latin-700-italic.woff2) format("woff2"); font-weight: 700; font-style: italic; }
+.ribbon { position: relative; display: inline-block; padding: 26px 50px 30px; border-radius: 8px;
+  background: linear-gradient(180deg, #c42a33 0%, #a01d26 46%, #7c121b 100%);
+  box-shadow: inset 0 0 0 5px #8e1820, inset 0 0 0 7px #e6c47c, inset 0 12px 20px -10px rgba(255,255,255,.35), 0 22px 44px -16px rgba(0,0,0,.75); }
+.ribbon::before, .ribbon::after { content: ""; position: absolute; bottom: -24px; width: 76px; height: 70%; z-index: -1; background: linear-gradient(180deg, #8a1720, #5e0d14); }
+.ribbon::before { left: -42px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 30% 50%); }
+.ribbon::after { right: -42px; clip-path: polygon(0 0, 100% 0, 70% 50%, 100% 100%, 0 100%); }
+.ribbon__holly { position: absolute; left: 50%; top: -28px; width: 96px; height: 52px; transform: translateX(-50%); }
+.foil { display: block; font-family: "Playfair", Georgia, serif; font-weight: 800; letter-spacing: -.005em; text-wrap: balance;
+  background: linear-gradient(180deg, #fff8df 0%, #f7df9b 34%, #dcae52 58%, #b98530 72%, #f6dfa0 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(66, 6, 12, .9)) drop-shadow(0 8px 14px rgba(0, 0, 0, .35)); }
+.ad { isolation: isolate; }
+.title.ribbon { margin: 34px 0 6px; padding: 22px 56px 26px; }
+.title .foil { font-size: 92px; line-height: 1; }
+.fmt-1x1 .title.ribbon { margin: 28px 0 4px; padding: 16px 44px 20px; }
+.fmt-1x1 .title .foil { font-size: 70px; }
+.fmt-9x16 .title .foil { font-size: 108px; }
 </style>
 </head>
 <body>
@@ -106,7 +126,7 @@ html, body { margin: 0; background: var(--green); }
     <img class="logo" src="assets/logo-cream.png" alt="Tweller Studios">
     <p class="eyebrow">Christmas 2026 · Trinidad &amp; Tobago</p>
     <p class="ask">Thinking about Christmas photos of you and your family?</p>
-    <h1 class="title">Book us now!</h1>
+    <h1 class="title ribbon"><svg class="ribbon__holly" viewBox="0 0 120 64" aria-hidden="true"><path d="M58 40 C40 18 18 14 4 24 C14 26 16 34 10 40 C22 36 28 44 26 52 C38 42 50 46 58 40Z" fill="#1f5a3a" stroke="#0f3322" stroke-width="2"/><path d="M62 40 C80 18 102 14 116 24 C106 26 104 34 110 40 C98 36 92 44 94 52 C82 42 70 46 62 40Z" fill="#256b45" stroke="#0f3322" stroke-width="2"/><circle cx="52" cy="40" r="9" fill="#c8202b"/><circle cx="68" cy="40" r="9" fill="#d4262f"/><circle cx="60" cy="30" r="9" fill="#e0353d"/><circle cx="57" cy="27" r="2.5" fill="#fff" opacity=".6"/></svg><span class="foil">Book us now!</span></h1>
     <p class="price"><i>Christmas Minis from</i><b>TTD 550</b></p>
     <p class="choose">4 scenes to choose from</p>
     <div class="grid">${tiles}</div>

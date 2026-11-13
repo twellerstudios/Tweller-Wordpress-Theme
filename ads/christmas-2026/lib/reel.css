@@ -69,3 +69,35 @@ html, body { margin: 0; background: #15110e; }
 .end__cta { font: 600 calc(42px * var(--u))/1.2 var(--sans); color: var(--cream); padding-bottom: calc(30px * var(--u)); position: relative; }
 .end__cta::after { content: ""; position: absolute; left: 50%; bottom: 0; width: calc(18px * var(--u)); height: calc(18px * var(--u));
   border-right: 4px solid var(--gold); border-bottom: 4px solid var(--gold); transform: translateX(-50%) rotate(45deg); }
+
+/* ── Christmas ribbon banners with gold-foil lettering ─────────── */
+@font-face { font-family: "Playfair"; src: url(../assets/fonts/playfair-display-latin-700-normal.woff2) format("woff2"); font-weight: 700; }
+@font-face { font-family: "Playfair"; src: url(../assets/fonts/playfair-display-latin-800-normal.woff2) format("woff2"); font-weight: 800; }
+@font-face { font-family: "Playfair"; src: url(../assets/fonts/playfair-display-latin-700-italic.woff2) format("woff2"); font-weight: 700; font-style: italic; }
+.ribbon { position: relative; display: inline-block; max-width: 84%; padding: 38px 54px 40px; border-radius: 8px;
+  background: linear-gradient(180deg, #c42a33 0%, #a01d26 46%, #7c121b 100%);
+  box-shadow: inset 0 0 0 6px #8e1820, inset 0 0 0 8px #e6c47c, inset 0 14px 22px -12px rgba(255, 255, 255, .35),
+              0 26px 50px -16px rgba(0, 0, 0, .75); }
+.ribbon::before, .ribbon::after { content: ""; position: absolute; bottom: -30px; width: 96px; height: 70%; z-index: -1;
+  background: linear-gradient(180deg, #8a1720, #5e0d14); }
+.ribbon::before { left: -52px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 30% 50%); }
+.ribbon::after { right: -52px; clip-path: polygon(0 0, 100% 0, 70% 50%, 100% 100%, 0 100%); }
+.ribbon__holly { position: absolute; left: 50%; top: -34px; width: 120px; height: 64px; transform: translateX(-50%); }
+.foil { display: block; font-family: "Playfair", Georgia, serif; font-weight: 800; letter-spacing: -.005em; text-wrap: balance;
+  background: linear-gradient(180deg, #fff8df 0%, #f7df9b 34%, #dcae52 58%, #b98530 72%, #f6dfa0 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(66, 6, 12, .9)) drop-shadow(0 10px 18px rgba(0, 0, 0, .35)); }
+.ribbon .hook__text { font-size: 82px; line-height: 1.08; max-width: 860px; text-shadow: none; }
+.ribbon--sm { padding: 22px 40px 24px; }
+.ribbon--sm::before, .ribbon--sm::after { width: 70px; bottom: -22px; }
+.ribbon--sm::before { left: -40px; } .ribbon--sm::after { right: -40px; }
+.ribbon--sm .ribbon__holly { width: 90px; height: 48px; top: -26px; }
+.label .label__no { margin-bottom: 18px; }
+.label .foil { font-style: italic; font-weight: 700; font-size: 78px; line-height: 1.05; padding: 0 6px 6px; }
+.caption .ribbon .foil { font-size: 88px; line-height: 1.05; }
+.caption__sub { display: inline-block; margin-top: 42px; padding: 12px 26px; border-radius: 999px; background: rgba(12, 9, 7, .62);
+  font: 500 italic 46px/1.15 var(--serif); color: var(--cream); }
+.caption .caption__note { margin-top: 40px; padding: 14px 24px; border-radius: 14px; background: rgba(12, 9, 7, .55); display: inline-block; }
+.end__kicker.ribbon { padding: calc(30px * var(--u)) calc(60px * var(--u)) calc(34px * var(--u)); margin: calc(30px * var(--u)) 0 calc(14px * var(--u)) !important; }
+.end__kicker .foil { font-size: calc(132px * var(--u)); line-height: 1; }
+.end__eb { background: linear-gradient(180deg, #f6dfa0, #d9a94c) !important; color: #3a0a0e !important; font-weight: 700 !important; box-shadow: 0 8px 20px -8px rgba(0,0,0,.6); }

@@ -22,6 +22,7 @@
     cta: 'Tap Book Now to see packages'
   }, (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {});
 
+  const HOLLY = '<svg class="ribbon__holly" viewBox="0 0 120 64" aria-hidden="true"><path d="M58 40 C40 18 18 14 4 24 C14 26 16 34 10 40 C22 36 28 44 26 52 C38 42 50 46 58 40Z" fill="#1f5a3a" stroke="#0f3322" stroke-width="2"/><path d="M62 40 C80 18 102 14 116 24 C106 26 104 34 110 40 C98 36 92 44 94 52 C82 42 70 46 62 40Z" fill="#256b45" stroke="#0f3322" stroke-width="2"/><circle cx="52" cy="40" r="9" fill="#c8202b"/><circle cx="68" cy="40" r="9" fill="#d4262f"/><circle cx="60" cy="30" r="9" fill="#e0353d"/><circle cx="57" cy="27" r="2.5" fill="#fff" opacity=".6"/></svg>';
   const SCENES = [
     { slug: 'fireside-library',   name: 'Fireside Library',   fx: 0.52, fy: 0.56, glow: [0.52, 0.66] },
     { slug: 'classic-red-hearth', name: 'Classic Red Hearth', fx: 0.50, fy: 0.55, glow: [0.50, 0.65] },
@@ -98,18 +99,18 @@
 
   // ── Text ────────────────────────────────────────
   const hook = el('div', 'block hook', root,
-    '<p class="hook__text">Thinking about Christmas photos of you and your family? <span class="emoji">🎄</span></p>');
+    '<div class="ribbon">' + HOLLY + '<p class="hook__text foil">Thinking about Christmas photos of you and your family?</p></div>');
   hook.style.top = px(SAFE_T + 10);
 
   const labels = SCENES.slice(1).map((sc, i) => {
-    const l = el('div', 'label', root, '<span class="label__no">Digital scene 0' + (i + 2) + '</span><span class="label__name">' + sc.name + '</span>');
+    const l = el('div', 'label', root, '<span class="label__no">Digital scene 0' + (i + 2) + '</span><div class="ribbon ribbon--sm">' + HOLLY + '<span class="foil">' + sc.name + '</span></div>');
     l.style.top = px(SAFE_T + 6);
     return l;
   });
 
   // Caption 1 + mosaic of all four scenes
   const mosaic = el('div', 'layer mosaic');
-  const cap1 = el('div', 'block caption', mosaic, '<p class="caption__big">4 scenes to choose from</p><p class="caption__note">Digital backdrops: we photograph you on white, then edit you into your scene</p>');
+  const cap1 = el('div', 'block caption', mosaic, '<div class="ribbon">' + HOLLY + '<span class="foil">4 scenes to choose from</span></div><br><p class="caption__note">Digital backdrops: we photograph you on white, then edit you into your scene</p>');
   cap1.style.top = px(SAFE_T + 6);
   const grid = el('div', 'grid', mosaic);
   const gW = W * 0.86, tileW = (gW - 18) / 2, tileH = tileW / 1.5;
@@ -123,7 +124,7 @@
 
   // Caption 2 over Classic Red Hearth
   const hearth2 = sceneLayer(Object.assign({}, SCENES[1]), 'hearth2');
-  const cap2 = el('div', 'block caption', root, '<p class="caption__big">Studio or at your home</p><p class="caption__small">Your scene, or your own decor</p>');
+  const cap2 = el('div', 'block caption', root, '<div class="ribbon">' + HOLLY + '<span class="foil">Studio or at your home</span></div><br><span class="caption__sub">Your scene, or your own decor</span>');
   cap2.style.top = px(SAFE_T + 6);
 
   // End card
@@ -131,7 +132,7 @@
   const endBg = el('img', 'end__bg', end); endBg.src = 'assets/scenes/fireside-library.jpg'; endBg.alt = '';
   const endBody = el('div', 'end__body', end,
     '<div class="anlogo" aria-label="Tweller Studios"></div>' +
-    '<p class="end__kicker">Book us now!</p>' +
+    '<div class="end__kicker ribbon">' + HOLLY + '<span class="foil">Book us now!</span></div>' +
     '<p class="end__price"><span>Christmas Minis from</span> TTD ' + vars.price + '</p>' +
     '<p class="end__eb">' + vars.urgency + '</p>' +
     '<p class="end__cta">' + vars.cta + '</p>');
