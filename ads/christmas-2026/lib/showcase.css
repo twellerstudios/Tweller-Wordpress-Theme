@@ -1,0 +1,36 @@
+@import url(reel.css);
+#root .bgblur { position: absolute; inset: -6%; background-size: cover; background-position: center; filter: blur(34px) brightness(.45) saturate(1.15); transform: scale(1.1); }
+#root .vig { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(12,9,7,0) 40%, rgba(12,9,7,.55) 100%); }
+.sc-head { position: absolute; left: 0; right: 0; text-align: center; z-index: 8; padding: 0 6%; }
+.sc-kick { font: 600 28px/1 var(--sans); letter-spacing: .3em; text-transform: uppercase; color: var(--gold); text-shadow: 0 1px 8px rgba(0,0,0,.6); }
+.sc-title { margin-top: 14px; font: 600 84px/1.02 var(--serif); text-shadow: 0 4px 26px rgba(0,0,0,.6); }
+.sc-title em { font-style: italic; font-weight: 500; color: var(--gold); }
+.card { position: absolute; overflow: hidden; border-radius: 22px; z-index: 5; box-shadow: 0 30px 70px rgba(0,0,0,.55), 0 0 0 3px rgba(226,191,116,.85); background: #000; }
+.card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.card .after { position: absolute; inset: 0; clip-path: inset(0 0 0 50%); }
+.handle { position: absolute; top: 0; bottom: 0; width: 6px; margin-left: -3px; background: #fff; z-index: 3; box-shadow: 0 0 18px rgba(0,0,0,.5); }
+.handle i { position: absolute; top: 50%; left: 50%; width: 92px; height: 92px; margin: -46px 0 0 -46px; border-radius: 50%; background: #fff; box-shadow: 0 6px 24px rgba(0,0,0,.45); }
+.handle i::before, .handle i::after { content: ""; position: absolute; top: 50%; width: 0; height: 0; margin-top: -13px; border: 13px solid transparent; }
+.handle i::before { left: 14px; border-right-color: var(--red); border-left-width: 0; }
+.handle i::after { right: 14px; border-left-color: var(--red); border-right-width: 0; }
+.pill { position: absolute; top: 22px; z-index: 4; padding: 10px 24px; border-radius: 999px; font: 600 28px/1 var(--sans); letter-spacing: .1em; text-transform: uppercase; background: rgba(21,17,14,.75); color: #fff; }
+.pill.l { left: 22px; } .pill.r { right: 22px; background: var(--red); }
+.cap { position: absolute; left: 0; right: 0; text-align: center; z-index: 8; opacity: 0; }
+.cap__name { display: inline-block; font: italic 500 84px/1 var(--serif); padding: 4px 34px 10px; border-bottom: 2px solid rgba(226,191,116,.8); text-shadow: 0 3px 22px rgba(0,0,0,.6); }
+.cap__sub { margin-top: 16px; font: 600 28px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
+.track { position: absolute; inset: 0; display: flex; }
+.track img { position: static; flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; }
+.arrow { position: absolute; top: 50%; width: 84px; height: 84px; margin-top: -42px; border-radius: 50%; background: rgba(255,255,255,.92); z-index: 4; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+.arrow::before { content: ""; position: absolute; top: 50%; left: 50%; margin: -13px 0 0 -8px; border: 13px solid transparent; }
+.arrow.l { left: 20px; } .arrow.l::before { border-right-color: var(--red); border-left-width: 0; margin-left: -12px; }
+.arrow.r { right: 20px; } .arrow.r::before { border-left-color: var(--red); border-right-width: 0; margin-left: -4px; }
+.dots { position: absolute; left: 0; right: 0; display: flex; gap: 16px; justify-content: center; z-index: 8; }
+.dots b { width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,.4); }
+.dots b.on { background: var(--gold); }
+.end { position: absolute; left: 0; right: 0; text-align: center; z-index: 9; padding: 0 6%; }
+.end__logo { position: relative; margin: 0 auto; }
+.end__logo img { position: absolute; max-width: none; }
+.end__line { margin-top: 38px; font: 600 70px/1.05 var(--serif); text-shadow: 0 3px 22px rgba(0,0,0,.6); }
+.end__line em { font-style: italic; color: var(--gold); font-weight: 500; }
+.end__url { display: inline-block; margin-top: 30px; padding: 20px 44px; border-radius: 14px; background: var(--red); font: 700 36px/1 var(--sans); letter-spacing: .02em; box-shadow: 0 8px 28px rgba(0,0,0,.4); }
+.end__sm { margin-top: 24px; font: 600 26px/1.3 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
