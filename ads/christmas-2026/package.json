@@ -1,0 +1,14 @@
+{
+  "name": "tweller-christmas-ads-2026",
+  "private": true,
+  "type": "module",
+  "description": "Christmas 2026 Meta ads: Scene Tour reel (HyperFrames) and Pick Your Scene carousel",
+  "scripts": {
+    "build": "node render.mjs",
+    "stills": "node render.mjs --stills"
+  },
+  "dependencies": {
+    "hyperframes": "0.9.41",
+    "playwright": "^1.50.0"
+  }
+}

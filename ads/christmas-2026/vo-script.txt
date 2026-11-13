@@ -1,0 +1,8 @@
+# start (s) | line — spoken by ffmpeg's built-in flite voice (slt). Edit and re-run: node render.mjs --vo
+0.15|Imagine your family's Christmas photo, right here.
+3.70|Four beautiful Christmas scenes.
+5.85|Your family, in the scene you choose.
+8.05|Pick your scene, or your own decor.
+9.95|In studio, or at your home.
+11.80|Christmas minis, from just five fifty.
+13.85|Tap Book Now.
