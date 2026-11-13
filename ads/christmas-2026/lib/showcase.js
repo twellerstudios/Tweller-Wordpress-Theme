@@ -56,13 +56,13 @@
   const dotEls = SCENES.map((_, i) => el('b', i === 0 ? 'on' : '', dots));
 
   // ── end card ──
-  const end = el('div', 'end', root); end.style.top = (TALL ? H * 0.2 : H * 0.14) + 'px'; end.style.opacity = 0;
+  const end = el('div', 'sc-end', root); end.style.top = (TALL ? H * 0.2 : H * 0.14) + 'px'; end.style.opacity = 0;
   const lw = Math.round(W * (TALL ? 0.5 : 0.4)); const lh = Math.round(lw / window.TW_LOGO.aspect);
-  const logo = el('div', 'end__logo', end); logo.style.width = lw + 'px'; logo.style.height = lh + 'px';
+  const logo = el('div', 'sc-end__logo', end); logo.style.width = lw + 'px'; logo.style.height = lh + 'px';
   Object.keys(window.TW_LOGO.parts).forEach((k) => { const p = window.TW_LOGO.parts[k]; const i = el('img', '', logo); i.src = 'assets/logo-parts/' + k + '.png'; Object.assign(i.style, { left: p.x * lw + 'px', top: p.y * lh + 'px', width: p.w * lw + 'px', height: p.h * lh + 'px' }); });
-  el('div', 'end__line', end, 'Christmas Minis<br>from <em>TTD 550</em>');
-  el('div', 'end__url', end, 'twellerstudios.com/christmas-photos');
-  el('div', 'end__sm', end, '4 digital scenes · Studio or at home');
+  el('div', 'sc-end__line', end, 'Christmas Minis<br>from <em>TTD 550</em>');
+  el('div', 'sc-end__url', end, 'twellerstudios.com/christmas-photos');
+  el('div', 'sc-end__sm', end, '4 digital scenes · Studio or at home');
 
   // ── timeline ──
   const tl = gsap.timeline({ paused: true });
