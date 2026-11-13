@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Builds every Christmas ad deliverable into ./out (or OUT_DIR):
-//   xmas_scene_tour_9x16.mp4 / _4x5.mp4          silent (pick music in Ads Manager)
-//   xmas_scene_tour_9x16_vo.mp4 / _4x5_vo.mp4    with voiceover
+//   xmas_scene_tour_9x16.mp4 / _4x5.mp4          with the Jingle Bells music bed (music/make-music.py)
+//   xmas_scene_tour_9x16_silent.mp4 / _4x5_silent.mp4   no audio track content (pick music in Ads Manager)
+//   *_vo.mp4                                     only with --vo (voiceover from vo-script.txt)
 //   xmas_scene_tour_thumb.jpg                    1080x1920 hook frame
 //   xmas_carousel_01..06.jpg, xmas_pick_scene_4x5.jpg
 //
@@ -20,7 +21,7 @@ const OUT = resolve(process.env.OUT_DIR || join(HERE, 'out'));
 const TMP = join(OUT, '.work');
 mkdirSync(TMP, { recursive: true });
 const args = new Set(process.argv.slice(2));
-const all = !args.has('--stills') && !args.has('--vo');
+const all = !['--stills', '--vo', '--reels', '--music'].some((a) => args.has(a));
 const run = (cmd, a, opts = {}) => execFileSync(cmd, a, { stdio: 'inherit', cwd: HERE, ...opts });
 const ff = (a) => run('ffmpeg', ['-nostdin', '-v', 'error', '-y', ...a]);
 const hfBin = process.env.HYPERFRAMES_BIN || 'hyperframes';
@@ -50,7 +51,7 @@ function buildVoiceover() {
 }
 
 function renderReel(fmt) {
-  const silent = join(OUT, `xmas_scene_tour_${fmt}.mp4`);
+  const silent = join(OUT, `xmas_scene_tour_${fmt}_silent.mp4`);
   const raw = join(TMP, `reel_${fmt}.mp4`);
   run(hfBin, ['render', '-c', `reel-${fmt}.html`, '-q', 'high', '-f', '30', '-o', raw], { shell: process.platform === 'win32' });
   // Meta-friendly H.264: yuv420p, faststart, a silent AAC track so every placement accepts it.
@@ -60,8 +61,18 @@ function renderReel(fmt) {
   return silent;
 }
 
+// Music bed at -16 LUFS (Meta's recommended loudness for Reels).
+function addMusic(silent) {
+  const music = join(HERE, 'assets', 'music', 'jingle-bells-15s.wav');
+  if (!existsSync(music)) run('python3', [join(HERE, 'music', 'make-music.py')]);
+  const out = silent.replace(/_silent\.mp4$/, '.mp4');
+  ff(['-i', silent, '-i', music, '-map', '0:v', '-map', '1:a', '-c:v', 'copy',
+    '-af', 'afade=t=in:d=0.05,loudnorm=I=-16:TP=-1.5:LRA=9', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out]);
+  return out;
+}
+
 function addVo(silent, vo) {
-  const out = silent.replace(/\.mp4$/, '_vo.mp4');
+  const out = silent.replace(/_silent\.mp4$/, '_vo.mp4');
   ff(['-i', silent, '-i', vo, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out]);
   return out;
 }
@@ -91,14 +102,16 @@ async function stills() {
   await b.close();
 }
 
-if (all || args.has('--vo') || args.has('--reels')) {
+if (all || args.has('--reels')) {
+  for (const fmt of ['9x16', '4x5']) addMusic(renderReel(fmt));
+  ff(['-ss', '1.0', '-i', join(OUT, 'xmas_scene_tour_9x16_silent.mp4'), '-frames:v', '1', '-q:v', '2', join(OUT, 'xmas_scene_tour_thumb.jpg')]);
+}
+if (args.has('--music')) {
+  for (const fmt of ['9x16', '4x5']) { const s = join(OUT, `xmas_scene_tour_${fmt}_silent.mp4`); if (existsSync(s)) addMusic(s); }
+}
+if (args.has('--vo')) {
   const vo = buildVoiceover();
-  if (all || args.has('--reels')) {
-    for (const fmt of ['9x16', '4x5']) addVo(renderReel(fmt), vo);
-    ff(['-ss', '1.0', '-i', join(OUT, 'xmas_scene_tour_9x16.mp4'), '-frames:v', '1', '-q:v', '2', join(OUT, 'xmas_scene_tour_thumb.jpg')]);
-  } else {
-    for (const fmt of ['9x16', '4x5']) { const s = join(OUT, `xmas_scene_tour_${fmt}.mp4`); if (existsSync(s)) addVo(s, vo); }
-  }
+  for (const fmt of ['9x16', '4x5']) { const s = join(OUT, `xmas_scene_tour_${fmt}_silent.mp4`); if (existsSync(s)) addVo(s, vo); }
 }
 if (all || args.has('--stills')) await stills();
 console.log('Done →', OUT);

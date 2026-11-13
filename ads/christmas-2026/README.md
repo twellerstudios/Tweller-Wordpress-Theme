@@ -31,5 +31,6 @@ OUT_DIR="C:/Users/Tweller/Pictures/CHRISTMAS BACKGROUNDS/ads_final" node render.
 - `carousel.html`: the 6 cards and the 4:5 fallback (`?card=1..6`, `&fmt=4x5`).
 - Client photos later: set the composition variable `family_<scene-slug>` to a transparent PNG cut-out, and it
   appears in front of that scene. For the carousel, add `&photo=<png>` to a scene card.
-- Voiceover: ffmpeg's built-in `flite` voice (`slt`), pitched slightly down, EQ'd and compressed. For music, choose a
+- Music: `music/make-music.py` synthesises an original arrangement of the Jingle Bells chorus (public domain, 1857), so it is free to use in paid ads. `*_silent.mp4` have no music, for picking a track from Meta's Sound Collection in Ads Manager instead.
+- Voiceover (optional, `--vo`): ffmpeg's built-in `flite` voice. For music, choose a
   track from Meta's Sound Collection in Ads Manager (no copyrighted songs).
