@@ -49,3 +49,5 @@
 .tw-xmas.tw-theme-scarlet .tf2-package-card:nth-child(3) .tf2-top-booked { background: #1d5a3f; color: #fff; }
 .tw-theme-scarlet .tw-trust__years span { color: var(--red); font-family: var(--serif); }
 .tw-theme-scarlet .tw-auth li::before { background-color: #fff; }
+
+.tw-xmas.tw-theme-scarlet :is(.tw-slide__pick, .tw-ba__pick) { background: var(--red); color: #fff; letter-spacing: .06em; text-transform: uppercase; font-size: 13px; }

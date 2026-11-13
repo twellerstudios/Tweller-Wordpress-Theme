@@ -101,8 +101,8 @@
 .tw-theme-evergreen :is(.tw-slide__img, .tw-compare, .tw-real__photos figure, .tw-gallery__item) { box-shadow: 0 0 0 1px rgba(226, 194, 126, .55), 0 22px 40px -22px rgba(0, 0, 0, .8); }
 .tw-xmas.tw-theme-evergreen .tw-slide__img { background: var(--cream); }
 .tw-theme-evergreen .tw-slide__no { color: var(--gold); }
-.tw-xmas.tw-theme-evergreen .tw-slide__pick { border-color: var(--gold); color: var(--gold); }
-.tw-xmas.tw-theme-evergreen .tw-slide__pick:hover { background: var(--red); border-color: var(--red); color: #fff; }
+.tw-xmas.tw-theme-evergreen :is(.tw-slide__pick, .tw-ba__pick) { background: var(--red); color: #fff; box-shadow: inset 0 0 0 2px #e6c47c, 0 12px 26px -14px rgba(0, 0, 0, .7); }
+.tw-xmas.tw-theme-evergreen :is(.tw-slide__pick, .tw-ba__pick):hover { background: var(--red-hi); color: #fff; }
 .tw-xmas.tw-theme-evergreen .tw-thumb { color: var(--muted); }
 .tw-xmas.tw-theme-evergreen .tw-thumb.is-active { color: var(--ink); }
 .tw-theme-evergreen .tw-thumb.is-active img { border-color: var(--gold); }

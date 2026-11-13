@@ -105,7 +105,6 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
                             <h3 class="tw-ba__name"><?php echo esc_html( $pair['label'] ); ?></h3>
                             <p class="tw-ba__sub">Digital backdrop &middot; photographed on white</p>
                         </div>
-                        <?php if ( $pair['pick'] ) : ?><button type="button" class="tw-slide__pick tw-ba__pick" data-pick="<?php echo esc_attr( $pair['pick'] ); ?>">Choose this backdrop</button><?php endif; ?>
                     </header>
                     <div class="tw-compare" data-compare style="--pos: 50%; --ar: <?php echo esc_attr( round( $pair['w'] / $pair['h'], 4 ) ); ?>; aspect-ratio: <?php echo (int) $pair['w']; ?> / <?php echo (int) $pair['h']; ?>;">
                         <img class="tw-compare__after" src="<?php echo esc_url( $pair['after'] ); ?>" width="<?php echo (int) $pair['w']; ?>" height="<?php echo (int) $pair['h']; ?>" alt="<?php echo esc_attr( 'After: finished photo with the ' . $pair['label'] . ' digital backdrop' ); ?>" loading="lazy" decoding="async">
@@ -115,6 +114,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
                         <span class="tw-compare__line" aria-hidden="true"><span class="tw-compare__knob"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M9 6l-5 6 5 6M15 6l5 6-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>
                         <input class="tw-compare__range" type="range" min="0" max="100" value="50" aria-label="<?php echo esc_attr( 'Drag to compare original and after: ' . $pair['label'] ); ?>">
                     </div>
+                    <?php if ( $pair['pick'] ) : ?><div class="tw-ba__foot"><button type="button" class="tw-slide__pick tw-ba__pick" data-pick="<?php echo esc_attr( $pair['pick'] ); ?>">Choose this backdrop</button></div><?php endif; ?>
                 </div></div>
             </article>
             <?php endforeach; ?>

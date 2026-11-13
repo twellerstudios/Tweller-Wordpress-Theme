@@ -521,3 +521,21 @@ body.tw-xmas-page { overflow-x: hidden; }
 .tw-xmas .tw-ba__morebtn { color: #fff; border-color: rgba(255, 255, 255, .45); }
 .tw-xmas .tw-ba__pick { grid-row: auto; }
 @media (min-width: 700px) { .tw-xmas .tw-ba__pick { grid-column: 3; grid-row: 1; width: auto; align-self: center; } }
+
+/* "Choose this backdrop": solid, in the style's own button colour, centered below */
+.tw-xmas .tw-slide__pick,
+.tw-xmas .tw-ba__pick {
+    grid-column: 1 / -1; grid-row: auto; justify-self: center; align-self: center; width: auto;
+    min-height: 50px; margin-top: 16px; padding: 0 30px; border: 0; border-radius: 999px;
+    background: var(--red); color: #fff; font: 700 15px/1.2 var(--sans); letter-spacing: .02em;
+    box-shadow: 0 12px 26px -14px rgba(0, 0, 0, .7); cursor: pointer;
+    transition: background-color .25s ease, transform .25s cubic-bezier(.22, .61, .36, 1);
+}
+.tw-xmas .tw-slide__pick:hover, .tw-xmas .tw-slide__pick:focus-visible,
+.tw-xmas .tw-ba__pick:hover, .tw-xmas .tw-ba__pick:focus-visible { background: var(--red-hi); color: #fff; border: 0; transform: translateY(-1px); }
+.tw-xmas .tw-slide__pick:active, .tw-xmas .tw-ba__pick:active { transform: scale(.98); }
+.tw-slide__cap { grid-template-columns: 1fr; }
+.tw-ba__foot { display: flex; justify-content: center; margin-top: 4px; }
+.tw-ba__head { grid-template-columns: auto 1fr; }
+@media (min-width: 700px) { .tw-ba__head { grid-template-columns: auto 1fr; } .tw-xmas .tw-ba__pick { grid-column: auto; grid-row: auto; } }
+@media (max-width: 599px) { .tw-xmas .tw-slide__pick { width: 100%; } .tw-xmas .tw-ba__foot .tw-ba__pick { width: 100%; } }
