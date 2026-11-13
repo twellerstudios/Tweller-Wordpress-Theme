@@ -263,12 +263,22 @@ class TwellerFlow2_Landing {
         add_filter( 'astra_the_title_enabled', '__return_false' );
         add_filter( 'body_class', function ( $c ) { $c[] = 'tw-xmas-page'; $c[] = 'ast-page-builder-template'; return $c; } );
         add_action( 'wp_head', array( __CLASS__, 'preloads' ), 2 );
+        // Astra prints its blog "archive title" banner when WordPress thinks this is the blog: not on this page.
+        foreach ( array( 'astra_primary_content_top', 'astra_content_before', 'astra_content_top' ) as $h ) {
+            remove_action( $h, 'astra_archive_page_info' );
+            remove_action( $h, 'astra_archive_banner' );
+        }
+        add_filter( 'astra_the_title_enabled', '__return_false' );
+        add_filter( 'astra_banner_enabled', '__return_false' );
+        add_filter( 'astra_archive_title_enabled', '__return_false' );
         ob_start( array( __CLASS__, 'filter_html' ) );
         return TWELLER_FLOW_2_PLUGIN_DIR . 'templates/landing-christmas.php';
     }
 
     /** Hero image + display font preloads (LCP). */
     public static function preloads() {
+        // Belt and braces: hide any theme title banner above the page.
+        echo '<style id="tw-no-banner">.tw-xmas-page .ast-archive-entry-banner,.tw-xmas-page .ast-single-entry-banner,.tw-xmas-page .entry-header,.tw-xmas-page .ast-archive-description,.tw-xmas-page .page-header{display:none!important}</style>' . "\n";
         $s = self::settings();
         $first = $s['scenes'][0] ?? null;
         if ( $first && empty( $first['image_id'] ) ) {
