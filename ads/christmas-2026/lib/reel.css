@@ -101,3 +101,8 @@ html, body { margin: 0; background: #15110e; }
 .end__kicker.ribbon { padding: calc(30px * var(--u)) calc(60px * var(--u)) calc(34px * var(--u)); margin: calc(30px * var(--u)) 0 calc(14px * var(--u)) !important; }
 .end__kicker .foil { font-size: calc(132px * var(--u)); line-height: 1; }
 .end__eb { background: linear-gradient(180deg, #f6dfa0, #d9a94c) !important; color: #3a0a0e !important; font-weight: 700 !important; box-shadow: 0 8px 20px -8px rgba(0,0,0,.6); }
+
+/* 9:16: wide view of each scene over a blurred fill of itself */
+.bgfill { position: absolute; inset: -6%; width: 112%; height: 112%; object-fit: cover; filter: blur(34px) brightness(.55) saturate(1.15); }
+.cam img.wide { -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 10%, #000 90%, transparent 100%); }

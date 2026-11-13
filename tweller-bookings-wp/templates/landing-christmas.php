@@ -101,11 +101,11 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
     <div class="tw-wrap">
         <p class="tw-kicker">01 · Digital backdrops</p>
         <h2 id="tw-scenes-title" class="tw-h2">Pick your digital scene</h2>
-        <p class="tw-lede">These are digital backdrops, not physical sets: we photograph your family on a white backdrop, then edit you into the scene you choose.</p>
+        <p class="tw-lede">These are digital backdrops, not physical sets: we photograph your family on a white backdrop, then place the backdrop you choose in.</p>
         <ol class="tw-digital" aria-label="How digital backdrops work">
             <li><span class="tw-digital__n">1</span><b>We photograph you on white</b><small>In studio, or at your home with our portable backdrop</small></li>
             <li><span class="tw-digital__n">2</span><b>You choose your scene</b><small>Any of the 4 below (book early for a second one free)</small></li>
-            <li><span class="tw-digital__n">3</span><b>We edit you in</b><small>Light and colour matched so it looks natural</small></li>
+            <li><span class="tw-digital__n">3</span><b>We place the backdrop in</b><small>Light and colour matched so it looks natural</small></li>
         </ol>
     </div>
     <ul class="tw-scenes__row" role="list">
@@ -156,7 +156,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
         <ol class="tw-steps">
             <li><span class="tw-steps__n">1</span><div><h3>Choose your package, date &amp; scene</h3><p>Pick a time and your backdrop online, and secure it with a deposit.</p></div></li>
             <li><span class="tw-steps__n">2</span><div><h3>Shoot in studio or at your home</h3><p>30 minutes to 2 hours, relaxed and guided, little ones included.</p></div></li>
-            <li><span class="tw-steps__n">3</span><div><h3>We edit you into your scene</h3><p>Your digital Christmas scene, finished and delivered to your online gallery, ready for cards, prints and the family chat. Shoot early to have them before Christmas.</p></div></li>
+            <li><span class="tw-steps__n">3</span><div><h3>We place your backdrop in</h3><p>Your digital Christmas scene, finished and delivered to your online gallery, ready for cards, prints and the family chat. Shoot early to have them before Christmas.</p></div></li>
         </ol>
     </div>
 </section>
@@ -282,7 +282,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
     </div>
     <div class="tw-viewer__bar">
         <button type="button" class="tw-viewer__nav" data-viewer-prev aria-label="Previous scene">←</button>
-        <p class="tw-viewer__name"><span data-viewer-name></span><small>Digital backdrop: we edit your family into this scene</small></p>
+        <p class="tw-viewer__name"><span data-viewer-name></span><small>Digital backdrop: we photograph you on white, then place this backdrop in</small></p>
         <button type="button" class="tw-viewer__nav" data-viewer-next aria-label="Next scene">→</button>
     </div>
     <div class="tw-viewer__actions">

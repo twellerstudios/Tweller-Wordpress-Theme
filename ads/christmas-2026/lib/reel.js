@@ -49,15 +49,29 @@
   // fireplace / window) sits at the centre of the crop.
   function sceneLayer(sc, cls) {
     const wrap = el('div', 'layer scene ' + (cls || ''));
+    const tall = W / H < 0.7;                  // 9:16
+    if (tall) {
+      // A soft, blurred extension of the same scene fills above and below,
+      // so the sharp image can show most of the backdrop, not just the fireplace.
+      const fill = el('img', 'bgfill', wrap);
+      fill.src = 'assets/scenes/' + sc.slug + '.jpg';
+      fill.alt = '';
+    }
     const cam = el('div', 'cam', wrap);
-    const img = el('img', '', cam);
+    const img = el('img', tall ? 'wide' : '', cam);
     img.src = 'assets/scenes/' + sc.slug + '.jpg';
     img.alt = '';
-    const ih = H * 1.0, iw = ih * 1.5;          // 3:2 source
-    let w = iw, h = ih;
-    if (w < W) { w = W; h = W / 1.5; }
-    const left = Math.min(0, Math.max(W - w, W / 2 - sc.fx * w));
-    const top = Math.min(0, Math.max(H - h, H / 2 - sc.fy * h));
+    let w, h, left, top;
+    if (tall) {
+      w = W * 1.5; h = w / 1.5;                // two-thirds of the scene's width
+      left = Math.min(0, Math.max(W - w, W / 2 - sc.fx * w));
+      top = H * 0.5 - h / 2;
+    } else {
+      h = H; w = h * 1.5;                       // 3:2 source, cover
+      if (w < W) { w = W; h = W / 1.5; }
+      left = Math.min(0, Math.max(W - w, W / 2 - sc.fx * w));
+      top = Math.min(0, Math.max(H - h, H / 2 - sc.fy * h));
+    }
     Object.assign(img.style, { width: px(w), height: px(h), left: px(left), top: px(top) });
     if (sc.glow) {
       const g = el('div', 'glow', cam);
@@ -110,7 +124,7 @@
 
   // Caption 1 + mosaic of all four scenes
   const mosaic = el('div', 'layer mosaic');
-  const cap1 = el('div', 'block caption', mosaic, '<div class="ribbon">' + HOLLY + '<span class="foil">4 scenes to choose from</span></div><br><p class="caption__note">Digital backdrops: we photograph you on white, then edit you into your scene</p>');
+  const cap1 = el('div', 'block caption', mosaic, '<div class="ribbon">' + HOLLY + '<span class="foil">4 scenes to choose from</span></div><br><p class="caption__note">Digital backdrops: we photograph you on white, then place the backdrop in</p>');
   cap1.style.top = px(SAFE_T + 6);
   const grid = el('div', 'grid', mosaic);
   const gW = W * 0.86, tileW = (gW - 18) / 2, tileH = tileW / 1.5;
