@@ -34,6 +34,7 @@ class TwellerFlow2_Landing {
         add_filter( 'tweller_flow_2_session_landings', array( __CLASS__, 'landings' ) );
         add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ), 20 );
         add_action( 'admin_init', array( __CLASS__, 'admin_save' ) );
+        add_action( 'admin_post_tweller_flow_2_apply_theme', array( __CLASS__, 'admin_apply_theme' ) );
         add_action( 'admin_enqueue_scripts', array( __CLASS__, 'admin_assets' ) );
     }
 
@@ -51,7 +52,7 @@ class TwellerFlow2_Landing {
     public static function faq_defaults() {
         return array(
             array( 'q' => 'Studio or my home?', 'a' => 'Either. Every package works in our studio or at your home or another location. For digital scenes we bring a portable white backdrop to you. Home and location shoots beyond Couva in the south, Curepe in the north, Macoya in the east or San Juan in the west have a TT$60 transport fee.' ),
-            array( 'q' => 'Are the 4 scenes real sets?', 'a' => 'No, they are digital backdrops. We photograph your family on a white backdrop, in studio or at your home, then place the backdrop you choose in, matching the light and colour so it looks natural. Prefer a real setting? Choose your own decor at home or a location instead.' ),
+            array( 'q' => 'Are the 4 scenes real sets?', 'a' => 'No, they are digital backdrops. We photograph your family on a white backdrop, in studio or at your home, then place the backdrop you choose in, matching the light and colour so it looks natural. Only the background changes: you are not altered, so your photos stay authentic. Prefer a real setting? Choose your own decor at home or a location instead.' ),
             array( 'q' => 'Can we use our own tree and decor?', 'a' => 'Yes. We shoot at your home with your own tree and Christmas setup, styled and lit so it looks its best.' ),
             array( 'q' => 'What do we wear on a white backdrop?', 'a' => 'Rich, solid colours look best in the scenes: deep red, evergreen, cream, gold, navy or burgundy. Avoid all-white outfits and large logos. Coordinate, don\'t match. Send us your options on WhatsApp and we\'ll help you choose.' ),
             array( 'q' => 'Can we bring the dog?', 'a' => 'Of course. Pets are family. Let us know in your booking notes so we plan the time for them.' ),
@@ -80,6 +81,7 @@ class TwellerFlow2_Landing {
             'review_url'       => '',
             'faq'              => self::faq_defaults(),
             'og_image_id'      => 0,
+            'theme'            => 'classic',
         );
     }
 
@@ -191,21 +193,34 @@ class TwellerFlow2_Landing {
         echo '<link rel="preload" as="font" type="font/woff2" href="' . esc_url( TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/fonts/cormorant-garamond-latin-600-normal.woff2' ) . '" crossorigin>' . "\n";
     }
 
-    /** Before & after pairs shown on the page (web only). */
+    /**
+     * Before & after pairs shown under the hero (web page only). Sets are
+     * public/landing/christmas/before-after/ba{N}-before.webp + ba{N}-after.webp;
+     * a set appears as soon as both files exist.
+     */
     public static function before_after() {
+        $dir  = TWELLER_FLOW_2_PLUGIN_DIR . 'public/landing/christmas/before-after/';
         $base = TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/christmas/before-after/';
         $v    = '?v=' . self::ASSET_VER;
-        $pairs = array(
-            array( 'n' => 1, 'label' => 'Snowy Window',     'w' => 1183, 'h' => 845 ),
-            array( 'n' => 2, 'label' => 'Champagne Gold',   'w' => 1200, 'h' => 1199 ),
-            array( 'n' => 3, 'label' => 'Fireside Library', 'w' => 1178, 'h' => 884 ),
-        );
+        $sets = apply_filters( 'tweller_flow_2_christmas_before_after_sets', array(
+            2 => 'Champagne Gold',
+            3 => 'Fireside Library',
+            5 => '',
+            6 => '',
+        ) );
         $out = array();
-        foreach ( $pairs as $p ) {
-            if ( ! file_exists( TWELLER_FLOW_2_PLUGIN_DIR . 'public/landing/christmas/before-after/ba' . $p['n'] . '-after.webp' ) ) continue;
-            $p['before'] = $base . 'ba' . $p['n'] . '-before.webp' . $v;
-            $p['after']  = $base . 'ba' . $p['n'] . '-after.webp' . $v;
-            $out[] = $p;
+        foreach ( $sets as $n => $label ) {
+            $after = $dir . 'ba' . $n . '-after.webp';
+            if ( ! file_exists( $after ) || ! file_exists( $dir . 'ba' . $n . '-before.webp' ) ) continue;
+            $size = @getimagesize( $after );
+            $out[] = array(
+                'n'      => $n,
+                'label'  => $label !== '' ? $label : 'Example ' . ( count( $out ) + 1 ),
+                'w'      => $size ? $size[0] : 1200,
+                'h'      => $size ? $size[1] : 900,
+                'before' => $base . 'ba' . $n . '-before.webp' . $v,
+                'after'  => $base . 'ba' . $n . '-after.webp' . $v,
+            );
         }
         return apply_filters( 'tweller_flow_2_christmas_before_after', $out );
     }
@@ -219,6 +234,9 @@ class TwellerFlow2_Landing {
         wp_enqueue_script( 'tweller-flow-2-booking' );
         wp_enqueue_style( 'tweller-landing', $base . 'css/landing.css', array( 'tweller-flow-2-booking' ), TWELLER_FLOW_2_VERSION );
         wp_enqueue_script( 'tweller-landing', $base . 'js/landing.js', array(), TWELLER_FLOW_2_VERSION, true );
+        if ( self::current_theme() !== 'classic' ) {
+            wp_enqueue_style( 'tweller-landing-modern', $base . 'css/landing-modern.css', array( 'tweller-landing' ), TWELLER_FLOW_2_VERSION );
+        }
 
         $s = self::settings();
         wp_localize_script( 'tweller-landing', 'twellerLanding', array(
@@ -270,7 +288,7 @@ class TwellerFlow2_Landing {
         $choices[] = array( 'key' => 'on-location', 'name' => 'On location', 'thumb' => '', 'kind' => 'location', 'note' => 'A place you choose' );
         $all[ $s['session_key'] ] = array(
             'title'       => 'Choose your backdrop',
-            'intro'       => 'The 4 scenes are digital backdrops: we photograph you on white (in studio or at your home), then place the backdrop you pick in.',
+            'intro'       => 'The 4 scenes are digital backdrops: we photograph you on white (in studio or at your home), then place the backdrop you pick in. Only the background changes; you are not altered.',
             'choices'     => $choices,
             'extra'       => self::early_bird_active(),
             'extra_label' => 'Early bird: pick your free extra scene',
@@ -441,6 +459,38 @@ class TwellerFlow2_Landing {
         include TWELLER_FLOW_2_PLUGIN_DIR . 'admin/views/landing.php';
     }
 
+    // ── Page styles ──────────────────────────────────
+
+    public static function themes() {
+        return array(
+            'classic' => array( 'name' => 'Classic', 'desc' => 'Warm Christmas: serif headings, cream, evergreen and red (as it is now).' ),
+            'modern'  => array( 'name' => 'Modern', 'desc' => 'Apple-clean: system type, white space, glass and big rounded cards.' ),
+            'festive' => array( 'name' => 'Modern Festive', 'desc' => 'Modern, with Stripe-style navy sections and soft red, gold and green gradients.' ),
+        );
+    }
+
+    /** The style in use; a logged-in admin can preview another with ?tw_theme=modern. */
+    public static function current_theme() {
+        $t = self::settings()['theme'] ?? 'classic';
+        if ( isset( $_GET['tw_theme'] ) && current_user_can( 'manage_options' ) ) {
+            $t = sanitize_key( wp_unslash( $_GET['tw_theme'] ) );
+        }
+        return isset( self::themes()[ $t ] ) ? $t : 'classic';
+    }
+
+    public static function admin_apply_theme() {
+        if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Not allowed' );
+        check_admin_referer( 'tweller_flow_2_apply_theme' );
+        $t = sanitize_key( $_POST['theme'] ?? '' );
+        if ( isset( self::themes()[ $t ] ) ) {
+            $s = self::settings();
+            $s['theme'] = $t;
+            update_option( self::OPT, $s );
+        }
+        wp_safe_redirect( admin_url( 'admin.php?page=tweller-flow-2-christmas&theme_applied=' . rawurlencode( $t ) ) );
+        exit;
+    }
+
     public static function admin_save() {
         if ( empty( $_POST['tweller_flow_2_save_landing'] ) || ! current_user_can( 'manage_options' ) ) return;
         check_admin_referer( 'tweller_flow_2_save_landing' );
@@ -487,6 +537,7 @@ class TwellerFlow2_Landing {
             'review_url'      => esc_url_raw( $p['review_url'] ?? '' ),
             'faq'             => $faq ?: self::faq_defaults(),
             'og_image_id'     => absint( $p['og_image_id'] ?? 0 ),
+            'theme'           => $old['theme'],
         ) );
 
         $tr = TwellerFlow2_Booking_API::transport();

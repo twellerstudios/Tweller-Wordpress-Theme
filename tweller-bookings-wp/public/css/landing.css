@@ -467,3 +467,9 @@ body.tw-xmas-page { overflow-x: hidden; }
 .tw-compare:focus-within { outline: none; }
 .tw-compare:has(.tw-compare__range:focus-visible) { outline: 3px solid var(--gold); outline-offset: 3px; }
 @media (min-width: 900px) { .tw-slider { max-width: 1040px; margin: 0 auto; } }
+
+/* Authenticity points (Original & after) */
+.tw-auth { list-style: none; margin: -8px 0 22px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.tw-auth li { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; color: #fff; }
+.tw-auth li::before { content: ""; width: 20px; height: 20px; border-radius: 50%; flex: none;
+    background: var(--gold) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2315110e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center / 12px no-repeat; }

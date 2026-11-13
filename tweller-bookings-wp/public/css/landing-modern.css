@@ -1,0 +1,186 @@
+/* Christmas page — "Modern" and "Modern Festive" styles.
+   Apple-like clarity (system type, big radii, glass, segmented controls)
+   with Stripe's language (navy ink, crisp 1px borders, layered shadows,
+   gradient accents). Loaded only when one of these styles is selected in
+   Tweller Bookings → Christmas Page. Classic = landing.css alone. */
+
+@font-face { font-family: "InterTW"; src: url("../landing/fonts/inter-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "InterTW"; src: url("../landing/fonts/inter-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "InterTW"; src: url("../landing/fonts/inter-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "InterTW"; src: url("../landing/fonts/inter-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+.tw-xmas.tw-theme-modern,
+.tw-xmas.tw-theme-festive {
+    --ink: #0a2540;
+    --ink-2: #1d3557;
+    --paper: #ffffff;
+    --cream: #f6f9fc;
+    --line: #e3e8ee;
+    --muted: #425466;
+    --red: #e0244d;
+    --red-hi: #c81d43;
+    --green: #0a2540;
+    --gold: #ffc35a;
+    --gold-ink: #e0244d;
+    --accent-grad: linear-gradient(100deg, #e0244d 0%, #ff6a3d 55%, #ffb63d 100%);
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "InterTW", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --serif: -apple-system, BlinkMacSystemFont, "SF Pro Display", "InterTW", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --r: 20px;
+    --shadow-sm: 0 2px 5px -1px rgba(50, 50, 93, .18), 0 1px 3px -1px rgba(0, 0, 0, .14);
+    --shadow-lg: 0 30px 60px -12px rgba(50, 50, 93, .25), 0 18px 36px -18px rgba(0, 0, 0, .3);
+    font-family: var(--sans);
+    color: var(--muted);
+    letter-spacing: -.005em;
+}
+
+/* ── Type ─────────────────────────────── */
+:is(.tw-theme-modern, .tw-theme-festive) .tw-kicker {
+    font: 600 15px/1.3 var(--sans); letter-spacing: 0; text-transform: none; color: var(--red);
+}
+:is(.tw-theme-modern, .tw-theme-festive) .tw-h2 {
+    font: 700 clamp(32px, 7.4vw, 56px)/1.04 var(--serif); letter-spacing: -.035em; color: var(--ink);
+}
+:is(.tw-theme-modern, .tw-theme-festive) .tw-lede { font-size: 18px; line-height: 1.55; color: var(--muted); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-hero__title {
+    font: 700 clamp(40px, 11vw, 88px)/.98 var(--serif); letter-spacing: -.045em;
+}
+:is(.tw-theme-modern, .tw-theme-festive) .tw-hero .tw-eyebrow { font: 600 14px/1.3 var(--sans); letter-spacing: .01em; text-transform: none; color: #ffd28a; }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-hero__sub { font-size: 17px; }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-hero__sub i { color: rgba(255, 255, 255, .55); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-hero__scene { border-radius: 999px; background: rgba(255, 255, 255, .16); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border: 1px solid rgba(255, 255, 255, .25); }
+
+/* ── Buttons: pills, gradient primary, glass secondary ── */
+:is(.tw-theme-modern, .tw-theme-festive) .tw-btn { font: 600 16px/1 var(--sans); letter-spacing: -.01em; min-height: 50px; }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-btn--primary { background: var(--red); box-shadow: 0 8px 20px -8px rgba(224, 36, 77, .7); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-btn--primary::after { content: "→"; margin-left: 2px; transition: transform .2s ease; }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-btn--primary:hover { background: var(--red-hi); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-btn--primary:hover::after { transform: translateX(3px); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-btn--ghost { background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .3);
+    -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); }
+
+/* ── Cards: crisp border, layered shadow ── */
+:is(.tw-theme-modern, .tw-theme-festive) :is(.tw-option, .tw-digital li, .tw-review) {
+    background: #fff; border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow-sm);
+}
+:is(.tw-theme-modern, .tw-theme-festive) .tw-option__title,
+:is(.tw-theme-modern, .tw-theme-festive) .tw-digital b,
+:is(.tw-theme-modern, .tw-theme-festive) .tw-steps h3 { font: 600 19px/1.25 var(--sans); letter-spacing: -.015em; color: var(--ink); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-digital__n,
+:is(.tw-theme-modern, .tw-theme-festive) .tw-steps__n {
+    border-radius: 12px; background: var(--accent-grad); color: #fff; font: 700 17px/1 var(--sans); box-shadow: 0 6px 14px -6px rgba(224, 36, 77, .6);
+}
+
+/* ── Sections ── */
+:is(.tw-theme-modern, .tw-theme-festive) .tw-scenes,
+:is(.tw-theme-modern, .tw-theme-festive) .tw-how,
+:is(.tw-theme-modern, .tw-theme-festive) .tw-faq { background: #fff; }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-real,
+:is(.tw-theme-modern, .tw-theme-festive) .tw-trust { background: var(--cream); }
+
+/* Slider */
+:is(.tw-theme-modern, .tw-theme-festive) .tw-slide__img { border-radius: 24px; box-shadow: var(--shadow-lg); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-slide__name { font: 700 26px/1.15 var(--sans); letter-spacing: -.025em; color: var(--ink); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-slide__no { color: var(--red); letter-spacing: .08em; }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tw-slide__pick { border: 0; background: var(--ink); color: #fff; }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tw-slide__pick:hover { background: var(--red); color: #fff; }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tw-slider__arrow { background: rgba(255, 255, 255, .72); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-thumb img { border-radius: 12px; }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-thumb.is-active img { border-color: var(--ink); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-scene__badge { background: rgba(255, 255, 255, .78); color: var(--ink); letter-spacing: .04em; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+
+/* Original & after: light (Modern), Apple segmented control for the tabs */
+.tw-theme-modern .tw-ba { background: #f5f5f7; color: var(--muted); }
+.tw-theme-modern .tw-ba .tw-h2 { color: var(--ink); }
+.tw-theme-modern .tw-ba .tw-kicker { color: var(--red); }
+.tw-theme-modern .tw-ba .tw-lede { color: var(--muted); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-ba__tabs { display: inline-flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(118, 118, 128, .14); }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tw-ba__tab { min-height: 38px; border: 0; border-radius: 9px; padding: 0 16px; font: 600 14px/1 var(--sans); color: var(--ink); background: transparent; }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tw-ba__tab:hover { background: rgba(255, 255, 255, .5); color: var(--ink); border: 0; }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tw-ba__tab.is-active { background: #fff; color: var(--ink); box-shadow: 0 3px 8px rgba(0, 0, 0, .12), 0 3px 1px rgba(0, 0, 0, .04); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-compare { border-radius: 24px; box-shadow: var(--shadow-lg); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-compare__tag { font: 600 12px/1 var(--sans); letter-spacing: .02em; text-transform: none; padding: 8px 12px;
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-compare__tag--before { background: rgba(255, 255, 255, .78); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-compare__tag--after { background: rgba(10, 37, 64, .72); }
+
+/* Packages: light (Modern) with a white floating card */
+.tw-theme-modern .tw-packages { background: linear-gradient(180deg, #fff 0%, var(--cream) 100%); color: var(--muted); }
+.tw-theme-modern .tw-packages .tw-h2 { color: var(--ink); }
+.tw-theme-modern .tw-packages .tw-kicker { color: var(--red); }
+.tw-theme-modern .tw-packages .tw-lede,
+.tw-theme-modern .tw-deposit { color: var(--muted); }
+.tw-theme-modern .tw-early { background: #fff; border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+.tw-theme-modern .tw-early__offer { color: var(--ink); }
+.tw-theme-modern .tw-early__offer strong { color: var(--red); }
+.tw-theme-modern .tw-early__clock { color: var(--muted); }
+.tw-theme-modern .tw-early__clock span { color: var(--ink); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-early__tag { background: var(--accent-grad); color: #fff; letter-spacing: .02em; text-transform: none; font-weight: 600; }
+
+/* Booking form inside the page */
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tweller-booking { border-radius: 28px; border: 1px solid var(--line); box-shadow: var(--shadow-lg); background: #fff; }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tweller-booking h3 { font: 700 26px/1.15 var(--sans); letter-spacing: -.03em; color: var(--ink); }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-package-card { border-radius: 20px; border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-package-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); border-color: var(--line); }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-package-card--badged:first-child { box-shadow: 0 0 0 2px var(--red), var(--shadow-sm); border-color: transparent; }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-pkg-title { font: 700 24px/1.1 var(--sans); letter-spacing: -.025em; }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-pkg-price { font: 700 28px/1.2 var(--sans); letter-spacing: -.03em; color: var(--ink); }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-top-booked { border-radius: 999px; letter-spacing: .02em; text-transform: none; font: 600 12px/1 var(--sans); padding: 7px 12px; }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-package-card:first-child .tf2-top-booked { background: var(--accent-grad); }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-package-card:nth-child(2) .tf2-top-booked { background: var(--ink); color: #fff; }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-package-card:nth-child(3) .tf2-top-booked { background: #fff2d6; color: #8a4b00; }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-pkg-cta { background: var(--ink); font-family: var(--sans); }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-package-card:first-child .tf2-pkg-cta { background: var(--red); }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-checkmark { filter: hue-rotate(160deg) saturate(1.4); }
+.tw-xmas:is(.tw-theme-modern, .tw-theme-festive) .tf2-bd__title { font: 700 22px/1.2 var(--sans); letter-spacing: -.02em; }
+
+/* Trust, FAQ, final */
+:is(.tw-theme-modern, .tw-theme-festive) .tw-trust__years { font: 600 18px/1 var(--sans); color: var(--muted); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-trust__years span { font: 800 120px/.9 var(--sans); letter-spacing: -.06em;
+    background: var(--accent-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-review blockquote p { font: 500 18px/1.5 var(--sans); color: var(--ink); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-q summary { font: 600 18px/1.3 var(--sans); letter-spacing: -.015em; color: var(--ink); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-q summary::after { border-color: var(--muted); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-final__title { font: 700 clamp(34px, 9vw, 64px)/1.02 var(--serif); letter-spacing: -.04em; }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-sticky { background: rgba(255, 255, 255, .72); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-sticky__book { background: var(--red); }
+
+/* ── Modern Festive: Stripe-style gradient mesh in Christmas colours ── */
+.tw-theme-festive .tw-scenes {
+    background:
+        radial-gradient(60% 45% at 0% 0%, rgba(224, 36, 77, .10), transparent 70%),
+        radial-gradient(50% 40% at 100% 8%, rgba(255, 182, 61, .16), transparent 70%),
+        radial-gradient(55% 50% at 85% 100%, rgba(14, 124, 102, .10), transparent 70%),
+        #fff;
+}
+.tw-theme-festive .tw-ba,
+.tw-theme-festive .tw-packages {
+    color: rgba(255, 255, 255, .78);
+    background:
+        radial-gradient(45% 55% at 10% 0%, rgba(224, 36, 77, .45), transparent 70%),
+        radial-gradient(40% 45% at 95% 15%, rgba(255, 150, 61, .35), transparent 70%),
+        radial-gradient(50% 50% at 60% 110%, rgba(14, 124, 102, .45), transparent 70%),
+        #0a2540;
+}
+.tw-theme-festive .tw-ba .tw-h2,
+.tw-theme-festive .tw-packages .tw-h2 { color: #fff; }
+.tw-theme-festive .tw-ba .tw-kicker,
+.tw-theme-festive .tw-packages .tw-kicker { color: #ffb4c3; }
+.tw-theme-festive .tw-ba .tw-lede,
+.tw-theme-festive .tw-packages .tw-lede,
+.tw-theme-festive .tw-deposit { color: rgba(255, 255, 255, .72); }
+.tw-theme-festive .tw-ba__tabs { background: rgba(255, 255, 255, .14); }
+.tw-xmas.tw-theme-festive .tw-ba__tab { color: #fff; }
+.tw-xmas.tw-theme-festive .tw-ba__tab:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+.tw-xmas.tw-theme-festive .tw-ba__tab.is-active { background: #fff; color: var(--ink); }
+.tw-theme-festive .tw-early { background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .18); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+.tw-theme-festive .tw-early__offer strong { color: #ffc35a; }
+.tw-theme-festive .tw-real {
+    background:
+        radial-gradient(50% 60% at 100% 0%, rgba(255, 182, 61, .14), transparent 70%),
+        radial-gradient(50% 60% at 0% 100%, rgba(224, 36, 77, .08), transparent 70%),
+        var(--cream);
+}
+
+.tw-theme-modern .tw-auth li { color: var(--ink); }
+:is(.tw-theme-modern, .tw-theme-festive) .tw-auth li::before { background-color: #12b76a;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'); }

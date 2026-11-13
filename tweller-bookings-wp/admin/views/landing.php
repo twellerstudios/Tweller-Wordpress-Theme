@@ -20,6 +20,44 @@ $thumb = function ( $id ) {
         <div class="tf2-alert tf2-alert--success">Saved. The Christmas page is updated.</div>
     <?php endif; ?>
 
+    <?php $tw_cur = TwellerFlow2_Landing::settings()['theme'] ?? 'classic'; ?>
+    <?php if ( isset( $_GET['theme_applied'] ) ) : ?>
+        <div class="tf2-alert tf2-alert--success">Page style applied: <?php echo esc_html( TwellerFlow2_Landing::themes()[ sanitize_key( $_GET['theme_applied'] ) ]['name'] ?? '' ); ?>.</div>
+    <?php endif; ?>
+    <div class="tf2-card tf2-mb-6">
+        <h2 style="margin-top:0;">Page style</h2>
+        <p class="tf2-description">Pick how the Christmas page looks. "Preview" opens the page in that style for you only; "Apply" makes it live.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;">
+        <?php
+        $tw_sw = array(
+            'classic' => 'background:linear-gradient(135deg,#173a2e 0 45%,#f7f0e4 45% 75%,#9a1b23 75%);',
+            'modern'  => 'background:linear-gradient(135deg,#ffffff 0 55%,#f5f5f7 55% 80%,#e0244d 80%);border:1px solid #e3e8ee;',
+            'festive' => 'background:radial-gradient(60% 70% at 15% 10%,rgba(224,36,77,.75),transparent 70%),radial-gradient(55% 60% at 90% 20%,rgba(255,150,61,.7),transparent 70%),radial-gradient(60% 60% at 60% 110%,rgba(14,124,102,.8),transparent 70%),#0a2540;',
+        );
+        $tw_font = array( 'classic' => 'Georgia, serif', 'modern' => '-apple-system, BlinkMacSystemFont, Inter, Segoe UI, sans-serif', 'festive' => '-apple-system, BlinkMacSystemFont, Inter, Segoe UI, sans-serif' );
+        foreach ( TwellerFlow2_Landing::themes() as $tk => $th ) : $on = ( $tk === $tw_cur ); ?>
+            <div style="border:<?php echo $on ? '2px solid #2271b1' : '1px solid #dcdcde'; ?>;border-radius:12px;padding:14px;background:#fff;">
+                <div style="height:96px;border-radius:8px;<?php echo $tw_sw[ $tk ]; ?>display:flex;align-items:flex-end;padding:10px;">
+                    <span style="font:<?php echo $tk === 'classic' ? '600 22px' : '700 20px'; ?>/1 <?php echo esc_attr( $tw_font[ $tk ] ); ?>;letter-spacing:<?php echo $tk === 'classic' ? '0' : '-.03em'; ?>;color:<?php echo $tk === 'modern' ? '#0a2540' : '#fff'; ?>;">Christmas Minis</span>
+                </div>
+                <p style="margin:10px 0 2px;font-weight:600;"><?php echo esc_html( $th['name'] ); ?><?php echo $on ? ' <span style="color:#2271b1;">· In use</span>' : ''; ?></p>
+                <p class="tf2-description" style="margin:0 0 10px;min-height:38px;"><?php echo esc_html( $th['desc'] ); ?></p>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <a class="button" href="<?php echo esc_url( add_query_arg( 'tw_theme', $tk, $page_url ) ); ?>" target="_blank" rel="noopener">Preview</a>
+                    <?php if ( ! $on ) : ?>
+                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0;">
+                        <?php wp_nonce_field( 'tweller_flow_2_apply_theme' ); ?>
+                        <input type="hidden" name="action" value="tweller_flow_2_apply_theme">
+                        <input type="hidden" name="theme" value="<?php echo esc_attr( $tk ); ?>">
+                        <button type="submit" class="button button-primary">Apply</button>
+                    </form>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+        </div>
+    </div>
+
     <form method="post">
         <?php wp_nonce_field( 'tweller_flow_2_save_landing' ); ?>
         <input type="hidden" name="tweller_flow_2_save_landing" value="1">
