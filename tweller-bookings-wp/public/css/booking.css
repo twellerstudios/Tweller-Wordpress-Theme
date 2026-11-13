@@ -975,3 +975,14 @@
 .tf2-bd__error { display: none; margin: 10px 0 0; font-size: 14px; font-weight: 600; color: #B42318; }
 .tf2-backdrop--missing .tf2-bd__error { display: block; }
 .tf2-backdrop--missing .tf2-bd__art { border-color: #E8A39B; }
+
+/* ── Where's your shoot? (transport fee) ─────────── */
+.tf2-where { border: 0; margin: 0 0 18px; padding: 0; min-width: 0; display: grid; gap: 8px; }
+.tf2-where__title { padding: 0; margin: 0 0 4px; font-size: 15px; font-weight: 600; color: var(--tf-text-dark); }
+.tf2-where__opt { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-height: 48px; padding: 10px 14px;
+    border: 1.5px solid var(--tf-border); border-radius: 10px; background: #fff; cursor: pointer; font-size: 15px; color: var(--tf-text-dark); }
+.tf2-where__opt input { width: 18px; height: 18px; margin: 0; flex: none; accent-color: var(--tf-primary); }
+.tf2-where__name { flex: 1 1 0; min-width: 0; }
+.tf2-where__fee { flex: none; padding: 3px 10px; border-radius: 999px; background: #FBEAEA; color: #8E1B22; font-size: 12.5px; font-weight: 700; }
+.tf2-where__opt:has(input:checked) { border-color: var(--tf-primary); box-shadow: 0 0 0 1px var(--tf-primary); }
+.tf2-where__help { margin: 2px 0 0; font-size: 13px; color: var(--tf-text); }

@@ -49,7 +49,7 @@ class TwellerFlow2_Landing {
 
     public static function faq_defaults() {
         return array(
-            array( 'q' => 'Studio or my home?', 'a' => 'Either. Every package works in our studio or at your home or another location. For digital scenes we bring a portable white backdrop to you.' ),
+            array( 'q' => 'Studio or my home?', 'a' => 'Either. Every package works in our studio or at your home or another location. For digital scenes we bring a portable white backdrop to you. Home and location shoots beyond Couva in the south, Curepe in the north, Macoya in the east or San Juan in the west have a TT$60 transport fee.' ),
             array( 'q' => 'Can we use our own tree and decor?', 'a' => 'Yes. We shoot at your home with your own tree and Christmas setup, styled and lit so it looks its best.' ),
             array( 'q' => 'What do we wear on a white backdrop?', 'a' => 'Rich, solid colours look best in the scenes: deep red, evergreen, cream, gold, navy or burgundy. Avoid all-white outfits and large logos. Coordinate, don\'t match. Send us your options on WhatsApp and we\'ll help you choose.' ),
             array( 'q' => 'Can we bring the dog?', 'a' => 'Of course. Pets are family. Let us know in your booking notes so we plan the time for them.' ),
@@ -442,6 +442,13 @@ class TwellerFlow2_Landing {
             'review_url'      => esc_url_raw( $p['review_url'] ?? '' ),
             'faq'             => $faq ?: self::faq_defaults(),
             'og_image_id'     => absint( $p['og_image_id'] ?? 0 ),
+        ) );
+
+        $tr = TwellerFlow2_Booking_API::transport();
+        update_option( 'tweller_flow_2_transport', array(
+            'enabled' => empty( $p['transport_enabled'] ) ? 0 : 1,
+            'fee'     => max( 0, (float) ( $p['transport_fee'] ?? $tr['fee'] ) ),
+            'area'    => sanitize_text_field( $p['transport_area'] ?? '' ) ?: $tr['area'],
         ) );
 
         $m = TwellerFlow2_Meta_Events::settings();

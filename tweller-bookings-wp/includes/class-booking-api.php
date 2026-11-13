@@ -182,6 +182,28 @@ class TwellerFlow2_Booking_API {
         ));
     }
 
+    /**
+     * Transport fee for shoots away from the studio outside the central area.
+     * Edited at Tweller Bookings → Christmas Page (applies to every booking).
+     */
+    public static function transport() {
+        $t = get_option( 'tweller_flow_2_transport', array() );
+        return wp_parse_args( is_array( $t ) ? $t : array(), array(
+            'enabled' => 1,
+            'fee'     => 60,
+            'area'    => 'beyond Couva in the south, Curepe in the north, Macoya in the east or San Juan in the west',
+        ) );
+    }
+
+    /** Where-is-the-shoot choices: key => label. */
+    public static function shoot_locations() {
+        return array(
+            'studio'  => 'In studio',
+            'central' => 'At home / on location — central area',
+            'outside' => 'At home / on location — outside central area',
+        );
+    }
+
     /** A configured session-type key, or '' — never free text from the client. */
     private static function valid_session_type( $key ) {
         $key   = sanitize_key( (string) $key );
@@ -211,6 +233,24 @@ class TwellerFlow2_Booking_API {
         if ( class_exists( 'TwellerFlow2_Image_Consent' ) ) {
             $consent = TwellerFlow2_Image_Consent::sanitize_choice( $data['image_consent'] ?? 'limited' );
             $pricing = TwellerFlow2_Image_Consent::price_booking( $package['price'], $consent, $client_email );
+        }
+
+        // Where the shoot is: away from the studio and outside the central
+        // area adds the transport fee (after any discount — it is a cost,
+        // not part of the session price).
+        $transport = self::transport();
+        $location  = sanitize_key( $data['shoot_location'] ?? '' );
+        $location_note = '';
+        if ( ! empty( $transport['enabled'] ) ) {
+            if ( ! isset( self::shoot_locations()[ $location ] ) ) {
+                return new WP_Error( 'shoot_location', 'Please tell us where your shoot will be.', array( 'status' => 400 ) );
+            }
+            $location_note = 'Location: ' . self::shoot_locations()[ $location ];
+            if ( $location === 'outside' && (float) $transport['fee'] > 0 ) {
+                $pricing['transport'] = (float) $transport['fee'];
+                $pricing['total']     = round( $pricing['total'] + (float) $transport['fee'], 2 );
+                $location_note       .= ' (+TT$' . number_format( (float) $transport['fee'], 0 ) . ' transport)';
+            }
         }
 
         // Gift card: taken off the card up front (atomically, so two bookings
@@ -269,7 +309,7 @@ class TwellerFlow2_Booking_API {
             'session_date' => sanitize_text_field( $data['session_date'] ),
             'session_time' => sanitize_text_field( $data['session_time'] ),
             'location' => sanitize_text_field( $data['location'] ?? '' ),
-            'notes' => trim( $backdrop_note . ( $backdrop_note && $client_notes ? "\n\n" : '' ) . $client_notes ),
+            'notes' => trim( implode( "\n", array_filter( array( $location_note, $backdrop_note ) ) ) . ( ( $location_note || $backdrop_note ) && $client_notes ? "\n\n" : '' ) . $client_notes ),
             'backdrop' => $backdrop_note,
             'payment_status' => 'pending',
             'deposit_amount' => $gift_take, // gift card, if any; bank transfer / card to follow

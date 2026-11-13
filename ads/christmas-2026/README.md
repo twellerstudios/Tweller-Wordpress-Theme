@@ -30,6 +30,6 @@ OUT_DIR="C:/Users/Tweller/Pictures/CHRISTMAS BACKGROUNDS/ads_final" node render.
   Text stays out of the top 14 % and bottom 35 % of the 9:16 frame (Reels interface).
 - `carousel.html`: the 6 cards and the 4:5 fallback (`?card=1..6`, `&fmt=4x5`).
 - Client photos later: set the composition variable `family_<scene-slug>` to a transparent PNG cut-out, and it
-  replaces the dashed "your family here" marker in that scene. For the carousel, add `&photo=<png>` to a scene card.
+  appears in front of that scene. For the carousel, add `&photo=<png>` to a scene card.
 - Voiceover: ffmpeg's built-in `flite` voice (`slt`), pitched slightly down, EQ'd and compressed. For music, choose a
   track from Meta's Sound Collection in Ads Manager (no copyrighted songs).

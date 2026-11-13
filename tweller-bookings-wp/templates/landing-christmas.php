@@ -169,7 +169,11 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
         </div>
         <?php endif; ?>
 
-        <p class="tw-deposit">A 50% deposit secures your date. The balance is due on the day of your shoot.</p>
+        <?php $tr = TwellerFlow2_Booking_API::transport(); ?>
+        <p class="tw-deposit">A 50% deposit secures your date. The balance is due on the day of your shoot.<?php
+            if ( ! empty( $tr['enabled'] ) && (float) $tr['fee'] > 0 ) :
+                echo ' ' . esc_html( sprintf( 'Home and location shoots %s add TT$%s transport.', $tr['area'], number_format( (float) $tr['fee'] ) ) );
+            endif; ?></p>
 
         <?php
         echo do_shortcode( sprintf(

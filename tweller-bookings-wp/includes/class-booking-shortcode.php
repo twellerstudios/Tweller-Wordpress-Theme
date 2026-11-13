@@ -198,9 +198,29 @@ class TwellerFlow2_Booking_Shortcode {
                         <label>Phone *</label>
                         <input type="tel" id="tf2-client-phone" required>
                     </div>
+                    <?php $tf2_tr = TwellerFlow2_Booking_API::transport(); if ( ! empty( $tf2_tr['enabled'] ) ) :
+                        $tf2_tr_fee = (float) $tf2_tr['fee']; ?>
+                    <fieldset class="tf2-where" id="tf2-where" data-fee="<?php echo esc_attr( $tf2_tr_fee ); ?>">
+                        <legend class="tf2-where__title">Where's your shoot? *</legend>
+                        <label class="tf2-where__opt">
+                            <input type="radio" name="tf2_shoot_location" value="studio" required>
+                            <span class="tf2-where__name">In studio</span>
+                        </label>
+                        <label class="tf2-where__opt">
+                            <input type="radio" name="tf2_shoot_location" value="central">
+                            <span class="tf2-where__name">At home or on location, in the central area</span>
+                        </label>
+                        <label class="tf2-where__opt">
+                            <input type="radio" name="tf2_shoot_location" value="outside">
+                            <span class="tf2-where__name">At home or on location, outside the central area</span>
+                            <?php if ( $tf2_tr_fee > 0 ) : ?><span class="tf2-where__fee">+TT$<?php echo esc_html( number_format( $tf2_tr_fee, $tf2_tr_fee == (int) $tf2_tr_fee ? 0 : 2 ) ); ?> transport</span><?php endif; ?>
+                        </label>
+                        <p class="tf2-where__help">Outside the central area means <?php echo esc_html( $tf2_tr['area'] ); ?>.</p>
+                    </fieldset>
+                    <?php endif; ?>
                     <div class="tf2-field">
-                        <label>Location Preference / Notes</label>
-                        <textarea id="tf2-client-notes" rows="3" placeholder="Studio or ON Location? Tell us any details you want included..."></textarea>
+                        <label>Your address or area / notes</label>
+                        <textarea id="tf2-client-notes" rows="3" placeholder="Your address or area, and any details you want included…"></textarea>
                     </div>
 
                     <?php

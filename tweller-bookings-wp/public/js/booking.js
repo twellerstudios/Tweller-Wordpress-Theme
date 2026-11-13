@@ -401,7 +401,8 @@ const tfBooking = {
                 phone: el('tf2-client-phone') ? el('tf2-client-phone').value : '',
                 notes: el('tf2-client-notes') ? el('tf2-client-notes').value : '',
                 backdrop: this.selectedBackdrop,
-                backdropExtra: this.selectedBackdropExtra
+                backdropExtra: this.selectedBackdropExtra,
+                shootLocation: (document.querySelector('input[name="tf2_shoot_location"]:checked') || {}).value || ''
             }));
         } catch (e) { /* private mode / quota — never block the booking */ }
     },
@@ -431,6 +432,14 @@ const tfBooking = {
         });
         document.querySelectorAll('input[name="tf2_image_consent"]').forEach((el) => {
             el.addEventListener('change', () => { this.syncConsentSelection(); this.saveState(); });
+        });
+        document.querySelectorAll('input[name="tf2_shoot_location"]').forEach((el) => {
+            el.addEventListener('change', () => {
+                const w = document.getElementById('tf2-where');
+                if (w) w.classList.remove('tf2-where--missing');
+                if (this.step === 4 && this.selectedPackageData && this.selectedDate) this.renderSummary();
+                this.saveState();
+            });
         });
     },
 
@@ -488,6 +497,11 @@ const tfBooking = {
         set('tf2-client-email', s.email);
         set('tf2-client-phone', s.phone);
         set('tf2-client-notes', s.notes);
+
+        if (s.shootLocation) {
+            const loc = document.querySelector('input[name="tf2_shoot_location"][value="' + s.shootLocation + '"]');
+            if (loc) loc.checked = true;
+        }
 
         if (s.consent) {
             const radio = document.querySelector('input[name="tf2_image_consent"][value="' + s.consent + '"]');
@@ -792,6 +806,18 @@ const tfBooking = {
             lines = `<div style="font-size:12.5px; color:#C9A227; margin-top:8px;">✓ You'll earn a discount on your next session.</div>`;
         }
 
+        // Transport fee: shoots away from the studio, outside the central area.
+        const where = document.getElementById('tf2-where');
+        const whereEl = document.querySelector('input[name="tf2_shoot_location"]:checked');
+        const transport = where && whereEl && whereEl.value === 'outside' ? (parseFloat(where.dataset.fee) || 0) : 0;
+        if (transport > 0) {
+            if (!lines.includes('Session')) {
+                lines = `<div style="display:flex; justify-content:space-between; opacity:0.9; font-size:14px; margin-top:8px;"><span>Session</span><span>TTD ${fmt(total)}</span></div>` + lines;
+            }
+            lines += `<div style="display:flex; justify-content:space-between; opacity:0.9; font-size:14px;"><span>Transport (outside central area)</span><span>TTD ${fmt(transport)}</span></div>`;
+            total += transport;
+        }
+
         let giftLines = '';
         if (this.gift && this.gift.balance > 0) {
             const use = Math.min(this.gift.balance, total);
@@ -902,7 +928,8 @@ const tfBooking = {
             attribution: this.readAttribution() || {},
             gift_code: this.gift ? this.gift.code : '',
             backdrop: this.selectedBackdrop,
-            backdrop_extra: this.selectedBackdropExtra
+            backdrop_extra: this.selectedBackdropExtra,
+            shoot_location: (document.querySelector('input[name="tf2_shoot_location"]:checked') || {}).value || ''
         };
         // A session with a backdrop picker needs a choice before booking.
         if (this.backdropConfig() && !this.selectedBackdrop) {

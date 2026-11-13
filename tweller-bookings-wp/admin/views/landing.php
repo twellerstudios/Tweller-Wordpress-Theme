@@ -40,6 +40,17 @@ $thumb = function ( $id ) {
                 <span class="tf2-description" style="display:block;margin-left:24px;">Unticked: the calendar's free slots are taken as available, and an "Ask on WhatsApp" link is shown instead. Fewer steps for ad visitors.</span></label>
         </div>
 
+        <?php $tr = TwellerFlow2_Booking_API::transport(); ?>
+        <div class="tf2-card tf2-mb-6">
+            <h2 style="margin-top:0;">Transport fee (all bookings)</h2>
+            <p class="tf2-description">Every booking form asks "Where's your shoot?": in studio, at home / on location in the central area, or outside it. Outside adds this fee to the total (and the 50% deposit).</p>
+            <label style="display:block;margin-bottom:10px;"><input type="checkbox" name="transport_enabled" value="1" <?php checked( $tr['enabled'] ); ?>> Ask where the shoot is and charge the fee</label>
+            <div class="tf2-off-grid">
+                <label>Fee (TTD)<input type="number" step="1" min="0" name="transport_fee" value="<?php echo esc_attr( $tr['fee'] ); ?>"></label>
+            </div>
+            <label style="display:block;margin-top:10px;">"Outside the central area means …"<input type="text" class="large-text" name="transport_area" value="<?php echo esc_attr( $tr['area'] ); ?>"></label>
+        </div>
+
         <div class="tf2-card tf2-mb-6">
             <h2 style="margin-top:0;">Scenes</h2>
             <p class="tf2-description">The first scene opens the hero. Leave the image empty to use the built-in web version. Focus = which part stays in view on phones ("50% 55%" = centre).</p>

@@ -6,7 +6,7 @@
  *
  * Real client photos can be dropped in later: set the variable
  * family_<slug> (e.g. family_classic-red-hearth) to a transparent PNG
- * cut-out and it replaces the dashed "your family here" marker in that scene.
+ * cut-out and it appears in front of that scene.
  *
  * Beats (s): 0 hook · 1.5 / 3.65 / 5.8 scene cuts · 8.0 caption 1 · 9.6 caption 2 · 11 end card · 15 out
  */
@@ -69,8 +69,7 @@
 
   SCENES.forEach((sc) => sceneLayer(sc));
 
-  // "Your family here" — a dashed outline where a family would stand,
-  // or a real cut-out when one is provided.
+  // A real family cut-out, when one is provided.
   const markTop = SAFE_B - H * (W / H > 0.7 ? 0.27 : 0.2);
   const markH = SAFE_B - markTop - 10, markW = Math.min(W * 0.52, markH * 1.45);
   SCENES.forEach((sc) => {
@@ -81,9 +80,7 @@
       Object.assign(f.style, { left: px(W / 2 - markW * 0.7), width: px(markW * 1.4), bottom: px(H - SAFE_B - H * 0.06) });
       return;
     }
-    const m = el('div', 'marker', sc.wrap, '<span>your family here</span>');
-    Object.assign(m.style, { left: px(W / 2 - markW / 2), top: px(markTop), width: px(markW), height: px(markH) });
-    sc.marker = m;
+    // No placeholder box: the empty scene speaks for itself.
   });
 
   // Falling snow / bokeh over everything but the end card text.
