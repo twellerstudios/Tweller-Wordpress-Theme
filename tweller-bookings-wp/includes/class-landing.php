@@ -37,6 +37,10 @@ class TwellerFlow2_Landing {
         add_filter( 'request', array( __CLASS__, 'route' ), 1 );
         add_filter( 'query_vars', function ( $v ) { $v[] = 'tw_xmas'; return $v; } );
         add_filter( 'redirect_canonical', array( __CLASS__, 'no_canonical' ), 5 );
+        // Christmas as the homepage while Book Us (the general booking page) is
+        // still the WordPress front page: keep Book Us reachable at /book-us/.
+        add_filter( 'page_link', array( __CLASS__, 'booking_page_link' ), 10, 2 );
+        add_filter( 'option_tweller_flow_2_booking_page', array( __CLASS__, 'booking_page_option' ) );
         add_shortcode( 'tweller_christmas', '__return_empty_string' );
         add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ), 20 );
         add_action( 'admin_init', array( __CLASS__, 'admin_save' ) );
@@ -232,7 +236,52 @@ class TwellerFlow2_Landing {
 
     /** WordPress must not "correct" these addresses to some other page. */
     public static function no_canonical( $redirect ) {
-        return self::is_landing() ? false : $redirect;
+        if ( self::is_landing() ) return false;
+        $uri = self::front_booking_uri();
+        if ( $uri !== '' ) {
+            $path = self::request_path();
+            if ( $path === $uri || strpos( $path, $uri . '/' ) === 0 ) return false;
+        }
+        return $redirect;
+    }
+
+    /**
+     * When the Christmas page is the homepage but the Book Us page (the general
+     * booking page) is also set as the WordPress front page, WordPress would
+     * send /book-us/ to "/" (the Christmas page). Returns the page id then, else 0.
+     */
+    private static function front_booking_id() {
+        static $id = null;
+        if ( $id !== null ) return $id;
+        $id = 0;
+        $s = self::settings();
+        if ( empty( $s['enabled'] ) || empty( $s['as_home'] ) || get_option( 'show_on_front' ) !== 'page' ) return $id;
+        $front = (int) get_option( 'page_on_front' );
+        if ( $front && has_shortcode( (string) get_post_field( 'post_content', $front ), 'tweller_booking' ) ) $id = $front;
+        return $id;
+    }
+
+    private static function front_booking_uri() {
+        $id = self::front_booking_id();
+        return $id ? trim( (string) get_page_uri( $id ), '/' ) : '';
+    }
+
+    private static function front_booking_url() {
+        $id = self::front_booking_id();
+        if ( ! $id ) return '';
+        if ( ! get_option( 'permalink_structure' ) ) return add_query_arg( 'page_id', $id, home_url( '/' ) );
+        return home_url( '/' . self::front_booking_uri() . '/' );
+    }
+
+    /** The Book Us page links (menus too) go to /book-us/, not to the homepage. */
+    public static function booking_page_link( $link, $post_id ) {
+        $id = self::front_booking_id();
+        return ( $id && (int) $post_id === $id ) ? self::front_booking_url() : $link;
+    }
+
+    public static function booking_page_option( $url ) {
+        $u = self::front_booking_url();
+        return $u !== '' ? $u : $url;
     }
 
     public static function is_landing() {
