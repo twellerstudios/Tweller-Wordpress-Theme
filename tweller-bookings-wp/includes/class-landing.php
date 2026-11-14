@@ -229,9 +229,24 @@ class TwellerFlow2_Landing {
             $uri  = $page ? trim( (string) get_page_uri( $page ), '/' ) : '';
             if ( $uri !== '' && ( $path === $uri . '/' . $slug || strpos( $path, $uri . '/' . $slug . '/' ) === 0 ) ) $hit = true;
         }
-        if ( ! $hit && ! empty( $s['as_home'] ) && $path === '' && empty( $_GET['s'] ) ) $hit = true;
+        if ( ! $hit && ! empty( $s['as_home'] ) && $path === '' && self::plain_home_request() ) $hit = true;
         if ( $hit ) return array( 'tw_xmas' => '1' );
         return $vars;
+    }
+
+    /**
+     * The bare homepage (ad / share tags allowed). Anything else on "/" —
+     * a draft preview (?page_id=…&preview=true), ?p=…, a search — is not
+     * the Christmas page.
+     */
+    private static function plain_home_request() {
+        foreach ( array_keys( $_GET ) as $k ) {
+            $k = strtolower( (string) $k );
+            if ( strpos( $k, 'utm_' ) === 0 ) continue;
+            if ( in_array( $k, array( 'fbclid', 'gclid', 'ttclid', 'coupon', 'snap', 'tw_theme', 'ref' ), true ) ) continue;
+            return false;
+        }
+        return true;
     }
 
     /** WordPress must not "correct" these addresses to some other page. */

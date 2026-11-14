@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Christmas Memory Giveaway — stills</title>
+<!-- giveaway.html?k=launch&fmt=4x5[&plat=fb]  ·  k: launch, memory, leaderboard, last48, livedraw, winners
+     fmt: 4x5 (1080x1350), 1x1 (1080x1080), 9x16 (1080x1920). Rendered by render-giveaway.mjs. -->
+<link rel="stylesheet" href="lib/giveaway.css">
+<style>
+.ad { position: relative; width: 1080px; height: 1350px; overflow: hidden; color: var(--cream); isolation: isolate; }
+.body { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 64px 70px 60px; }
+.fmt-1x1 .ad { height: 1080px; }
+.fmt-1x1 .body { padding: 50px 64px 48px; }
+/* Stories: words stay between the top 14% and the bottom 20% */
+.fmt-9x16 .ad { height: 1920px; }
+/* zoom 1.25 makes everything bigger on the tall canvas; padding is in zoomed px (280 / 400 real) */
+.fmt-9x16 .body { zoom: 1.15; padding: 234px 56px 334px; justify-content: center; }
+.fmt-9x16 .k-launch .where, .fmt-9x16 .k-launch .steps, .fmt-9x16 .k-launch .gap-l + .gap-l { display: none; }
+.fmt-9x16 .k-launch .prints { height: 262px; } .fmt-9x16 .k-launch .print img { height: 168px; }
+
+.logo { width: 96px; height: auto; }
+.gap-s { height: 14px; } .gap { height: 26px; } .gap-l { height: 40px; } .grow { flex: 1; }
+.title.ribbon { margin-top: 34px; }
+.title .foil { font-size: 68px; }
+.fmt-1x1 .title .foil { font-size: 62px; }
+.fmt-9x16 .title .foil { font-size: 66px; }
+.fmt-9x16 .ask { font-size: 60px; }
+.fmt-1x1 .ask { font-size: 50px; }
+.fmt-1x1 .prize__name { font-size: 34px; } .fmt-1x1 .prize { padding: 18px 18px 18px; } .fmt-1x1 .prize__how { font-size: 16px; }
+.fmt-1x1 .steps li { font-size: 17px; } .fmt-1x1 .steps .n { width: 38px; height: 38px; font-size: 21px; margin-bottom: 8px; } .fmt-1x1 .steps small { display: none; }
+.fmt-1x1 .pill { font-size: 22px; padding: 14px 28px; }
+.where { font: 600 20px/1 var(--sans); letter-spacing: .08em; color: var(--cream); opacity: .9; }
+.where svg { width: 22px; height: 22px; vertical-align: -4px; margin: 0 6px 0 14px; fill: var(--gold); }
+.where svg:first-child { margin-left: 0; }
+
+/* Memory of the Day */
+.quote-card { position: relative; width: 100%; flex: 1; max-height: 820px; border-radius: 26px; padding: 70px 60px 50px; text-align: left;
+  background: linear-gradient(170deg, rgba(248,241,229,.97), rgba(239,226,203,.95)); color: var(--ink);
+  box-shadow: 0 0 0 1px rgba(228,196,126,.7), 0 40px 70px -30px rgba(0,0,0,.85); }
+.quote-card::before { content: "\201C"; position: absolute; left: 34px; top: -36px; font: 600 220px/1 var(--serif); color: var(--gold-2); }
+.quote-card .lines { position: absolute; left: 60px; right: 60px; top: 110px; bottom: 150px;
+  background: repeating-linear-gradient(180deg, transparent 0 74px, rgba(160, 120, 60, .18) 74px 76px); }
+.quote-card .who { position: absolute; left: 60px; right: 60px; bottom: 54px; padding-top: 18px; border-top: 1.5px solid rgba(160,120,60,.35);
+  font: italic 500 34px/1 var(--serif); color: #7a6a58; }
+
+/* Leaderboard */
+.board { width: 100%; display: grid; gap: 18px; }
+.row { display: flex; align-items: center; gap: 22px; padding: 22px 26px; border-radius: 20px; background: rgba(248,241,229,.1); box-shadow: inset 0 0 0 1px rgba(228,196,126,.4); }
+.medal { flex: none; width: 74px; height: 74px; border-radius: 50%; display: grid; place-items: center; font: 600 40px/1 var(--serif); color: #3a2a0a;
+  background: radial-gradient(circle at 35% 30%, #fff3c9, #e4c47e 45%, #b98530); box-shadow: 0 8px 18px -8px rgba(0,0,0,.7); }
+.row:nth-child(2) .medal { background: radial-gradient(circle at 35% 30%, #ffffff, #d7d9dc 45%, #9aa0a6); }
+.row:nth-child(3) .medal { background: radial-gradient(circle at 35% 30%, #ffe2c4, #d39a66 45%, #9a6234); }
+.row .slot { flex: 1; height: 64px; }
+.heart { flex: none; display: flex; align-items: center; gap: 8px; font: 700 22px/1 var(--sans); color: var(--gold); }
+.heart svg { width: 30px; height: 30px; fill: #e0353d; }
+
+/* 48 hours */
+.big { margin: 0; font: 600 230px/1 var(--serif); letter-spacing: -.03em; color: #fff; text-shadow: 0 10px 40px rgba(0,0,0,.4); }
+.big-sub { margin: -6px 0 0; font: italic 500 80px/1.1 var(--serif); color: var(--gold); }
+.fmt-4x5 .big { font-size: 190px; } .fmt-4x5 .big-sub { font-size: 64px; }
+
+/* Real client photos, as a little stack of prints */
+.prints { position: relative; flex: none; width: 100%; height: 300px; margin: 10px 0 0; }
+.print { position: absolute; top: 14px; width: 230px; padding: 10px 10px 34px; background: #fbf8f1; border-radius: 4px;
+  box-shadow: 0 24px 40px -18px rgba(0,0,0,.85); }
+.print img { display: block; width: 100%; height: 190px; object-fit: cover; border-radius: 2px; }
+.print:nth-child(1) { left: 50%; margin-left: -330px; transform: rotate(-7deg); }
+.print:nth-child(2) { left: 50%; margin-left: -115px; top: 0; transform: rotate(2deg); z-index: 2; }
+.print:nth-child(3) { left: 50%; margin-left: 100px; transform: rotate(8deg); }
+
+/* Winners */
+.wtable { width: 100%; border-collapse: separate; border-spacing: 12px; }
+.wtable th { font: 700 16px/1 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--gold); padding-bottom: 4px; }
+.wtable th.side { text-align: left; width: 26%; color: var(--cream); letter-spacing: .08em; font-size: 18px; }
+.wtable td { height: 92px; }
+.wtable td.side { font: 600 34px/1.05 var(--serif); color: #fff; text-align: left; }
+.wtable td.side small { display: block; font: 500 15px/1.3 var(--sans); color: rgba(248,241,229,.7); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function () {
+  const q = new URLSearchParams(location.search);
+  const fmt = q.get('fmt') || '4x5', k = q.get('k') || 'launch', fb = q.get('plat') === 'fb';
+  document.body.classList.add('fmt-' + fmt);
+  const HOLLY = '<svg class="ribbon__holly" viewBox="0 0 120 64" aria-hidden="true"><path d="M58 40 C40 18 18 14 4 24 C14 26 16 34 10 40 C22 36 28 44 26 52 C38 42 50 46 58 40Z" fill="#1f5a3a" stroke="#0f3322" stroke-width="2"/><path d="M62 40 C80 18 102 14 116 24 C106 26 104 34 110 40 C98 36 92 44 94 52 C82 42 70 46 62 40Z" fill="#256b45" stroke="#0f3322" stroke-width="2"/><circle cx="52" cy="40" r="9" fill="#c8202b"/><circle cx="68" cy="40" r="9" fill="#d4262f"/><circle cx="60" cy="30" r="9" fill="#e0353d"/><circle cx="57" cy="27" r="2.5" fill="#fff" opacity=".6"/></svg>';
+  const ribbon = (text, cls) => `<div class="ribbon ${cls || ''}">${HOLLY}<span class="foil">${text}</span></div>`;
+  const ICON = {
+    fb: '<svg viewBox="0 0 24 24"><path d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21z"/></svg>',
+    ig: '<svg viewBox="0 0 24 24"><path d="M12 7.3a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4zm0 7.7a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm4.9-7.9a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0zM12 4.6c2.4 0 2.7 0 3.6.1 2.4.1 3.6 1.3 3.7 3.7.1.9.1 1.2.1 3.6s0 2.7-.1 3.6c-.1 2.4-1.3 3.6-3.7 3.7-.9.1-1.2.1-3.6.1s-2.7 0-3.6-.1c-2.4-.1-3.6-1.3-3.7-3.7-.1-.9-.1-1.2-.1-3.6s0-2.7.1-3.6C4.8 6 6 4.8 8.4 4.7c.9-.1 1.2-.1 3.6-.1zM12 3c-2.4 0-2.8 0-3.7.1C5 3.2 3.2 5 3.1 8.3 3 9.2 3 9.6 3 12s0 2.8.1 3.7c.1 3.3 1.9 5.1 5.2 5.2.9.1 1.3.1 3.7.1s2.8 0 3.7-.1c3.3-.1 5.1-1.9 5.2-5.2.1-.9.1-1.3.1-3.7s0-2.8-.1-3.7C20.8 5 19 3.2 15.7 3.1 14.8 3 14.4 3 12 3z"/></svg>',
+    tt: '<svg viewBox="0 0 24 24"><path d="M16.6 5.8A4.3 4.3 0 0 1 15.5 3h-3.1v12.4a2.6 2.6 0 1 1-1.8-2.5V9.7a5.7 5.7 0 1 0 4.9 5.7V9.1a7.3 7.3 0 0 0 4.3 1.4V7.4a4.3 4.3 0 0 1-3.2-1.6z"/></svg>',
+    heart: '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.5 3 4.6 6.7 4.6c2.1 0 3.4 1.1 4.3 2.4.9-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg>'
+  };
+  const where = `<p class="where">${ICON.fb}Facebook ${ICON.ig}Instagram ${ICON.tt}TikTok</p>`;
+  const prizes = `<div class="prizes">
+      <div class="prize"><span class="prize__tag">Most-loved memory</span><p class="prize__name">Full Christmas Session</p><p class="prize__how">The memory with the most likes</p></div>
+      <div class="prize prize--mini"><span class="prize__tag">Random draw</span><p class="prize__name">Mini Session</p><p class="prize__how">One lucky memory, picked at random</p></div>
+    </div>`;
+  const step2 = fb ? 'Like the ones that move you<small>Likes pick the winner</small>' : 'Tag who was there<small>Bonus entry</small>';
+  const steps = `<ol class="steps">
+      <li><span class="n">1</span>Comment your memory<small>A real Christmas story</small></li>
+      <li><span class="n">2</span>${step2}</li>
+      <li><span class="n">3</span>Enter on our site too<small>twellerstudios.com/giveaway</small></li>
+    </ol>`;
+
+  const views = {
+    launch: () => `
+      <img class="logo" src="assets/logo-cream.png" alt="Tweller Studios">
+      <div class="gap"></div><p class="kicker">Giveaway · Christmas 2026</p>
+      <div class="gap"></div><p class="ask">What&rsquo;s the Christmas<br><b>you&rsquo;ll never forget?</b></p>
+      ${fmt === '9x16' ? '<div class="prints">' + [6, 3, 5].map((n) => `<div class="print"><img src="assets/before-after/ba${n}-after.webp" alt=""></div>`).join('') + '</div>' : ''}
+      ${ribbon('Win a Christmas photo session', 'title')}
+      <div class="gap-l"></div>${prizes}
+      <div class="gap"></div>${where}
+      <div class="gap-l"></div>${steps}
+      <div class="grow"></div>
+      <span class="pill">Comment yours below</span>
+      <div class="gap-s"></div><p class="fine">Ends <b>Sun Dec 6, 8 pm</b> · 6 winners · T&amp;T 18+ · Prizes valid 6 months</p>`,
+    memory: () => `
+      <img class="logo" src="assets/logo-cream.png" alt="Tweller Studios">
+      <div class="gap"></div><p class="kicker">The Christmas Memory Giveaway</p>
+      ${ribbon('Memory of the Day', 'title')}
+      <div class="gap-l"></div><div class="quote-card"><div class="lines"></div><div class="who">Shared by</div></div>
+      <div class="gap-l"></div><p class="fine">Comment <b>your</b> memory on our pinned giveaway post</p>`,
+    leaderboard: () => `
+      <img class="logo" src="assets/logo-cream.png" alt="Tweller Studios">
+      <div class="gap"></div><p class="kicker">The Christmas Memory Giveaway</p>
+      <div class="gap"></div><p class="ask">The most-loved<br><b>memories right now</b></p>
+      <div class="gap-l"></div>
+      <div class="board">${[1, 2, 3].map((n) => `<div class="row"><span class="medal">${n}</span><span class="slot blank"></span><span class="heart">${ICON.heart}</span></div>`).join('')}</div>
+      <div class="gap-l"></div><span class="pill">Go show them some love</span>
+      <div class="gap-s"></div><p class="fine">The most-liked memory wins a <b>Full Christmas Session</b> · Ends Sun Dec 6</p>`,
+    last48: () => `
+      <img class="logo" src="assets/logo-cream.png" alt="Tweller Studios">
+      <div class="gap"></div><p class="kicker">The Christmas Memory Giveaway</p>
+      <div class="gap-l"></div><p class="big">48</p><p class="big-sub">hours left</p>
+      <div class="gap-l"></div><p class="ask" style="font-size:52px;">to share the Christmas<br><b>you&rsquo;ll never forget</b></p>
+      <div class="gap-l"></div>${prizes}
+      <div class="gap-l"></div><span class="pill">Comment your memory</span>
+      <div class="gap-s"></div><p class="fine">Entries close <b>Sun Dec 6 at 8 pm</b></p>`,
+    livedraw: () => `
+      <img class="logo" src="assets/logo-cream.png" alt="Tweller Studios">
+      <div class="gap"></div><p class="kicker">The Christmas Memory Giveaway</p>
+      ${ribbon('Live draw tonight', 'title')}
+      <div class="gap-l"></div><p class="big" style="font-size:190px;">7 pm</p><p class="big-sub">Monday, Dec 7</p>
+      <div class="gap-l"></div>${where}
+      <div class="gap-l"></div><p class="ask" style="font-size:52px;">Join us live to see<br><b>who wins 6 sessions</b></p>`,
+    winners: () => `
+      <img class="logo" src="assets/logo-cream.png" alt="Tweller Studios">
+      <div class="gap"></div><p class="kicker">The Christmas Memory Giveaway</p>
+      ${ribbon('Our winners', 'title')}
+      <div class="gap"></div><p class="ask" style="font-size:44px;">Thank you for every memory you shared</p>
+      <div class="gap"></div>
+      <table class="wtable"><tr><th class="side"></th><th>Full Session</th><th>Mini Session</th></tr>
+        ${[['Facebook', ICON.fb], ['Instagram', ICON.ig], ['TikTok', ICON.tt]].map(([n]) => `<tr><td class="side">${n}</td><td class="blank"></td><td class="blank"></td></tr>`).join('')}
+      </table>
+      <div class="grow"></div>
+      <p class="fine">Winners: check your DMs and reply within 72 hours<br>Everyone else: <b>MEMORY50</b> = TT$50 off Christmas photos until Dec 15</p>`
+  };
+  document.getElementById('app').innerHTML = `<div class="ad"><img class="gw-bg" src="assets/scenes/${k === 'memory' || k === 'winners' ? 'champagne-gold' : 'fireside-library'}.jpg" alt=""><div class="gw-shade"></div><div class="gw-frame"></div><div class="body k-${k}">${(views[k] || views.launch)()}</div></div>`;
+})();
+</script>
+</body>
+</html>
