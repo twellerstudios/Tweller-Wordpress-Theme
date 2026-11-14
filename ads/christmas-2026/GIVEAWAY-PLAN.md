@@ -10,21 +10,23 @@
 
 ---
 
-## 1. Prizes and how winners are picked
+## 1. Prizes and how winners are picked (weekly)
 
-**Six winners: two per platform (Facebook, Instagram, TikTok).**
+**A new giveaway every week, three weeks, then a final draw.**
 
-| Prize | How it's won | On each platform |
-|---|---|---|
-| **Full Christmas Session** | The memory comment with the **most likes** when entries close ("Most-loved memory") | 1 |
-| **Mini Session** | A **random draw** from everyone who commented a real memory (8+ words) | 1 |
+| Round | Runs | Prize | How it's won |
+|---|---|---|---|
+| **Week 1** | Sun Nov 15, 7 pm to Sun Nov 22, 8 pm | **1 Mini Session** | Random draw from that week's entries (all platforms together) |
+| **Week 2** | Sun Nov 22, 8 pm to Sun Nov 29, 8 pm | **1 Mini Session** | Random draw from that week's entries |
+| **Week 3** | Sun Nov 29, 8 pm to Sun Dec 6, 8 pm | **1 Mini Session** | Random draw from that week's entries |
+| **Final draw** | Mon Dec 7, 7 pm (live) | **2 Full Christmas Sessions** | From the entries of the **last two weeks (Weeks 2 + 3)**: one to the **most-loved memory (most likes)**, one **random** |
 
-- **Validity:** prizes can be used for **any session type within 6 months**.
-- **Prize codes:** the plugin creates them. Each is 100% off, one-time, and expires after 6 months.
-- **Draw tickets:** 1 for a memory comment, +1 for tagging the person who was there (Instagram and TikTok only), and +1 for also sharing the memory on the website.
-- **Thank-you gift for every website entrant:** code `MEMORY50`, TT$50 off Christmas photos, valid until Dec 15.
-
-> If you'd rather give away only one Full and one Mini in total, use the platform with the most entries for the Full, and draw the Mini from all three. The tool works either way.
+- **Prize validity:** any session type, within **6 months**. The plugin makes each prize code (100% off, one-time).
+- **A person can win once,** so weekly winners are left out of the final draw.
+- **Each week is its own post** on each platform: "Week 1: What's the Christmas you'll never forget?" Entries are imported per week, so each week's entries stay separate. You can keep entering every week with a new memory.
+- **Draw tickets:** 1 for a memory comment (8+ words), +1 for tagging the person who was there (Instagram and TikTok only), +1 for also sharing the memory on the website (once per week).
+- **Thank-you gift for every website entrant:** `MEMORY50`, TT$50 off Christmas photos, valid until Dec 15.
+- **Total prizes:** 3 Mini + 2 Full Sessions.
 
 ## 2. Platform rules (so posts don't get flagged)
 - **Facebook: don't ask people to tag friends or share to their timeline to enter.** That breaks Meta's Page promotion rules, so on Facebook the entry is just the memory comment. The tool never gives tag tickets on Facebook.
@@ -36,18 +38,21 @@
 
 | Date | What happens | Where |
 |---|---|---|
-| **Sat Nov 14** | Install the plugin, publish the /giveaway/ page, paste the post links into **Giveaway → Settings** | Website |
-| **Sun Nov 15, 7 pm** | **Launch:** Reel + feed post on all three platforms, pinned to the top | FB, IG, TikTok |
-| Nov 16 – Dec 5 | **"Memory of the Day":** repost one touching memory as a story or quote card each day (only if they ticked "OK to share") | Stories |
-| Thu Nov 19 | Tip story: "Tag the person who was there. They'll want to like it too 😉" | IG, TikTok |
-| **Wed Nov 25** | **Leaderboard story:** "Top 3 most-loved memories right now…" (first names only). Their families rush to like them. | IG, FB stories |
-| Mon Nov 30 | Early-bird ends + "1 week left" post | All |
-| Thu Dec 4 | "48 hours left" countdown sticker + Reel of 3 memories read aloud | All |
-| **Sun Dec 6, 8 pm** | **Entries close** (the page countdown hits zero) | |
-| **Mon Dec 7, 7 pm** | **Live draw:** import the final comments, then go live on Instagram/Facebook and draw on screen | IG Live / FB Live |
-| Tue Dec 8 | Winners announced (post + stories); winners have 72 h to reply | All |
-| Wed Dec 9 | Email every website entrant: "Didn't win? Your TT$50 code ends Dec 15" | Email |
-| Dec 9 – 24 | Run your Christmas ads to a **custom audience of everyone who engaged with the giveaway** (retargeting) | Meta Ads |
+| **Sat Nov 14** | Install the plugin, publish the /giveaway/ page | Website |
+| **Sun Nov 15, 7 pm** | **Week 1 launch:** Reel + feed post on all three platforms, pinned | FB, IG, TikTok |
+| Nov 16 – 21 | "Memory of the Day" story each day (only memories they said are OK to share) | Stories |
+| Fri Nov 20 | "48 hours left in Week 1" story | IG, FB |
+| **Sun Nov 22, 8 pm** | Week 1 closes. Import the comments, draw the Mini winner | Website |
+| **Sun Nov 22, 8 pm** | **Week 2 post goes up** + Week 1 winner announcement story | All |
+| Mon Nov 23 | Week 1 winner posted; they have 72 h to reply | All |
+| **Sun Nov 29, 8 pm** | Week 2 closes, draw. **Week 3 post goes up** with "Final week: the last two weeks decide the 2 Full Sessions" | All |
+| Wed Dec 2 | **Leaderboard story:** "Top 3 most-loved memories right now" (families rush to like) | IG, FB |
+| Fri Dec 4 | "48 hours left" + Reel of memories read aloud | All |
+| **Sun Dec 6, 8 pm** | Giveaway closes | |
+| **Mon Dec 7, 7 pm** | **Live final draw:** Week 3 Mini winner, then the 2 Full Sessions | IG Live / FB Live |
+| Tue Dec 8 | Winners announced; 72 h to reply | All |
+| Wed Dec 9 | Email every website entrant: "Your TT$50 code ends Dec 15" | Email |
+| Dec 9 – 24 | Christmas ads to everyone who engaged with the giveaway (retargeting) | Meta Ads |
 
 ## 4. The launch posts
 
@@ -68,25 +73,25 @@
 > 3️⃣ Tag the person who was there with you (bonus entry)
 > 4️⃣ Bonus: share it at twellerstudios.com/giveaway too (link in bio) for another entry + a thank-you gift 🎁
 >
-> 🏆 The memory with the **most likes** wins a **Full Christmas Session**
-> 🍀 One random memory wins a **Mini Session**
+> 🍀 A **Mini Session** is drawn every week
+> 🏆 After 3 weeks, **2 Full Christmas Sessions** go to the most-loved memories
 > Prizes can be used for any session within 6 months.
 >
-> Closes Sun Dec 6, 8 pm. Live draw Mon Dec 7. 18+, T&T only. Not sponsored by or associated with Instagram. Full rules at twellerstudios.com/giveaway
+> This week closes Sun, 8 pm. A new Mini Session every week + 2 Full Sessions in the final draw. 18+, T&T only. Not sponsored by or associated with Instagram. Full rules at twellerstudios.com/giveaway
 > #ChristmasMemories #TrinidadChristmas #TTGiveaway #TwellerStudios #ChristmasInTT
 
 ### Facebook caption (no tagging requirement)
 > 🎄 **THE CHRISTMAS MEMORY GIVEAWAY** 🎄
 > Tell us the Christmas you'll never forget. 🥹 Comment your most memorable Christmas memory below.
 >
-> 🏆 The memory with the **most likes** wins a **Full Christmas Session**
-> 🍀 One memory drawn at random wins a **Mini Session**
+> 🍀 A **Mini Session** is drawn every week
+> 🏆 After 3 weeks, **2 Full Christmas Sessions** are drawn from the last two weeks
 > 🎁 Share it at twellerstudios.com/giveaway as well for a bonus entry and a thank-you gift.
 >
-> Prizes can be used for any session within 6 months. Closes Sun Dec 6, 8 pm. Live draw Mon Dec 7. 18+, T&T residents. This promotion is not sponsored, endorsed or administered by Facebook. Rules: twellerstudios.com/giveaway
+> Prizes can be used for any session within 6 months. This week closes Sun, 8 pm. A new Mini Session every week + 2 Full Sessions in the final draw. 18+, T&T residents. This promotion is not sponsored, endorsed or administered by Facebook. Rules: twellerstudios.com/giveaway
 
 ### TikTok caption
-> What's the Christmas you'll never forget? 🎄 Comment it + tag who was there 👇 Most-liked memory wins a FULL Christmas photo session, a random one wins a Mini 📸 Ends Dec 6 · T&T 18+ · not affiliated with TikTok · rules at twellerstudios.com/giveaway #trinidadtiktok #christmasintrinidad #christmasmemories #giveaway
+> What's the Christmas you'll never forget? 🎄 Comment it + tag who was there 👇 A new Mini session winner every week + 2 FULL sessions at the end 📸 Ends Dec 6 · T&T 18+ · not affiliated with TikTok · rules at twellerstudios.com/giveaway #trinidadtiktok #christmasintrinidad #christmasmemories #giveaway
 
 ### Your first comment (pin it)
 > I'll start 😊 The Christmas my grandmother let me stir the sorrel for the first time… [your own real memory]. Your turn 👇

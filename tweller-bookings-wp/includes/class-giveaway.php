@@ -42,7 +42,11 @@ class TwellerFlow2_Giveaway {
         $s = get_option( self::SETTINGS, array() );
         return wp_parse_args( is_array( $s ) ? $s : array(), array(
             'title'       => 'The Christmas Memory Giveaway',
-            'ends'        => '2026-12-06 20:00',
+            'rounds'      => array(
+                array( 'id' => 'w1', 'label' => 'Week 1', 'start' => '2026-11-15 19:00', 'end' => '2026-11-22 20:00' ),
+                array( 'id' => 'w2', 'label' => 'Week 2', 'start' => '2026-11-22 20:00', 'end' => '2026-11-29 20:00' ),
+                array( 'id' => 'w3', 'label' => 'Week 3', 'start' => '2026-11-29 20:00', 'end' => '2026-12-06 20:00' ),
+            ),
             'gift_code'   => 'MEMORY50',
             'min_words'   => 8,
             'tag_bonus'   => 1,  // extra entry for tagging at least one person (Instagram, TikTok)
@@ -52,12 +56,65 @@ class TwellerFlow2_Giveaway {
         ) );
     }
 
-    public static function ends_ts() {
+    // ── Weekly rounds ────────────────────────────────
+
+    private static function ts( $str ) {
         try {
-            return ( new DateTimeImmutable( self::settings()['ends'], wp_timezone() ) )->getTimestamp();
+            return ( new DateTimeImmutable( (string) $str, wp_timezone() ) )->getTimestamp();
         } catch ( Exception $e ) {
             return 0;
         }
+    }
+
+    /** Rounds in order, each with start_ts / end_ts. */
+    public static function rounds() {
+        $out = array();
+        foreach ( (array) self::settings()['rounds'] as $r ) {
+            $r['start_ts'] = self::ts( $r['start'] );
+            $r['end_ts']   = self::ts( $r['end'] );
+            if ( $r['start_ts'] && $r['end_ts'] && $r['end_ts'] > $r['start_ts'] ) $out[] = $r;
+        }
+        usort( $out, function ( $a, $b ) { return $a['start_ts'] <=> $b['start_ts']; } );
+        return $out;
+    }
+
+    public static function round_label( $id ) {
+        foreach ( self::rounds() as $r ) if ( $r['id'] === $id ) return $r['label'];
+        return '';
+    }
+
+    /** The round that is open now, or null. */
+    public static function current_round() {
+        $now = time();
+        foreach ( self::rounds() as $r ) if ( $now >= $r['start_ts'] && $now < $r['end_ts'] ) return $r;
+        return null;
+    }
+
+    /** Which round a moment falls in ('' = none). */
+    public static function round_for_ts( $ts ) {
+        foreach ( self::rounds() as $r ) if ( $ts >= $r['start_ts'] && $ts < $r['end_ts'] ) return $r['id'];
+        return '';
+    }
+
+    /** The final draw covers the last two weeks. */
+    public static function final_ids() {
+        $ids = wp_list_pluck( self::rounds(), 'id' );
+        return array_slice( $ids, -2 );
+    }
+
+    /** When the giveaway as a whole ends (the last round's end). */
+    public static function ends_ts() {
+        $r = self::rounds();
+        return $r ? end( $r )['end_ts'] : 0;
+    }
+
+    /** The deadline the page counts down to: the open round's end, else the next round's. */
+    public static function countdown_ts() {
+        $c = self::current_round();
+        if ( $c ) return $c['end_ts'];
+        $now = time();
+        foreach ( self::rounds() as $r ) if ( $r['start_ts'] > $now ) return $r['end_ts'];
+        return 0;
     }
 
     /** First time: a draft /giveaway/ page and the thank-you gift code. */
@@ -175,7 +232,7 @@ class TwellerFlow2_Giveaway {
     }
 
     /** Add comments for a platform; the same comment imported twice is kept once (likes updated). */
-    public static function add_comments( $platform, $rows ) {
+    public static function add_comments( $platform, $rows, $round = '' ) {
         $all   = self::comments();
         $index = array();
         foreach ( $all as $i => $c ) $index[ $c['id'] ] = $i;
@@ -184,10 +241,10 @@ class TwellerFlow2_Giveaway {
             $user = sanitize_text_field( $r['user'] );
             $text = sanitize_textarea_field( $r['text'] );
             if ( $user === '' ) continue;
-            $id = md5( $platform . '|' . self::handle( $user ) . '|' . $text );
+            $id = md5( $platform . '|' . self::handle( $user ) . '|' . $text . '|' . $round );
             $row = array(
                 'id' => $id, 'platform' => $platform, 'user' => $user, 'text' => $text,
-                'likes' => max( 0, (int) $r['likes'] ), 'tags' => self::tags_in( $text ), 'date' => $r['date'] ?? '',
+                'likes' => max( 0, (int) $r['likes'] ), 'tags' => self::tags_in( $text ), 'date' => $r['date'] ?? '', 'round' => $round,
             );
             if ( isset( $index[ $id ] ) ) { $all[ $index[ $id ] ]['likes'] = max( $all[ $index[ $id ] ]['likes'], $row['likes'] ); continue; }
             $all[] = $row;
@@ -199,19 +256,35 @@ class TwellerFlow2_Giveaway {
 
     // ── Entrants, metrics and draws ──────────────────
 
-    /** One row per person per platform, with their entries. */
-    public static function entrants( $platform ) {
+    /**
+     * One row per person per platform, with their entries.
+     * $ids limits it to those rounds (null = all); $platform 'all' merges the three.
+     */
+    public static function entrants( $platform, $ids = null ) {
+        if ( $platform === 'all' ) {
+            $merged = array();
+            foreach ( array_keys( self::platforms() ) as $k ) {
+                foreach ( self::entrants( $k, $ids ) as $h => $p ) { $p['platform'] = $k; $merged[ $k . '|' . $h ] = $p; }
+            }
+            uasort( $merged, function ( $a, $b ) { return ( $b['best']['likes'] ?? -1 ) <=> ( $a['best']['likes'] ?? -1 ) ?: $b['entries'] <=> $a['entries']; } );
+            return $merged;
+        }
         $s       = self::settings();
         $winners = array();
         foreach ( self::draws() as $d ) if ( empty( $d['void'] ) ) $winners[ $d['platform'] . '|' . self::handle( $d['user'] ) ] = true;
         $web = array();
-        foreach ( self::web() as $w ) if ( $w['platform'] === $platform && $w['handle'] !== '' ) $web[ self::handle( $w['handle'] ) ] = $w;
+        foreach ( self::web() as $w ) {
+            if ( $w['platform'] !== $platform || $w['handle'] === '' ) continue;
+            if ( $ids !== null && ! in_array( self::round_for_ts( $w['time'] ), $ids, true ) ) continue;
+            $web[ self::handle( $w['handle'] ) ] = $w;
+        }
 
         $people = array();
         foreach ( self::comments() as $c ) {
             if ( $c['platform'] !== $platform ) continue;
+            if ( $ids !== null && ! in_array( $c['round'] ?? '', $ids, true ) ) continue;
             $h = self::handle( $c['user'] );
-            if ( ! isset( $people[ $h ] ) ) $people[ $h ] = array( 'handle' => $h, 'user' => $c['user'], 'comments' => 0, 'best' => null, 'tags' => array(), 'memory' => false );
+            if ( ! isset( $people[ $h ] ) ) $people[ $h ] = array( 'handle' => $h, 'user' => $c['user'], 'platform' => $platform, 'comments' => 0, 'best' => null, 'tags' => array(), 'memory' => false );
             $p = &$people[ $h ];
             $p['comments']++;
             $p['tags'] = array_values( array_unique( array_merge( $p['tags'], $c['tags'] ) ) );
@@ -234,13 +307,15 @@ class TwellerFlow2_Giveaway {
         return $people;
     }
 
-    public static function metrics( $platform ) {
-        $people = self::entrants( $platform );
+    public static function metrics( $platform, $ids = null ) {
+        $people = self::entrants( $platform, $ids );
+        $plats  = $platform === 'all' ? array_keys( self::platforms() ) : array( $platform );
         $tagged = array();
         $likes  = 0;
         $n      = 0;
         foreach ( self::comments() as $c ) {
-            if ( $c['platform'] !== $platform ) continue;
+            if ( ! in_array( $c['platform'], $plats, true ) ) continue;
+            if ( $ids !== null && ! in_array( $c['round'] ?? '', $ids, true ) ) continue;
             $n++;
             $likes += $c['likes'];
             foreach ( $c['tags'] as $t ) {
@@ -251,7 +326,11 @@ class TwellerFlow2_Giveaway {
         }
         uasort( $tagged, function ( $a, $b ) { return $b['count'] <=> $a['count']; } );
         $web = 0;
-        foreach ( self::web() as $w ) if ( $w['platform'] === $platform ) $web++;
+        foreach ( self::web() as $w ) {
+            if ( $platform !== 'all' && $w['platform'] !== $platform ) continue;
+            if ( $ids !== null && ! in_array( self::round_for_ts( $w['time'] ), $ids, true ) ) continue;
+            $web++;
+        }
         return array(
             'comments' => $n,
             'people'   => count( $people ),
@@ -265,14 +344,15 @@ class TwellerFlow2_Giveaway {
     }
 
     /**
-     * kind = 'loved'  → the memory with the most likes (ties: first imported)
+     * kind = 'loved'  → the memory with the most likes
      * kind = 'random' → a random pick, one ticket per entry (CSPRNG)
-     * Past winners are left out.
+     * Over the chosen rounds and platform ('all' = every platform together).
+     * Past winners are left out. $prize = 'mini' | 'full', $label names the draw.
      */
-    public static function draw( $platform, $kind ) {
-        $people = array_filter( self::entrants( $platform ), function ( $p ) { return $p['entries'] > 0 && ! $p['won']; } );
-        if ( ! $people ) return new WP_Error( 'empty', 'No eligible entrants left on ' . self::platforms()[ $platform ] . '.' );
-        $fingerprint = hash( 'sha256', implode( ',', array_map( function ( $p ) { return $p['handle'] . ':' . $p['entries'] . ':' . ( $p['best']['likes'] ?? 0 ); }, $people ) ) );
+    public static function draw( $platform, $kind, $ids = null, $prize = 'mini', $label = '' ) {
+        $people = array_filter( self::entrants( $platform, $ids ), function ( $p ) { return $p['entries'] > 0 && ! $p['won']; } );
+        if ( ! $people ) return new WP_Error( 'empty', 'No eligible entrants left.' );
+        $fingerprint = hash( 'sha256', implode( ',', array_map( function ( $p ) { return $p['platform'] . '/' . $p['handle'] . ':' . $p['entries'] . ':' . ( $p['best']['likes'] ?? 0 ); }, $people ) ) );
 
         if ( $kind === 'loved' ) {
             $win = null;
@@ -287,8 +367,10 @@ class TwellerFlow2_Giveaway {
         $draw = array(
             'id'          => wp_generate_password( 10, false, false ),
             'time'        => time(),
-            'platform'    => $platform,
+            'platform'    => $win['platform'],
             'kind'        => $kind,
+            'prize'       => $prize === 'full' ? 'full' : 'mini',
+            'label'       => $label,
             'user'        => $win['user'],
             'likes'       => (int) ( $win['best']['likes'] ?? 0 ),
             'memory'      => $win['best']['text'] ?? '',
@@ -305,11 +387,12 @@ class TwellerFlow2_Giveaway {
     }
 
     /** A one-time 100%-off code for the prize: any session, the package of the prize, 6 months. */
-    public static function prize_code( $draw_id, $prize ) {
+    public static function prize_code( $draw_id, $prize = '' ) {
         $draws = self::draws();
         foreach ( $draws as $i => $d ) {
             if ( $d['id'] !== $draw_id ) continue;
             if ( $d['prize_code'] ) return $d['prize_code'];
+            $prize = $prize !== '' ? $prize : ( $d['prize'] ?? 'mini' );
             $pk = $prize === 'full' ? array( 'full', 'xmas_full' ) : array( 'mini', 'xmas_mini' );
             $pk = array_values( array_intersect( $pk, array_keys( (array) get_option( 'tweller_flow_2_packages', array() ) ) ) );
             $all = TwellerFlow2_Coupons::all();
@@ -348,6 +431,7 @@ class TwellerFlow2_Giveaway {
 
         $ends = self::ends_ts();
         if ( $ends && time() > $ends ) return new WP_Error( 'closed', 'The giveaway has closed. Thank you for taking part!', array( 'status' => 400 ) );
+        if ( self::rounds() && ! self::current_round() && time() < self::rounds()[0]['start_ts'] ) return new WP_Error( 'early', 'The giveaway hasn\'t started yet. Check back soon!', array( 'status' => 400 ) );
 
         $name     = sanitize_text_field( $d['name'] ?? '' );
         $email    = sanitize_email( $d['email'] ?? '' );
@@ -359,8 +443,9 @@ class TwellerFlow2_Giveaway {
         if ( self::word_count( $memory ) < (int) self::settings()['min_words'] ) return new WP_Error( 'short', 'Tell us a little more about your memory (a few sentences).', array( 'status' => 400 ) );
 
         $web = self::web();
+        $now_round = self::round_for_ts( time() );
         foreach ( $web as $w ) {
-            if ( strtolower( $w['email'] ) === strtolower( $email ) ) return new WP_Error( 'dupe', 'You\'re already entered with this email. Good luck!', array( 'status' => 400 ) );
+            if ( strtolower( $w['email'] ) === strtolower( $email ) && self::round_for_ts( $w['time'] ) === $now_round ) return new WP_Error( 'dupe', 'You\'re already entered this week with this email. Come back next week with a new memory!', array( 'status' => 400 ) );
         }
         $web[] = array(
             'time' => time(), 'name' => $name, 'email' => $email, 'phone' => substr( sanitize_text_field( $d['phone'] ?? '' ), 0, 30 ),
@@ -407,11 +492,15 @@ class TwellerFlow2_Giveaway {
     }
 
     public static function shortcode() {
-        $s      = self::settings();
-        $ends   = self::ends_ts();
-        $closed = $ends && time() > $ends;
-        $gift   = self::gift();
-        $urls   = $s['urls'];
+        $s       = self::settings();
+        $ends    = self::countdown_ts();           // the deadline to count down to
+        $all_end = self::ends_ts();
+        $closed  = $all_end && time() > $all_end;
+        $current = self::current_round();
+        $rounds  = self::rounds();
+        $final   = array_values( array_filter( $rounds, function ( $r ) { return in_array( $r['id'], self::final_ids(), true ); } ) );
+        $gift    = self::gift();
+        $urls    = $s['urls'];
         ob_start();
         include TWELLER_FLOW_2_PLUGIN_DIR . 'templates/giveaway.php';
         return ob_get_clean();
@@ -444,12 +533,20 @@ class TwellerFlow2_Giveaway {
         self::guard( 'tweller_flow_2_giveaway_save' );
         $p = wp_unslash( $_POST );
         $s = self::settings();
-        $ends = str_replace( 'T', ' ', sanitize_text_field( $p['ends'] ?? '' ) );
+        $rounds = array();
+        foreach ( (array) ( $p['rounds'] ?? array() ) as $i => $r ) {
+            $st = str_replace( 'T', ' ', sanitize_text_field( $r['start'] ?? '' ) );
+            $en = str_replace( 'T', ' ', sanitize_text_field( $r['end'] ?? '' ) );
+            $ok = '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/';
+            if ( ! preg_match( $ok, $st ) || ! preg_match( $ok, $en ) ) continue;
+            $rounds[] = array( 'id' => 'w' . ( count( $rounds ) + 1 ), 'label' => sanitize_text_field( $r['label'] ?? '' ) ?: 'Week ' . ( count( $rounds ) + 1 ), 'start' => $st, 'end' => $en );
+        }
+        if ( ! $rounds ) $rounds = $s['rounds'];
         $urls = array();
         foreach ( array_keys( self::platforms() ) as $k ) $urls[ $k ] = esc_url_raw( $p['urls'][ $k ] ?? '' );
         $s = array_merge( $s, array(
             'title'     => sanitize_text_field( $p['title'] ?? $s['title'] ) ?: $s['title'],
-            'ends'      => preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $ends ) ? $ends : $s['ends'],
+            'rounds'    => $rounds,
             'gift_code' => TwellerFlow2_Coupons::normalize( $p['gift_code'] ?? '' ),
             'min_words' => max( 0, min( 60, (int) ( $p['min_words'] ?? 8 ) ) ),
             'tag_bonus' => max( 0, min( 5, (int) ( $p['tag_bonus'] ?? 1 ) ) ),
@@ -468,24 +565,37 @@ class TwellerFlow2_Giveaway {
         if ( ! empty( $_FILES['file']['tmp_name'] ) && is_uploaded_file( $_FILES['file']['tmp_name'] ) && (int) $_FILES['file']['size'] < 5 * MB_IN_BYTES ) {
             $raw = (string) file_get_contents( $_FILES['file']['tmp_name'] );
         }
+        $round = sanitize_key( $_POST['round'] ?? '' );
+        if ( ! self::round_label( $round ) ) $round = '';
         $rows  = self::parse_import( $raw );
-        $added = self::add_comments( $platform, $rows );
+        $added = self::add_comments( $platform, $rows, $round );
         self::back( array( 'msg' => 'imported', 'n' => $added, 'of' => count( $rows ), 'p' => $platform ) );
     }
 
     public static function admin_draw() {
         self::guard( 'tweller_flow_2_giveaway_draw' );
-        $platform = sanitize_key( $_POST['platform'] ?? '' );
+        $scope    = sanitize_key( $_POST['scope'] ?? '' );               // a round id, or 'final'
         $kind     = ( $_POST['kind'] ?? '' ) === 'loved' ? 'loved' : 'random';
-        if ( ! isset( self::platforms()[ $platform ] ) ) self::back();
-        $r = self::draw( $platform, $kind );
-        if ( is_wp_error( $r ) ) self::back( array( 'msg' => 'empty', 'p' => $platform ) );
-        self::back( array( 'msg' => 'drawn', 'd' => $r['id'], 'p' => $platform ) );
+        $platform = sanitize_key( $_POST['platform'] ?? 'all' );
+        if ( $platform !== 'all' && ! isset( self::platforms()[ $platform ] ) ) $platform = 'all';
+        if ( $scope === 'final' ) {
+            $ids   = self::final_ids();
+            $prize = 'full';
+            $label = 'Final draw (' . implode( ' + ', array_map( array( __CLASS__, 'round_label' ), $ids ) ) . ')';
+        } else {
+            if ( ! self::round_label( $scope ) ) self::back( array( 'msg' => 'empty' ) );
+            $ids   = array( $scope );
+            $prize = 'mini';
+            $label = self::round_label( $scope ) . ' Mini draw';
+        }
+        $r = self::draw( $platform, $kind, $ids, $prize, $label );
+        if ( is_wp_error( $r ) ) self::back( array( 'msg' => 'empty' ) );
+        self::back( array( 'msg' => 'drawn', 'd' => $r['id'] ) );
     }
 
     public static function admin_prize() {
         self::guard( 'tweller_flow_2_giveaway_prize' );
-        $code = self::prize_code( sanitize_text_field( $_POST['draw'] ?? '' ), ( $_POST['prize'] ?? '' ) === 'full' ? 'full' : 'mini' );
+        $code = self::prize_code( sanitize_text_field( $_POST['draw'] ?? '' ) );
         self::back( array( 'msg' => 'prize', 'code' => $code ) );
     }
 

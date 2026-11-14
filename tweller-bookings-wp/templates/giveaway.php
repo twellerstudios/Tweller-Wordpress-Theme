@@ -1,5 +1,5 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit;
-/** @var array $s settings  @var int $ends  @var bool $closed  @var array|null $gift  @var array $urls */
+/** @var array $s settings  @var int $ends  @var int $all_end  @var bool $closed  @var array|null $current  @var array $rounds  @var array $final  @var array|null $gift  @var array $urls */
 $plat = TwellerFlow2_Giveaway::platforms();
 $font = TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/fonts/';
 ?>
@@ -25,6 +25,12 @@ $font = TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/fonts/';
 .tw-gw__prize p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--muted); }
 .tw-gw__tag { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; background: var(--red); color: #fff; }
 .tw-gw__tag--g { background: var(--green); }
+.tw-gw__weeks { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0 0; }
+.tw-gw__week { padding: 12px 14px; border-radius: 12px; border: 1px solid #E6DECF; background: #fff; font-size: 13px; color: var(--muted); }
+.tw-gw__week strong { display: block; color: var(--ink); font-size: 15px; }
+.tw-gw__week em { display: block; margin-top: 6px; font-style: normal; font-weight: 700; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.tw-gw__week.is-on { border-color: var(--green); box-shadow: 0 0 0 2px rgba(23,58,46,.15); } .tw-gw__week.is-on em { color: var(--green); }
+.tw-gw__week.is-over { opacity: .55; }
 .tw-gw h2 { color: var(--ink); margin: 34px 0 12px; font: 600 32px/1.1 "TwCormorant", Georgia, serif; }
 .tw-gw__steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
 .tw-gw__steps li { position: relative; padding: 0 0 16px 46px; font-size: 15px; line-height: 1.6; counter-increment: s; }
@@ -58,30 +64,38 @@ $font = TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/fonts/';
     <section class="tw-gw__hero">
         <div class="tw-gw__kicker">Tweller Studios · Christmas 2026</div>
         <h1 class="tw-gw__title"><?php echo esc_html( $s['title'] ); ?></h1>
-        <p class="tw-gw__lead">Tell us your <em>most memorable</em> Christmas memory. The memory that touches the most hearts wins a Full Christmas Session, and a lucky entrant wins a Mini Session, on Facebook, Instagram and TikTok.</p>
+        <p class="tw-gw__lead">Tell us your <em>most memorable</em> Christmas memory. A <strong>Mini Session</strong> is given away <strong>every week</strong>, and at the end <strong>2 Full Christmas Sessions</strong> are drawn from the last two weeks.</p>
+        <?php if ( $current ) : ?><p class="tw-gw__kicker" style="margin-top:16px;"><?php echo esc_html( $current['label'] ); ?> closes in</p><?php endif; ?>
         <?php if ( $ends && ! $closed ) : ?>
-            <div class="tw-gw__count" data-ends="<?php echo (int) $ends; ?>" aria-label="Time left to enter">
+            <div class="tw-gw__count" data-ends="<?php echo (int) $ends; ?>" aria-label="Time left to enter this week">
                 <div><b data-u="d">0</b><span>days</span></div><div><b data-u="h">0</b><span>hrs</span></div><div><b data-u="m">0</b><span>min</span></div><div><b data-u="s">0</b><span>sec</span></div>
             </div>
         <?php elseif ( $closed ) : ?>
-            <p class="tw-gw__lead" style="margin-top:18px;"><strong>Entries are closed.</strong> Winners are announced on our pages.</p>
+            <p class="tw-gw__lead" style="margin-top:18px;"><strong>The giveaway has ended.</strong> Winners are announced on our pages.</p>
         <?php endif; ?>
     </section>
 
     <div class="tw-gw__prizes">
-        <div class="tw-gw__prize"><span class="tw-gw__tag">Most-loved memory</span><h3>Full Christmas Session</h3><p>The memory with the most likes on each platform (Facebook, Instagram, TikTok). Up to 1 hour, 10 edited images.</p></div>
-        <div class="tw-gw__prize"><span class="tw-gw__tag tw-gw__tag--g">Random draw</span><h3>Mini Session</h3><p>One lucky entrant on each platform, drawn at random from everyone who shared a memory.</p></div>
+        <div class="tw-gw__prize"><span class="tw-gw__tag tw-gw__tag--g">Every week</span><h3>Mini Session</h3><p>One lucky memory is drawn at random each week. Up to 30 minutes, 5 edited images. A new chance every week, so keep entering.</p></div>
+        <div class="tw-gw__prize"><span class="tw-gw__tag">Final draw</span><h3>2 Full Christmas Sessions</h3><p>Drawn from the entries of the last two weeks. Up to 1 hour, 10 edited images.</p></div>
     </div>
-    <p class="tw-gw__small">Prizes can be used for any type of session within 6 months. 6 winners in total.</p>
+    <p class="tw-gw__small">Prizes can be used for any type of session within 6 months. <?php echo $final ? 'The final draw covers <strong>' . esc_html( implode( ' + ', wp_list_pluck( $final, 'label' ) ) ) . '</strong>.' : ''; ?></p>
+    <?php if ( $rounds ) : ?>
+    <div class="tw-gw__weeks">
+        <?php foreach ( $rounds as $r ) : $on = $current && $current['id'] === $r['id']; $over = time() >= $r['end_ts']; ?>
+            <div class="tw-gw__week<?php echo $on ? ' is-on' : ( $over ? ' is-over' : '' ); ?>"><strong><?php echo esc_html( $r['label'] ); ?></strong><span><?php echo esc_html( wp_date( 'M j', $r['start_ts'] ) . ' – ' . wp_date( 'M j', $r['end_ts'] ) ); ?></span><em><?php echo $on ? 'Open now' : ( $over ? 'Closed' : 'Coming up' ); ?></em></div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 
     <h2>How to enter</h2>
     <ol class="tw-gw__steps">
-        <li><strong>Find our giveaway post</strong> on Facebook, Instagram or TikTok and follow / like our page.
+        <li><strong>Find this week's giveaway post</strong> on Facebook, Instagram or TikTok and follow / like our page.
             <?php if ( array_filter( $urls ) ) : ?><span class="tw-gw__plats"><?php foreach ( $urls as $k => $u ) if ( $u ) echo '<a href="' . esc_url( $u ) . '" target="_blank" rel="noopener">' . esc_html( $plat[ $k ] ) . ' post</a>'; ?></span><?php endif; ?>
         </li>
         <li><strong>Comment your most memorable Christmas memory.</strong> The funny one, the one that still makes you cry, the year everything went wrong. The more real, the better.</li>
         <li><strong>On Instagram and TikTok, tag the person who was there</strong> in your memory for a bonus entry (on Facebook, tagging isn't needed).</li>
-        <li><strong>Share it here too</strong> for one more bonus entry, and get a thank-you gift<?php echo $gift ? ' (' . esc_html( $gift['label'] ) . ' your Christmas photos)' : ''; ?>.</li>
+        <li><strong>Share it here too</strong> for one more bonus entry (once a week), and get a thank-you gift<?php echo $gift ? ' (' . esc_html( $gift['label'] ) . ' your Christmas photos)' : ''; ?>.</li>
     </ol>
 
     <h2 id="enter">Share your memory</h2>
@@ -126,9 +140,9 @@ $font = TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/fonts/';
 
     <h2>The rules</h2>
     <div class="tw-gw__small">
-        <p>No purchase necessary. Open to residents of Trinidad &amp; Tobago aged 18+. Entries close <?php echo $ends ? esc_html( wp_date( 'l, F j \a\t g:i a', $ends ) ) : 'on the date shown on our posts'; ?>. One main entry per person per platform (your memory comment); bonus entries for tagging the person in your memory (Instagram and TikTok) and for sharing your memory on this page.</p>
-        <p>On each platform: the Full Christmas Session goes to the memory comment with the most likes when entries close; the Mini Session is drawn at random from all other eligible entrants. Likes bought or obtained through fake accounts disqualify an entry. Winners are announced on our pages within 48 hours and must reply within 72 hours, or a new winner is drawn.</p>
-        <p>Prizes: one Full Christmas Session or one Mini Session per winner, usable for any session type within 6 months of the draw, subject to availability. Not exchangeable for cash; the transport fee for home or location shoots outside the central area still applies.</p>
+        <p>No purchase necessary. Open to residents of Trinidad &amp; Tobago aged 18+. The giveaway runs in weekly rounds (<?php echo $rounds ? esc_html( implode( ', ', array_map( function ( $r ) { return $r['label'] . ': ' . wp_date( 'M j g:i a', $r['start_ts'] ) . ' to ' . wp_date( 'M j g:i a', $r['end_ts'] ); }, $rounds ) ) ) : 'dates shown on our posts'; ?>). One main entry per person per platform each week (your memory comment); bonus entries for tagging the person in your memory (Instagram and TikTok) and for sharing your memory on this page.</p>
+        <p>Every week one Mini Session is drawn at random from that week's eligible entrants. After the last week, 2 Full Christmas Sessions are drawn from the entries of the last two weeks (one to the most-loved memory, by likes, and one at random). Likes bought or obtained through fake accounts disqualify an entry. A person can win once. Winners are announced on our pages within 48 hours and must reply within 72 hours, or a new winner is drawn.</p>
+        <p>Prizes: one Mini Session per week and two Full Christmas Sessions at the end, usable for any session type within 6 months of the draw, subject to availability. Not exchangeable for cash; the transport fee for home or location shoots outside the central area still applies.</p>
         <p>This promotion is in no way sponsored, endorsed, administered by or associated with Facebook, Instagram, Meta or TikTok. By entering you release them from any liability.</p>
     </div>
 </div>
