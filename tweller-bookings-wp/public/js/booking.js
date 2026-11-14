@@ -41,6 +41,7 @@ const tfBooking = {
             if (t) this.trackView(t);
         }
         this.wireGiftCard();
+        this.wireCoupon();
         if (new URLSearchParams(location.search).get('buy') === 'gift') this.openGift();
     },
 
@@ -154,6 +155,82 @@ const tfBooking = {
         }
         this.saveState();
         this.refreshSummary();
+    },
+
+    // ── Coupon code ────────────────────────────────────
+    // A discount off the session price. Previewed here; the server prices it
+    // again when the booking is made, so this is only ever a preview.
+
+    coupon: null,   // { code, type, amount, packages, label }
+
+    wireCoupon() {
+        const toggle = document.getElementById('tf2-coupon-toggle');
+        const body = document.getElementById('tf2-coupon-body');
+        const input = document.getElementById('tf2-coupon-code');
+        const apply = document.getElementById('tf2-coupon-apply');
+        if (!toggle || !body || !input || !apply) return;
+
+        const open = () => { body.hidden = false; toggle.setAttribute('aria-expanded', 'true'); };
+        toggle.addEventListener('click', () => {
+            if (body.hidden) { open(); input.focus(); }
+            else { body.hidden = true; toggle.setAttribute('aria-expanded', 'false'); }
+        });
+        apply.addEventListener('click', () => this.applyCoupon(input.value));
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); this.applyCoupon(input.value); }
+        });
+
+        // From a link (?coupon=CODE) or a saved draft.
+        const fromUrl = new URLSearchParams(location.search).get('coupon');
+        const saved = (this.readState() || {}).couponCode;
+        const code = fromUrl || saved;
+        if (code) { open(); input.value = code; this.applyCoupon(code, true); }
+    },
+
+    async applyCoupon(raw, quiet) {
+        const msg = document.getElementById('tf2-coupon-msg');
+        const code = String(raw || '').trim();
+        const say = (text, ok) => {
+            msg.textContent = text;
+            msg.hidden = !text;
+            msg.className = 'tf2-gift__msg' + (ok ? ' tf2-gift__msg--ok' : ' tf2-gift__msg--bad');
+        };
+        if (!code) { this.coupon = null; say(''); this.saveState(); this.refreshSummary(); return; }
+
+        say('Checking…', true);
+        try {
+            const qs = new URLSearchParams({
+                code,
+                package: this.selectedPackageKey || '',
+                session: this.selectedSessionTypeKey || '',
+                email: (document.getElementById('tf2-client-email') || {}).value || ''
+            });
+            const res = await fetch(`${window.twellerBooking.restUrl}coupons/check?${qs.toString()}`);
+            const data = await res.json();
+            if (!res.ok || !data.ok) throw new Error(data.message || 'That coupon code wasn\'t recognised.');
+            this.coupon = { code: data.code, type: data.type, amount: Number(data.amount) || 0, packages: data.packages || [], label: data.label };
+            document.getElementById('tf2-coupon-code').value = data.code;
+            say(`✓ ${data.label} applied`, true);
+        } catch (e) {
+            this.coupon = null;
+            say(quiet ? '' : e.message, false);
+        }
+        this.saveState();
+        this.refreshSummary();
+    },
+
+    // True when the coupon on hand can be used on the package that is picked.
+    couponFits() {
+        if (!this.coupon) return false;
+        const pk = this.coupon.packages || [];
+        return !pk.length || pk.includes(this.selectedPackageKey);
+    },
+
+    couponOff(base) {
+        if (!this.couponFits()) return 0;
+        const c = this.coupon;
+        const off = c.type === 'percent' ? base * c.amount / 100 : c.amount;
+        return Math.round(Math.min(Math.max(off, 0), base) * 100) / 100;
     },
 
     refreshSummary() {
@@ -399,6 +476,7 @@ const tfBooking = {
                 timeDisplay: this.selectedTimeDisplay,
                 consent: consent ? consent.value : 'limited',
                 giftCode: this.gift ? this.gift.code : '',
+                couponCode: this.coupon ? this.coupon.code : '',
                 name:  el('tf2-client-name')  ? el('tf2-client-name').value  : '',
                 email: el('tf2-client-email') ? el('tf2-client-email').value : '',
                 phone: el('tf2-client-phone') ? el('tf2-client-phone').value : '',
@@ -1069,6 +1147,18 @@ const tfBooking = {
             lines = `<div style="font-size:12.5px; color:#C9A227; margin-top:8px;">✓ You'll earn a discount on your next session.</div>`;
         }
 
+        // Coupon: off the session price (the privacy fee and transport stay).
+        const couponOff = this.couponOff(base);
+        if (couponOff > 0) {
+            if (!lines.includes('Session')) {
+                lines = `<div style="display:flex; justify-content:space-between; opacity:0.9; font-size:14px; margin-top:8px;"><span>Session</span><span>TTD ${fmt(base)}</span></div>` + lines;
+            }
+            lines += `<div style="display:flex; justify-content:space-between; font-size:14px; color:#C9A227;"><span>Coupon ${this.coupon.code}</span><span>− TTD ${fmt(couponOff)}</span></div>`;
+            total -= couponOff;
+        } else if (this.coupon && !this.couponFits()) {
+            lines += `<div style="font-size:12.5px; opacity:0.85; margin-top:8px;">Coupon ${this.coupon.code} doesn't apply to this package.</div>`;
+        }
+
         // Transport fee: shoots away from the studio, outside the central area.
         const where = document.getElementById('tf2-where');
         const transport = where && this.shootType() === 'location' && this.shootPoint && this.shootPoint.outside
@@ -1223,6 +1313,7 @@ const tfBooking = {
             image_consent: (document.querySelector('input[name="tf2_image_consent"]:checked') || {}).value || 'limited',
             attribution: this.readAttribution() || {},
             gift_code: this.gift ? this.gift.code : '',
+            coupon_code: this.couponFits() ? this.coupon.code : '',
             backdrop: this.selectedBackdrop,
             backdrop_extra: this.selectedBackdropExtra,
             shoot_location: this.shootType(),

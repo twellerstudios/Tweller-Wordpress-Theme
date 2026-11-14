@@ -256,6 +256,28 @@ class TwellerFlow2_Booking_API {
             $pricing = TwellerFlow2_Image_Consent::price_booking( $package['price'], $consent, $client_email );
         }
 
+        // Coupon: a discount on the session price (not the transport fee).
+        // Checked and priced here; the use is counted just before the booking
+        // is created, and given back if that fails.
+        $coupon_code = '';
+        $coupon_off  = 0.0;
+        $coupon_note = '';
+        if ( ! empty( $data['coupon_code'] ) && class_exists( 'TwellerFlow2_Coupons' ) ) {
+            if ( TwellerFlow2_Coupons::guess_blocked() ) return TwellerFlow2_Coupons::guess_error();
+            $cp     = TwellerFlow2_Coupons::get( $data['coupon_code'] );
+            $cp_err = TwellerFlow2_Coupons::error( $cp, sanitize_key( $data['package_type'] ), self::valid_session_type( $data['session_type'] ?? '' ), $client_email );
+            if ( $cp_err ) {
+                TwellerFlow2_Coupons::guess_failed();
+                return new WP_Error( 'coupon', $cp_err, array( 'status' => 400 ) );
+            }
+            $coupon_off = min( TwellerFlow2_Coupons::discount_for( $cp, (float) $package['price'] ), max( 0.0, (float) $pricing['total'] ) );
+            if ( $coupon_off > 0 ) {
+                $coupon_code      = $cp['code'];
+                $pricing['total'] = round( $pricing['total'] - $coupon_off, 2 );
+                $coupon_note      = 'Coupon ' . $coupon_code . ': -TT$' . number_format( $coupon_off, 2 );
+            }
+        }
+
         // Where the shoot is: away from the studio and outside the central
         // area adds the transport fee (after any discount — it is a cost,
         // not part of the session price).
@@ -348,7 +370,7 @@ class TwellerFlow2_Booking_API {
             'session_date' => sanitize_text_field( $data['session_date'] ),
             'session_time' => sanitize_text_field( $data['session_time'] ),
             'location' => $location_text !== '' ? $location_text : sanitize_text_field( $data['location'] ?? '' ),
-            'notes' => trim( implode( "\n", array_filter( array( $location_note, $backdrop_note ) ) ) . ( ( $location_note || $backdrop_note ) && $client_notes ? "\n\n" : '' ) . $client_notes ),
+            'notes' => trim( implode( "\n", array_filter( array( $location_note, $backdrop_note, $coupon_note ) ) ) . ( ( $location_note || $backdrop_note || $coupon_note ) && $client_notes ? "\n\n" : '' ) . $client_notes ),
             'backdrop' => $backdrop_note,
             'payment_status' => 'pending',
             'deposit_amount' => $gift_take, // gift card, if any; bank transfer / card to follow
@@ -360,9 +382,20 @@ class TwellerFlow2_Booking_API {
             'skip_notifications' => $gift_take > 0,
         );
 
+        // Count the coupon use now (it may have run out since the check above).
+        if ( $coupon_code !== '' && ! TwellerFlow2_Coupons::redeem( $coupon_code ) ) {
+            if ( $gift_take > 0 ) {
+                $gc = TwellerFlow2_Gift_Cards::get_by_code( $gift_code );
+                if ( $gc ) TwellerFlow2_Gift_Cards::credit( $gc->id, $gift_take, 'Refunded — booking not completed' );
+            }
+            return new WP_Error( 'coupon', 'That coupon has already been used.', array( 'status' => 400 ) );
+        }
+
         self::$public_booking = true;
         $session_id = TwellerFlow2_Session::create( $session_data );
         self::$public_booking = false;
+
+        if ( ! $session_id && $coupon_code !== '' ) TwellerFlow2_Coupons::release( $coupon_code );
 
         if ( ! $session_id ) {
             if ( $gift_take > 0 ) {
@@ -370,6 +403,10 @@ class TwellerFlow2_Booking_API {
                 if ( $gc ) TwellerFlow2_Gift_Cards::credit( $gc->id, $gift_take, 'Refunded — booking could not be created' );
             }
             return new WP_Error( 'create_failed', 'Could not create booking.', array( 'status' => 500 ) );
+        }
+
+        if ( $coupon_code !== '' ) {
+            TwellerFlow2_Session::record_stage_history( $session_id, 'booked', 0, 'Coupon ' . $coupon_code . ' applied — TT$' . number_format( $coupon_off, 2 ) . ' off' );
         }
 
         if ( $gift_take > 0 ) {
@@ -414,6 +451,7 @@ class TwellerFlow2_Booking_API {
             'session_id' => $session_id,
             'tracking_code' => $session->tracking_code,
             'gift_applied' => $gift_take,
+            'coupon_applied' => $coupon_off,
         ) );
     }
 

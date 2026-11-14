@@ -309,6 +309,19 @@ class TwellerFlow2_Booking_Shortcode {
                     </div>
                     <?php endif; ?>
 
+                    <?php if ( class_exists( 'TwellerFlow2_Coupons' ) ) : ?>
+                    <div class="tf2-gift tf2-coupon" id="tf2-coupon">
+                        <button type="button" class="tf2-gift__toggle" id="tf2-coupon-toggle" aria-expanded="false" aria-controls="tf2-coupon-body"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span>Have a coupon code?</span></button>
+                        <div class="tf2-gift__body" id="tf2-coupon-body" hidden>
+                            <div class="tf2-gift__row">
+                                <input type="text" id="tf2-coupon-code" placeholder="Enter your coupon code" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Coupon code">
+                                <button type="button" id="tf2-coupon-apply">Apply</button>
+                            </div>
+                            <p class="tf2-gift__msg" id="tf2-coupon-msg" hidden></p>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
                     <?php if ( $confirm ) : ?>
                     <div class="tf2-field tf2-confirm-availability" style="background:#F9FAFB; padding:12px; border:1px solid #E5E7EB; border-radius:6px; margin-bottom:15px;">
                         <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-weight:normal; margin:0;">
