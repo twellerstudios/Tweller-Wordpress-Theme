@@ -71,8 +71,8 @@ $act = function ( $c, $do ) {
                     <td><input type="number" id="cp-uses" name="max_uses" min="0" value="1" style="width:90px;"> <span class="tf2-description">1 = one booking only. 0 = unlimited.</span></td>
                 </tr>
                 <tr>
-                    <th><label for="cp-exp">Valid until</label></th>
-                    <td><input type="date" id="cp-exp" name="expires"> <span class="tf2-description">Optional. The last day it works.</span></td>
+                    <th><label for="cp-exp">Ends at (countdown)</label></th>
+                    <td><input type="datetime-local" id="cp-exp" name="expires"> <span class="tf2-description">Optional. Pick a date and time (site time: <?php echo esc_html( wp_timezone_string() ); ?>). The client sees a live countdown once they enter the code, and it stops working at that moment.</span></td>
                 </tr>
                 <tr>
                     <th><label for="cp-email">Only for this email</label></th>
@@ -94,13 +94,14 @@ $act = function ( $c, $do ) {
             <p class="tf2-description">None yet.</p>
         <?php else : ?>
         <table class="widefat striped">
-            <thead><tr><th>Code</th><th>Discount</th><th>Applies to</th><th>Used</th><th>Valid until</th><th>For</th><th>Note</th><th></th></tr></thead>
+            <thead><tr><th>Code</th><th>Discount</th><th>Applies to</th><th>Used</th><th>Ends</th><th>For</th><th>Note</th><th></th></tr></thead>
             <tbody>
             <?php foreach ( $coupons as $code => $c ) :
                 $pkg_names = array();
                 foreach ( (array) $c['packages'] as $k ) $pkg_names[] = $packages[ $k ]['name'] ?? $k;
                 $used_up = (int) $c['max_uses'] > 0 && (int) $c['uses'] >= (int) $c['max_uses'];
-                $expired = ! empty( $c['expires'] ) && current_time( 'Y-m-d' ) > $c['expires'];
+                $exp_ts  = TwellerFlow2_Coupons::expiry_ts( $c );
+                $expired = $exp_ts && time() > $exp_ts;
                 $status  = empty( $c['active'] ) ? 'Off' : ( $used_up ? 'Used up' : ( $expired ? 'Expired' : 'Active' ) );
             ?>
                 <tr>
@@ -108,7 +109,7 @@ $act = function ( $c, $do ) {
                     <td><?php echo esc_html( TwellerFlow2_Coupons::label( $c ) ); ?></td>
                     <td><?php echo esc_html( $pkg_names ? implode( ', ', $pkg_names ) : 'Any package' ); ?></td>
                     <td><?php echo (int) $c['uses']; ?> / <?php echo (int) $c['max_uses'] ? (int) $c['max_uses'] : '∞'; ?></td>
-                    <td><?php echo esc_html( $c['expires'] ?: '—' ); ?></td>
+                    <td><?php echo $exp_ts ? esc_html( wp_date( 'M j, Y g:i a', $exp_ts ) ) : '—'; ?></td>
                     <td><?php echo esc_html( $c['email'] ?: 'Anyone' ); ?></td>
                     <td><?php echo esc_html( $c['note'] ); ?></td>
                     <td style="white-space:nowrap;">

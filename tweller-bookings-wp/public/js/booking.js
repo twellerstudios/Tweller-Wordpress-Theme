@@ -208,15 +208,49 @@ const tfBooking = {
             const res = await fetch(`${window.twellerBooking.restUrl}coupons/check?${qs.toString()}`);
             const data = await res.json();
             if (!res.ok || !data.ok) throw new Error(data.message || 'That coupon code wasn\'t recognised.');
-            this.coupon = { code: data.code, type: data.type, amount: Number(data.amount) || 0, packages: data.packages || [], label: data.label };
+            // The deadline is kept as "seconds left" measured on the page's own clock, so a wrong phone clock can't extend it.
+            const left = data.expires_ts ? Math.max(0, data.expires_ts - (data.now_ts || data.expires_ts)) : 0;
+            this.coupon = { code: data.code, type: data.type, amount: Number(data.amount) || 0, packages: data.packages || [], label: data.label, endsAt: left ? performance.now() + left * 1000 : 0 };
             document.getElementById('tf2-coupon-code').value = data.code;
             say(`✓ ${data.label} applied`, true);
+            this.startCouponTimer(say);
         } catch (e) {
             this.coupon = null;
             say(quiet ? '' : e.message, false);
         }
         this.saveState();
         this.refreshSummary();
+    },
+
+    couponTimer: null,
+
+    // A live countdown while the coupon has an end time; at zero the coupon
+    // drops off the summary (the server refuses it as well).
+    startCouponTimer(say) {
+        clearInterval(this.couponTimer);
+        const c = this.coupon;
+        if (!c || !c.endsAt) return;
+        const fmtLeft = (ms) => {
+            const t = Math.max(0, Math.floor(ms / 1000));
+            const d = Math.floor(t / 86400), h = Math.floor(t % 86400 / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+            const p = (n) => String(n).padStart(2, '0');
+            return (d ? d + 'd ' : '') + p(h) + ':' + p(m) + ':' + p(s);
+        };
+        const tick = () => {
+            const ms = c.endsAt - performance.now();
+            if (this.coupon !== c) { clearInterval(this.couponTimer); return; }
+            if (ms <= 0) {
+                clearInterval(this.couponTimer);
+                this.coupon = null;
+                say('This coupon has just expired.', false);
+                this.saveState();
+                this.refreshSummary();
+                return;
+            }
+            say(`✓ ${c.label} applied · ends in ${fmtLeft(ms)}`, true);
+        };
+        tick();
+        this.couponTimer = setInterval(tick, 1000);
     },
 
     // True when the coupon on hand can be used on the package that is picked.

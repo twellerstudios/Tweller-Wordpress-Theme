@@ -23,6 +23,38 @@ class TwellerFlow2_Coupons {
         add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ), 21 );
         add_action( 'admin_post_tweller_flow_2_coupon_save', array( __CLASS__, 'admin_save' ) );
         add_action( 'admin_post_tweller_flow_2_coupon_action', array( __CLASS__, 'admin_action' ) );
+        add_action( 'init', array( __CLASS__, 'maybe_seed' ), 40 );
+    }
+
+    /**
+     * Two one-time 50%-off codes for a returning client (once, when this
+     * version is first loaded). Delete or edit them on the Coupons page.
+     */
+    public static function maybe_seed() {
+        if ( get_option( 'tweller_flow_2_coupons_seeded_sj' ) ) return;
+        $all = self::all();
+        foreach ( array( '50OFF-SJ1', '50OFF-SJ2' ) as $code ) {
+            if ( isset( $all[ $code ] ) ) continue;
+            $all[ $code ] = array(
+                'code' => $code, 'type' => 'percent', 'amount' => 50.0, 'packages' => array(), 'session_types' => array(),
+                'expires' => '', 'max_uses' => 1, 'uses' => 0, 'email' => '', 'note' => 'One-time code for a returning client (sale discount)',
+                'active' => 1, 'created' => current_time( 'Y-m-d' ),
+            );
+        }
+        update_option( self::OPTION, $all, false );
+        update_option( 'tweller_flow_2_coupons_seeded_sj', 1, false );
+    }
+
+    /** When the code stops working, as a Unix time (site timezone), or 0 for never. A bare date means the end of that day. */
+    public static function expiry_ts( $c ) {
+        $e = trim( (string) ( $c['expires'] ?? '' ) );
+        if ( $e === '' ) return 0;
+        try {
+            $dt = new DateTimeImmutable( strlen( $e ) <= 10 ? $e . ' 23:59:59' : $e, wp_timezone() );
+            return $dt->getTimestamp();
+        } catch ( Exception $ex ) {
+            return 0;
+        }
     }
 
     // ── Storage ──────────────────────────────────────
@@ -62,7 +94,8 @@ class TwellerFlow2_Coupons {
     public static function error( $c, $package_key = '', $session_type = '', $email = '' ) {
         if ( ! $c ) return 'That coupon code wasn\'t recognised. Please check it.';
         if ( empty( $c['active'] ) ) return 'That coupon is no longer active.';
-        if ( ! empty( $c['expires'] ) && current_time( 'Y-m-d' ) > $c['expires'] ) return 'That coupon has expired.';
+        $ts = self::expiry_ts( $c );
+        if ( $ts && time() > $ts ) return 'That coupon has expired.';
         if ( (int) $c['max_uses'] > 0 && (int) $c['uses'] >= (int) $c['max_uses'] ) return 'That coupon has already been used.';
         if ( ! empty( $c['packages'] ) && $package_key !== '' && ! in_array( $package_key, $c['packages'], true ) ) {
             return 'That coupon doesn\'t apply to the package you picked.';
@@ -166,6 +199,8 @@ class TwellerFlow2_Coupons {
             'label'    => self::label( $c ),
             'packages' => array_values( (array) $c['packages'] ),
             'locked'   => ! empty( $c['email'] ),
+            'expires_ts' => self::expiry_ts( $c ),
+            'now_ts'   => time(),
         ) );
     }
 
@@ -219,8 +254,9 @@ class TwellerFlow2_Coupons {
         if ( count( $pk ) === count( (array) $packages ) ) $pk = array();
         if ( count( $st ) === count( (array) $types ) ) $st = array();
 
-        $expires = sanitize_text_field( $p['expires'] ?? '' );
-        if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $expires ) ) $expires = '';
+        // A date, or a date and time ("2026-11-30T18:00"); stored as "Y-m-d H:i" in the site's timezone.
+        $expires = str_replace( 'T', ' ', sanitize_text_field( $p['expires'] ?? '' ) );
+        if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2})?$/', $expires ) ) $expires = '';
 
         $all          = self::all();
         $all[ $code ] = array(
