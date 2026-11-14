@@ -2230,3 +2230,16 @@ body.page .page-hero {
 .tf2-client-nav-item > a {
     font-weight: 600;
 }
+
+/* Snap It Forward: the client's share link */
+.tf2-snap { margin: 28px auto 8px; max-width: 640px; padding: 20px 22px; border: 1px solid var(--tf-gray-200); border-radius: 14px; background: #FBF8EF; font-family: var(--tf-font); }
+.tf2-snap__kicker { font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--tf-gold-dark); margin-bottom: 6px; }
+.tf2-snap__lead { margin: 0 0 14px; font-size: 14.5px; line-height: 1.6; color: var(--tf-gray-700); }
+.tf2-snap__row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tf2-snap__link { flex: 1 1 260px; min-width: 0; text-overflow: ellipsis; padding: 11px 12px; border: 1px solid var(--tf-gray-300); border-radius: 10px; background: #fff; font: 600 15px/1.2 var(--tf-font); color: var(--tf-black); }
+.tf2-snap__copy { flex: 1 0 auto; padding: 11px 16px; border: 0; border-radius: 10px; background: var(--tf-black); color: #fff; font: 600 14px/1 var(--tf-font); cursor: pointer; min-height: 44px; }
+.tf2-snap__copy:hover { background: var(--tf-gray-900); }
+.tf2-snap__copy:focus-visible { outline: 2px solid var(--tf-gold); outline-offset: 2px; }
+.tf2-snap__share { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; font-size: 13px; color: var(--tf-gray-500); }
+.tf2-snap__share a { color: #128C4A; font-weight: 600; text-decoration: none; }
+.tf2-snap__share a:hover { text-decoration: underline; }

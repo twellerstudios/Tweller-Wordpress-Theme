@@ -276,6 +276,14 @@
                             <span class="tf2-client-info__label">Email</span>
                             <span class="tf2-client-info__value"><?php echo esc_html( $session->client_email ?: '—' ); ?></span>
                         </div>
+                        <?php if ( class_exists( 'TwellerFlow2_Referrals' ) && TwellerFlow2_Referrals::on() && $session->client_email && ( $tf2_snap = TwellerFlow2_Referrals::ensure_member( $session->client_email, $session->client_name ) ) ) : ?>
+                        <div class="tf2-client-info__item">
+                            <span class="tf2-client-info__label">Snap Link</span>
+                            <span class="tf2-client-info__value"><a href="<?php echo esc_url( TwellerFlow2_Referrals::link( $tf2_snap ) ); ?>" target="_blank" rel="noopener"><?php echo esc_html( TwellerFlow2_Referrals::short_link( $tf2_snap ) ); ?></a>
+                                <button type="button" class="button button-small tf2-copy" data-copy="<?php echo esc_attr( TwellerFlow2_Referrals::link( $tf2_snap ) ); ?>">Copy</button></span>
+                        </div>
+                        <?php include TWELLER_FLOW_2_PLUGIN_DIR . 'admin/views/partials/copy-js.php'; ?>
+                        <?php endif; ?>
                         <div class="tf2-client-info__item">
                             <span class="tf2-client-info__label">Phone</span>
                             <span class="tf2-client-info__value"><?php echo esc_html( $session->client_phone ?: '—' ); ?></span>

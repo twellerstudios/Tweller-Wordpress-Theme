@@ -268,7 +268,21 @@ class TwellerFlow2_Booking_API {
         $coupon_code = '';
         $coupon_off  = 0.0;
         $coupon_note = '';
-        if ( ! empty( $data['coupon_code'] ) && class_exists( 'TwellerFlow2_Coupons' ) ) {
+        $snap_member = null;
+        if ( ! empty( $data['coupon_code'] ) && class_exists( 'TwellerFlow2_Referrals' ) && class_exists( 'TwellerFlow2_Coupons' )
+            && ! TwellerFlow2_Coupons::get( $data['coupon_code'] ) && TwellerFlow2_Referrals::get( $data['coupon_code'] ) ) {
+            // Snap It Forward: a friend's discount on their first session.
+            $snap_member = TwellerFlow2_Referrals::get( $data['coupon_code'] );
+            $snap_err    = TwellerFlow2_Referrals::error( $snap_member, $client_email );
+            if ( $snap_err ) return new WP_Error( 'coupon', $snap_err, array( 'status' => 400 ) );
+            $coupon_off = min( TwellerFlow2_Referrals::friend_discount( (float) $package['price'] ), max( 0.0, (float) $pricing['total'] ) );
+            if ( $coupon_off > 0 ) {
+                $pricing['total'] = round( $pricing['total'] - $coupon_off, 2 );
+                $coupon_note      = 'Snap It Forward (' . $snap_member['name'] . ', ' . $snap_member['code'] . '): -TT$' . number_format( $coupon_off, 2 );
+            } else {
+                $snap_member = null;
+            }
+        } elseif ( ! empty( $data['coupon_code'] ) && class_exists( 'TwellerFlow2_Coupons' ) ) {
             if ( TwellerFlow2_Coupons::guess_blocked() ) return TwellerFlow2_Coupons::guess_error();
             $cp     = TwellerFlow2_Coupons::get( $data['coupon_code'] );
             $cp_err = TwellerFlow2_Coupons::error( $cp, sanitize_key( $data['package_type'] ), self::valid_session_type( $data['session_type'] ?? '' ), $client_email, (float) $package['price'] );
@@ -409,6 +423,11 @@ class TwellerFlow2_Booking_API {
                 if ( $gc ) TwellerFlow2_Gift_Cards::credit( $gc->id, $gift_take, 'Refunded — booking could not be created' );
             }
             return new WP_Error( 'create_failed', 'Could not create booking.', array( 'status' => 500 ) );
+        }
+
+        if ( $snap_member ) {
+            TwellerFlow2_Referrals::record_booking( $snap_member, $session_id, $session_data['client_name'], $client_email, $coupon_off );
+            TwellerFlow2_Session::record_stage_history( $session_id, 'booked', 0, 'Snap It Forward: shared by ' . $snap_member['name'] . ' (' . $snap_member['code'] . ') — TT$' . number_format( $coupon_off, 2 ) . ' off' );
         }
 
         if ( $coupon_code !== '' ) {

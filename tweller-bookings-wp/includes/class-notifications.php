@@ -73,6 +73,8 @@ class TwellerFlow2_Notifications {
             }
         }
 
+        if ( in_array( $stage, array( 'booked', 'delivered' ), true ) ) $body = self::with_snap( $session, $body );
+
         self::send_email( $session, $subject, $body, $attachments, $extra_to );
 
         foreach ( $attachments as $file ) {
@@ -253,6 +255,24 @@ class TwellerFlow2_Notifications {
 
         self::log_notification( $session->id, $session->client_email, $subject, $body, $sent ? 'sent' : 'failed' );
         return $sent;
+    }
+
+    /**
+     * Snap It Forward: the client's own share link, added to the booking,
+     * confirmation and gallery emails (also when the studio has edited the
+     * template, unless the edited text already shows the link).
+     */
+    public static function with_snap( $session, $body ) {
+        if ( ! class_exists( 'TwellerFlow2_Referrals' ) || ! TwellerFlow2_Referrals::on() || empty( $session->client_email ) ) return $body;
+        $member = TwellerFlow2_Referrals::ensure_member( $session->client_email, $session->client_name );
+        if ( ! $member || strpos( $body, TwellerFlow2_Referrals::short_link( $member ) ) !== false ) return $body;
+        $card = TwellerFlow2_Referrals::email_card_html( $member );
+        $pos  = strripos( $body, 'Warm regards' );
+        if ( $pos !== false ) {
+            $p = strripos( substr( $body, 0, $pos ), '<p' );
+            if ( $p !== false ) return substr( $body, 0, $p ) . $card . substr( $body, $p );
+        }
+        return $body . $card;
     }
 
     /** Low-level branded send: wraps $body in the black & gold template */
@@ -597,6 +617,7 @@ class TwellerFlow2_Notifications {
             }
         }
 
+        $body = self::with_snap( $session, $body );
         $sent = self::send_email( $session, $subject, $body, $attachments, $extra_to );
 
         foreach ( $attachments as $file ) {

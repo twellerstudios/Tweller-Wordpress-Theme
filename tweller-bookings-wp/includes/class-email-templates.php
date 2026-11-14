@@ -205,6 +205,9 @@ class TwellerFlow2_Email_Templates {
             'review_button'   => $N::email_button_row( $review, 'Leave Us a Review', false, 6 ),
             'session_details' => $N::session_details_card( $session, $pkg_name ),
             'payment_summary' => $N::payment_summary_card( $session ),
+            // Snap It Forward: the client's own share link (plain) and the share card (HTML).
+            'snap_link'       => ( class_exists( 'TwellerFlow2_Referrals' ) && TwellerFlow2_Referrals::on() && ( $tf2_m = TwellerFlow2_Referrals::ensure_member( $session->client_email, $session->client_name ) ) ) ? esc_url( TwellerFlow2_Referrals::link( $tf2_m ) ) : '',
+            'snap_card'       => ( class_exists( 'TwellerFlow2_Referrals' ) && ! empty( $tf2_m ) ) ? TwellerFlow2_Referrals::email_card_html( $tf2_m ) : '',
         );
     }
 

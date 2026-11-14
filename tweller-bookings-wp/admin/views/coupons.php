@@ -153,7 +153,11 @@ $act = function ( $c, $do ) {
                 $status  = empty( $c['active'] ) ? 'Off' : ( $used_up ? 'Used up' : ( $expired ? 'Expired' : 'Active' ) );
             ?>
                 <tr>
-                    <td><strong style="letter-spacing:.05em;"><?php echo esc_html( $code ); ?></strong><br><small><?php echo esc_html( $status ); ?></small></td>
+                    <td><strong style="letter-spacing:.05em;"><?php echo esc_html( $code ); ?></strong><br><small><?php echo esc_html( $status ); ?></small>
+                        <div style="margin-top:6px;white-space:nowrap;">
+                            <button type="button" class="button button-small tf2-copy" data-copy="<?php echo esc_attr( $code ); ?>">Copy code</button>
+                            <button type="button" class="button button-small tf2-copy" data-copy="<?php echo esc_attr( add_query_arg( 'coupon', $code, TwellerFlow2_Booking_Links::page_url() ?: home_url( '/' ) ) ); ?>">Copy link</button>
+                        </div></td>
                     <td><?php echo esc_html( TwellerFlow2_Coupons::label( $c ) ); ?><?php if ( (float) ( $c['min_spend'] ?? 0 ) > 0 ) echo '<br><small>Min. TT$' . esc_html( number_format( (float) $c['min_spend'] ) ) . '</small>'; ?></td>
                     <td><?php echo esc_html( $pkg_names ? implode( ', ', $pkg_names ) : 'Any package' ); ?></td>
                     <td><?php echo (int) $c['uses']; ?> / <?php echo (int) $c['max_uses'] ? (int) $c['max_uses'] : '∞'; ?></td>
@@ -178,3 +182,4 @@ $act = function ( $c, $do ) {
     t.addEventListener('change', function () { u.textContent = t.value === 'fixed' ? 'TT$ off the session price' : '% off the session price'; });
 })();
 </script>
+<?php include TWELLER_FLOW_2_PLUGIN_DIR . 'admin/views/partials/copy-js.php'; ?>

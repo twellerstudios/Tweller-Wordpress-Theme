@@ -181,9 +181,12 @@ const tfBooking = {
         });
 
         // From a link (?coupon=CODE) or a saved draft.
-        const fromUrl = new URLSearchParams(location.search).get('coupon');
+        const qs = new URLSearchParams(location.search);
+        const fromUrl = qs.get('coupon') || qs.get('snap');
+        // A Snap Link visit (twellerstudios.com/snap/sarah-j) is remembered for 60 days.
+        const snapCookie = (document.cookie.match(/(?:^|;\s*)tf2_snap=([^;]+)/) || [])[1];
         const saved = (this.readState() || {}).couponCode;
-        const code = fromUrl || saved;
+        const code = fromUrl || saved || (snapCookie ? decodeURIComponent(snapCookie) : '');
         if (code) { open(); input.value = code; this.applyCoupon(code, true); }
     },
 
@@ -210,9 +213,9 @@ const tfBooking = {
             if (!res.ok || !data.ok) throw new Error(data.message || 'That coupon code wasn\'t recognised.');
             // The deadline is kept as "seconds left" measured on the page's own clock, so a wrong phone clock can't extend it.
             const left = data.expires_ts ? Math.max(0, data.expires_ts - (data.now_ts || data.expires_ts)) : 0;
-            this.coupon = { code: data.code, type: data.type, amount: Number(data.amount) || 0, packages: data.packages || [], min_spend: Number(data.min_spend) || 0, label: data.label, endsAt: left ? performance.now() + left * 1000 : 0 };
+            this.coupon = { code: data.code, type: data.type, amount: Number(data.amount) || 0, snap: !!data.snap, packages: data.packages || [], min_spend: Number(data.min_spend) || 0, label: data.label, endsAt: left ? performance.now() + left * 1000 : 0 };
             document.getElementById('tf2-coupon-code').value = data.code;
-            say(`✓ ${data.label} applied`, true);
+            say(data.snap ? `✓ ${data.label} your first session` : `✓ ${data.label} applied`, true);
             this.startCouponTimer(say);
         } catch (e) {
             this.coupon = null;
@@ -1215,7 +1218,7 @@ const tfBooking = {
             if (!lines.includes('Session')) {
                 lines = `<div style="display:flex; justify-content:space-between; opacity:0.9; font-size:14px; margin-top:8px;"><span>Session</span><span>TTD ${fmt(base)}</span></div>` + lines;
             }
-            lines += `<div style="display:flex; justify-content:space-between; font-size:14px; color:#C9A227;"><span>Coupon ${this.coupon.code}</span><span>− TTD ${fmt(couponOff)}</span></div>`;
+            lines += `<div style="display:flex; justify-content:space-between; font-size:14px; color:#C9A227;"><span>${this.coupon.snap ? 'Snap It Forward' : 'Coupon ' + this.coupon.code}</span><span>− TTD ${fmt(couponOff)}</span></div>`;
             total -= couponOff;
         } else if (this.coupon && !this.couponFits()) {
             const gap = this.couponMinGap();

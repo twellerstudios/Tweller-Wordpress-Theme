@@ -627,6 +627,8 @@ class TwellerFlow2_Tracker_Shortcode {
                 </div>
             <?php endif; ?>
 
+            <?php if ( class_exists( 'TwellerFlow2_Referrals' ) ) echo TwellerFlow2_Referrals::portal_card( $session ); // phpcs:ignore ?>
+
             <div class="tf2-tracker__footer">
                 <p class="tf2-tracker__code">Shoot Code: <strong><?php echo esc_html( $session->tracking_code ); ?></strong></p>
                 <p class="tf2-tracker__refresh">This page auto-refreshes every 60 seconds.</p>

@@ -247,6 +247,15 @@ class TwellerFlow2_Coupons {
 
     public static function rest_check( $request ) {
         if ( self::guess_blocked() ) return self::guess_error();
+        // A Snap It Forward code (a client's own link code) works in the same box.
+        if ( ! self::get( (string) $request->get_param( 'code' ) ) && class_exists( 'TwellerFlow2_Referrals' ) ) {
+            $snap = TwellerFlow2_Referrals::get( (string) $request->get_param( 'code' ) );
+            if ( $snap ) {
+                $err = TwellerFlow2_Referrals::error( $snap, sanitize_email( (string) $request->get_param( 'email' ) ) );
+                if ( $err ) return new WP_Error( 'invalid', $err, array( 'status' => 400 ) );
+                return rest_ensure_response( TwellerFlow2_Referrals::check_response( $snap ) );
+            }
+        }
         $c   = self::get( (string) $request->get_param( 'code' ) );
         $pk  = sanitize_key( (string) $request->get_param( 'package' ) );
         $st  = sanitize_key( (string) $request->get_param( 'session' ) );
@@ -315,7 +324,7 @@ class TwellerFlow2_Coupons {
         $code = self::normalize( $p['code'] ?? '' );
         if ( $code === '' ) $code = self::random_code();
         if ( strlen( $code ) < 3 || strlen( $code ) > 30 ) self::back( array( 'error' => 'code' ) );
-        if ( self::get( $code ) ) self::back( array( 'error' => 'exists', 'code' => $code ) );
+        if ( self::get( $code ) || ( class_exists( 'TwellerFlow2_Referrals' ) && TwellerFlow2_Referrals::get( $code ) ) ) self::back( array( 'error' => 'exists', 'code' => $code ) );
 
         $packages = get_option( 'tweller_flow_2_packages', array() );
         $types    = get_option( 'tweller_flow_2_session_types', array() );
