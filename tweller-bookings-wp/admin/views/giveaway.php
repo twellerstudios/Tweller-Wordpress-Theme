@@ -36,6 +36,7 @@ $ends   = TwellerFlow2_Giveaway::ends_ts();
     <?php elseif ( $msg === 'empty' ) : ?><div class="tf2-alert tf2-alert--error">Nobody eligible left to draw.</div>
     <?php elseif ( $msg === 'prize' ) : ?><div class="tf2-alert tf2-alert--success">Prize code created: <strong><?php echo esc_html( sanitize_text_field( wp_unslash( $_GET['code'] ?? '' ) ) ); ?></strong>. Send it to the winner.</div>
     <?php elseif ( $msg === 'voided' ) : ?><div class="tf2-alert tf2-alert--success">That win is cancelled. Draw again for a new winner.</div>
+    <?php elseif ( $msg === 'hidden' ) : ?><div class="tf2-alert tf2-alert--success">Updated the public board.</div>
     <?php elseif ( $msg === 'cleared' ) : ?><div class="tf2-alert tf2-alert--success">Comments for that platform removed.</div>
     <?php endif; ?>
 
@@ -82,6 +83,36 @@ $ends   = TwellerFlow2_Giveaway::ends_ts();
                     <td><?php $fd = array_filter( $draws, function ( $d ) { return empty( $d['void'] ) && ( $d['prize'] ?? '' ) === 'full'; } ); echo count( $fd ) . ' of 2 drawn'; ?></td></tr>
             </tbody>
         </table>
+    </div>
+
+    <?php
+    $conn  = TwellerFlow2_Giveaway_Meta::connected();
+    $live_id = $rsel !== 'all' && $rsel !== 'final' ? $rsel : ( $current ? $current['id'] : ( $rounds ? end( $rounds )['id'] : '' ) );
+    $ls    = $live_id ? TwellerFlow2_Giveaway_Meta::round_stats( $live_id ) : null;
+    $grow  = TwellerFlow2_Giveaway_Meta::growth();
+    $lsync = TwellerFlow2_Giveaway_Meta::last_sync();
+    ?>
+    <div class="tf2-card tf2-mb-6">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+            <h2 style="margin:0;">Live numbers: <?php echo esc_html( TwellerFlow2_Giveaway::round_label( $live_id ) ?: '—' ); ?></h2>
+            <span>
+                <?php if ( $conn ) : ?><small><?php echo $lsync ? 'Updated ' . esc_html( human_time_diff( $lsync ) ) . ' ago' : 'Not synced yet'; ?></small> <?php endif; ?>
+                <a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=tweller-flow-2-giveaway-meta' ) ); ?>"><?php echo $conn ? 'Meta settings & sync' : 'Connect Facebook & Instagram'; ?></a>
+            </span>
+        </div>
+        <?php if ( ! $conn ) : ?>
+            <p class="tf2-description">Connect Facebook and Instagram once and the likes, comments, shares, reach, video views and every comment come in by themselves.</p>
+        <?php elseif ( $ls ) : ?>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px;">
+                <?php foreach ( array( 'likes' => 'Likes', 'comments' => 'Comments', 'shares' => 'Shares', 'reach' => 'People reached', 'views' => 'Views' ) as $f => $label ) : ?>
+                    <div style="background:#f6f7f7;border-radius:8px;padding:10px 12px;"><div class="tf2-description"><?php echo esc_html( $label ); ?></div><div style="font-size:22px;font-weight:700;"><?php echo esc_html( number_format( $ls['total'][ $f ] ) ); ?></div></div>
+                <?php endforeach; ?>
+                <?php foreach ( $grow as $k => $g ) : ?>
+                    <div style="background:#f6f7f7;border-radius:8px;padding:10px 12px;"><div class="tf2-description"><?php echo esc_html( ucfirst( $k ) ); ?> followers</div><div style="font-size:22px;font-weight:700;"><?php echo esc_html( number_format( $g['now'] ) ); ?> <small style="color:<?php echo $g['gained'] >= 0 ? '#067647' : '#B42318'; ?>;"><?php echo ( $g['gained'] >= 0 ? '+' : '' ) . esc_html( number_format( $g['gained'] ) ); ?></small></div></div>
+                <?php endforeach; ?>
+            </div>
+            <p class="tf2-description" style="margin:10px 0 0;">Totals include Facebook, Instagram and the TikTok numbers you typed in. Comment likes and website votes feed the draw below.</p>
+        <?php endif; ?>
     </div>
 
     <h2 class="nav-tab-wrapper" style="margin-bottom:12px;">
@@ -149,17 +180,22 @@ $ends   = TwellerFlow2_Giveaway::ends_ts();
             <p class="tf2-description">No comments imported yet for this selection.</p>
         <?php else : ?>
         <table class="widefat striped" style="margin-top:10px;">
-            <thead><tr><th>Person</th><?php if ( $tab === 'all' ) echo '<th>Platform</th>'; ?><th>Likes</th><th>Tickets</th><th>Tagged</th><th>Website</th><th>Memory</th></tr></thead>
+            <thead><tr><th>Person</th><?php if ( $tab === 'all' ) echo '<th>Platform</th>'; ?><th>Score</th><th>Tickets</th><th>Tagged</th><th>Website</th><th>Memory</th></tr></thead>
             <tbody>
             <?php foreach ( array_slice( $people, 0, 300 ) as $p ) : ?>
                 <tr<?php echo $p['won'] ? ' style="background:#FFF7E0;"' : ''; ?>>
                     <td><strong><?php echo esc_html( $p['user'] ); ?></strong><?php echo $p['won'] ? ' 🏆' : ''; ?></td>
                     <?php if ( $tab === 'all' ) echo '<td>' . esc_html( $plats[ $p['platform'] ] ?? '' ) . '</td>'; ?>
-                    <td><?php echo (int) ( $p['best']['likes'] ?? 0 ); ?></td>
+                    <td><strong><?php echo (int) ( $p['best']['score'] ?? 0 ); ?></strong><?php if ( ! empty( $p['best']['votes'] ) ) echo '<br><small>' . (int) $p['best']['likes'] . ' likes + ' . (int) $p['best']['votes'] . ' site votes</small>'; ?></td>
                     <td><?php echo $p['entries'] ? (int) $p['entries'] : '<small>Not eligible (memory too short)</small>'; ?></td>
                     <td><?php echo esc_html( implode( ' ', array_map( function ( $t ) { return '@' . $t; }, $p['tags'] ) ) ); ?></td>
                     <td><?php echo $p['web'] ? '✓' : ''; ?></td>
-                    <td style="max-width:420px;"><?php echo esc_html( wp_trim_words( $p['best']['text'] ?? '', 40 ) ); ?></td>
+                    <td style="max-width:420px;"><?php echo esc_html( wp_trim_words( $p['best']['text'] ?? '', 40 ) ); ?>
+                        <?php if ( ! empty( $p['best']['id'] ) ) :
+                            $is_hidden = in_array( $p['best']['id'], TwellerFlow2_Giveaway::hidden_ids(), true );
+                            echo '<br>' . $form( 'hide', array( 'cid' => $p['best']['id'] ), $is_hidden ? 'Show on the public board' : 'Hide from the public board', 'button-link' ); // phpcs:ignore
+                            if ( ! empty( $p['best']['link'] ) ) echo ' · <a href="' . esc_url( $p['best']['link'] ) . '" target="_blank" rel="noopener">open comment</a>';
+                        endif; ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
@@ -247,6 +283,11 @@ $ends   = TwellerFlow2_Giveaway::ends_ts();
                     <label>Tagging someone (Instagram, TikTok): <input type="number" name="tag_bonus" min="0" max="5" value="<?php echo esc_attr( $s['tag_bonus'] ); ?>" style="width:60px;"></label> &nbsp;
                     <label>Sharing the memory on the website: <input type="number" name="web_bonus" min="0" max="5" value="<?php echo esc_attr( $s['web_bonus'] ); ?>" style="width:60px;"></label>
                     <p class="tf2-description">Facebook doesn't allow "tag a friend to enter", so tags never earn tickets there.</p>
+                </td></tr>
+                <tr><th>Live board &amp; website votes</th><td>
+                    <label><input type="checkbox" name="public_board" value="1" <?php checked( ! empty( $s['public_board'] ) ); ?>> Show the live leaderboard on the giveaway page (visitors can vote on the website)</label><br>
+                    <label>Each website vote counts as <input type="number" name="vote_weight" min="0" max="10" step="0.5" value="<?php echo esc_attr( $s['vote_weight'] ); ?>" style="width:70px;"> comment like(s)</label>
+                    <p class="tf2-description">The "most-loved memory" draw uses likes plus website votes. Set to 0 to count social likes only.</p>
                 </td></tr>
                 <?php foreach ( $plats as $k => $l ) : ?>
                     <tr><th><label for="gs-u-<?php echo esc_attr( $k ); ?>"><?php echo esc_html( $l ); ?> post link</label></th><td><input type="url" id="gs-u-<?php echo esc_attr( $k ); ?>" name="urls[<?php echo esc_attr( $k ); ?>]" class="regular-text" value="<?php echo esc_attr( $s['urls'][ $k ] ?? '' ); ?>" placeholder="https://"> <span class="tf2-description">The current week's post. Shown as a button on the giveaway page, so change it each week.</span></td></tr>

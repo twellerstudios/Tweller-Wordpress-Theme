@@ -58,6 +58,31 @@ $font = TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/fonts/';
 .tw-gw__code { display: inline-block; margin: 8px 0 14px; padding: 10px 18px; border: 2px dashed var(--gold); border-radius: 12px; font-size: 22px; font-weight: 800; letter-spacing: .12em; }
 .tw-gw__small { font-size: 12.5px; line-height: 1.6; color: var(--muted); }
 .tw-gw__hp { position: absolute !important; left: -9999px !important; }
+
+/* Live board */
+.tw-gw__live { margin-top: 34px; }
+.tw-gw__nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 0 0 16px; }
+.tw-gw__num { padding: 14px 10px; border-radius: 14px; text-align: center; background: var(--green); color: #fff; }
+.tw-gw__num b { display: block; font: 600 30px/1 "TwCormorant", Georgia, serif; }
+.tw-gw__num span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; opacity: .8; }
+.tw-gw__pulse { display: inline-block; width: 9px; height: 9px; margin-right: 8px; border-radius: 50%; background: #1fa971; box-shadow: 0 0 0 0 rgba(31,169,113,.6); animation: twgwp 1.8s infinite; vertical-align: 1px; }
+@keyframes twgwp { 70% { box-shadow: 0 0 0 9px rgba(31,169,113,0); } 100% { box-shadow: 0 0 0 0 rgba(31,169,113,0); } }
+@media (prefers-reduced-motion: reduce) { .tw-gw__pulse { animation: none; } }
+.tw-gw__mem { margin: 0 0 12px; padding: 18px 18px 14px; border-radius: 16px; background: #fff; border: 1px solid #E6DECF; }
+.tw-gw__mem:first-child { border-color: var(--gold); box-shadow: 0 10px 30px rgba(201,162,39,.18); }
+.tw-gw__rank { display: inline-grid; place-items: center; width: 30px; height: 30px; margin-right: 8px; border-radius: 50%; background: var(--green); color: #fff; font-weight: 700; font-size: 14px; }
+.tw-gw__mem:first-child .tw-gw__rank { background: var(--gold); color: #3a2a0a; }
+.tw-gw__mem q { display: block; margin: 10px 0 12px; font: italic 500 21px/1.35 "TwCormorant", Georgia, serif; quotes: "\201C" "\201D"; }
+.tw-gw__who { font-weight: 700; font-size: 14px; }
+.tw-gw__who small { font-weight: 500; color: var(--muted); }
+.tw-gw__act { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tw-gw__vote { padding: 9px 16px; border: 0; border-radius: 99px; background: var(--red); color: #fff; font: 700 14px/1 Inter, sans-serif; cursor: pointer; min-height: 40px; }
+.tw-gw__vote[disabled] { background: #9aa39e; cursor: default; }
+.tw-gw__soc { padding: 9px 14px; border-radius: 99px; border: 1px solid #D9CFBC; color: var(--ink); text-decoration: none; font-weight: 600; font-size: 13.5px; }
+.tw-gw__score { margin-left: auto; font-weight: 700; color: var(--red); }
+.tw-gw__vf { display: none; margin: 8px 0 14px; padding: 14px; border-radius: 14px; background: var(--cream); border: 1px solid #EBE2CF; }
+.tw-gw__vf.on { display: block; }
+.tw-gw__vf input { width: 100%; margin: 0 0 8px; padding: 11px 12px; border: 1px solid #D9CFBC; border-radius: 10px; font: inherit; font-size: 16px; }
 </style>
 
 <div class="tw-gw" id="tw-gw">
@@ -86,6 +111,23 @@ $font = TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/fonts/';
             <div class="tw-gw__week<?php echo $on ? ' is-on' : ( $over ? ' is-over' : '' ); ?>"><strong><?php echo esc_html( $r['label'] ); ?></strong><span><?php echo esc_html( wp_date( 'M j', $r['start_ts'] ) . ' – ' . wp_date( 'M j', $r['end_ts'] ) ); ?></span><em><?php echo $on ? 'Open now' : ( $over ? 'Closed' : 'Coming up' ); ?></em></div>
         <?php endforeach; ?>
     </div>
+    <?php endif; ?>
+
+
+    <?php if ( ! empty( $s['public_board'] ) ) : ?>
+    <section class="tw-gw__live" id="tw-gw-live" aria-labelledby="tw-gw-live-t" hidden>
+        <h2 id="tw-gw-live-t" style="margin-top:0;"><span class="tw-gw__pulse" aria-hidden="true"></span>Live: the memories people love</h2>
+        <p class="tw-gw__small" style="margin:0 0 14px;">These are this week's most-loved memories, updated every few minutes. <strong>Vote here on the website, or like the comment on Facebook / Instagram.</strong> Both count.</p>
+        <div class="tw-gw__nums" id="tw-gw-nums"></div>
+        <div id="tw-gw-vf" class="tw-gw__vf">
+            <label for="gw-vemail" style="display:block;margin:0 0 6px;font-weight:600;font-size:13.5px;">Your email to vote (once a week, up to 3 memories). We won't share it.</label>
+            <input type="email" id="gw-vemail" autocomplete="email" placeholder="you@example.com">
+            <button type="button" class="tw-gw__vote" id="tw-gw-vgo">Vote</button>
+            <p class="tw-gw__msg" id="tw-gw-vmsg" role="status" aria-live="polite" style="margin:8px 0 0;"></p>
+        </div>
+        <div id="tw-gw-list"></div>
+        <p class="tw-gw__small" id="tw-gw-upd" style="text-align:right;"></p>
+    </section>
     <?php endif; ?>
 
     <h2>How to enter</h2>
@@ -185,5 +227,65 @@ $font = TWELLER_FLOW_2_PLUGIN_URL . 'public/landing/fonts/';
             })
             .catch(function (err) { msg.textContent = err.message; msg.className = 'tw-gw__msg tw-gw__msg--bad'; btn.disabled = false; });
     });
+})();
+</script>
+<script>
+(function () {
+    var live = document.getElementById('tw-gw-live');
+    if (!live) return;
+    var list = document.getElementById('tw-gw-list'), nums = document.getElementById('tw-gw-nums'), upd = document.getElementById('tw-gw-upd');
+    var vf = document.getElementById('tw-gw-vf'), vmsg = document.getElementById('tw-gw-vmsg'), pending = null;
+    var emailKey = 'tw_gw_email';
+    var saved = ''; try { saved = localStorage.getItem(emailKey) || ''; } catch (e) {}
+    var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    var N = function (n) { return Number(n || 0).toLocaleString(); };
+    var PL = { facebook: 'Facebook', instagram: 'Instagram', tiktok: 'TikTok' };
+    var voted = {}; try { voted = JSON.parse(localStorage.getItem('tw_gw_voted') || '{}'); } catch (e) {}
+    function render(d) {
+        if (!d || d.off) return;
+        var st = d.stats || {};
+        live.hidden = false;
+        var cells = [['likes', 'Likes'], ['comments', 'Comments'], ['shares', 'Shares'], ['reach', 'People reached'], ['views', 'Views']].filter(function (c) { return st[c[0]]; });
+        nums.innerHTML = cells.map(function (c) { return '<div class="tw-gw__num"><b>' + N(st[c[0]]) + '</b><span>' + c[1] + '</span></div>'; }).join('') || '';
+        nums.style.display = cells.length ? '' : 'none';
+        if (!d.top || !d.top.length) { list.innerHTML = '<p class="tw-gw__small">No memories yet this week. Be the first to share yours!</p>'; }
+        else list.innerHTML = d.top.map(function (m, i) {
+            var done = voted[m.id];
+            return '<div class="tw-gw__mem"><span class="tw-gw__rank">' + (i + 1) + '</span><span class="tw-gw__who">' + esc(m.name) + ' <small>on ' + (PL[m.plat] || '') + '</small></span>' +
+                '<q>' + esc(m.text) + '</q><div class="tw-gw__act">' +
+                '<button type="button" class="tw-gw__vote" data-id="' + esc(m.id) + '"' + (done ? ' disabled' : '') + '>' + (done ? 'Voted ✓' : '❤ Vote') + '</button>' +
+                (m.link ? '<a class="tw-gw__soc" href="' + esc(m.link) + '" target="_blank" rel="noopener">Like it on ' + (PL[m.plat] || 'social') + '</a>' : '') +
+                '<span class="tw-gw__score">' + N(m.score) + ' ❤</span></div></div>';
+        }).join('');
+        var ago = d.updated ? Math.max(0, Math.round((d.now - d.updated) / 60)) : null;
+        upd.textContent = ago === null ? 'Live numbers update every few minutes.' : 'Updated ' + (ago < 1 ? 'just now' : ago + ' min ago') + '. Refreshing automatically.';
+    }
+    function load() {
+        fetch(<?php echo wp_json_encode( rest_url( 'tweller-flow-2/v1/giveaway/board' ) ); ?>).then(function (r) { return r.json(); }).then(render).catch(function () {});
+    }
+    function vote(id, email, btn) {
+        vmsg.className = 'tw-gw__msg'; vmsg.textContent = 'Sending…';
+        fetch(<?php echo wp_json_encode( rest_url( 'tweller-flow-2/v1/giveaway/vote' ) ); ?>, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id, email: email }) })
+            .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+            .then(function (r) {
+                if (!r.ok) throw new Error(r.j.message || 'Could not vote.');
+                try { localStorage.setItem(emailKey, email); } catch (e) {}
+                voted[id] = 1; try { localStorage.setItem('tw_gw_voted', JSON.stringify(voted)); } catch (e) {}
+                vf.classList.remove('on'); vmsg.textContent = ''; load();
+            })
+            .catch(function (e) { vmsg.textContent = e.message; vmsg.className = 'tw-gw__msg tw-gw__msg--bad'; });
+    }
+    list.addEventListener('click', function (e) {
+        var b = e.target.closest('.tw-gw__vote'); if (!b || b.disabled) return;
+        pending = b.getAttribute('data-id');
+        if (saved) { vote(pending, saved, b); return; }
+        vf.classList.add('on'); document.getElementById('gw-vemail').focus(); vf.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    document.getElementById('tw-gw-vgo').addEventListener('click', function () {
+        var em = document.getElementById('gw-vemail').value.trim();
+        if (!/^\S+@\S+\.\S+$/.test(em)) { vmsg.textContent = 'Please enter a valid email.'; vmsg.className = 'tw-gw__msg tw-gw__msg--bad'; return; }
+        saved = em; if (pending) vote(pending, em);
+    });
+    load(); setInterval(function () { if (!document.hidden) load(); }, 30000);
 })();
 </script>
