@@ -231,7 +231,7 @@ class TwellerFlow2_Session {
             $gift   = class_exists( 'TwellerFlow2_Gift_Cards' ) ? TwellerFlow2_Gift_Cards::applied_amount( $id ) : 0;
             $amt    = round( (float) $amount + $gift, 2 );
             $total  = (float) $session->total_amount;
-            $status = ( $total > 0 && $amt >= $total ) ? 'paid' : 'deposit';
+            $status = ( $amt + 0.004 >= $total ) ? 'paid' : 'deposit'; // a fully-covered (free prize) session counts as paid
 
             self::update( $id, array(
                 'payment_status' => $status,

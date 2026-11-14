@@ -449,6 +449,12 @@ class TwellerFlow2_Booking_API {
             TwellerFlow2_Notifications::notify_studio_new_booking( $session_id );
         }
 
+        // Fully covered by a code (a giveaway prize): nothing to pay, so the
+        // booking is confirmed straight away (confirmation email + calendar).
+        if ( $gift_take <= 0 && (float) $pricing['total'] <= 0 && ( $coupon_code !== '' || $snap_member ) ) {
+            TwellerFlow2_Session::verify_receipt( $session_id, 'approve', 0 );
+        }
+
         // Record the consent choice and settle the client-level credits: a
         // redeemed next-session discount is spent now, and choosing "unlimited"
         // banks a fresh discount for the client's next booking.
