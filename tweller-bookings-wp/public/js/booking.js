@@ -1085,7 +1085,7 @@ const tfBooking = {
             } else {
                 html += `<div class="tf2-pkg-price">TTD ${money(pkg.price)}</div>`;
             }
-            if (sc && sc.step > 0) html += `<div class="tf2-scarce-note">Price goes up to TTD ${money(Number(rawPkg.price) + Number(sc.next_add))} after the next ${sc.left} booking${sc.left === 1 ? '' : 's'}</div>`;
+            if (sc && sc.step > 0) html += `<div class="tf2-scarce-note">TTD ${money(Number(rawPkg.price) + Number(sc.next_add))} after the next ${sc.left} booking${sc.left === 1 ? '' : 's'}</div>`;
             
             if (pkg.features && Array.isArray(pkg.features)) {
                 html += `<ul class="tf2-pkg-features">`;
