@@ -54,6 +54,8 @@ class TwellerFlow2_Booking_Shortcode {
             'preselect' => TwellerFlow2_Booking_Links::requested_key(),
             'preselectPackage' => TwellerFlow2_Booking_Links::requested_package(),
             'gift' => array( 'enabled' => self::gifts_on() ),
+            // "Only 7 left" counters by session type (Limited Spots), real counts.
+            'scarcity' => class_exists( 'TwellerFlow2_Scarcity' ) ? TwellerFlow2_Scarcity::public_map() : array(),
             // Visual backdrop picker per session type (Christmas scenes…),
             // supplied by TwellerFlow2_Landing; empty = no picker.
             'backdrops' => self::backdrops(),

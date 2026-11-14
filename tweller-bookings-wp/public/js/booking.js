@@ -210,7 +210,7 @@ const tfBooking = {
             if (!res.ok || !data.ok) throw new Error(data.message || 'That coupon code wasn\'t recognised.');
             // The deadline is kept as "seconds left" measured on the page's own clock, so a wrong phone clock can't extend it.
             const left = data.expires_ts ? Math.max(0, data.expires_ts - (data.now_ts || data.expires_ts)) : 0;
-            this.coupon = { code: data.code, type: data.type, amount: Number(data.amount) || 0, packages: data.packages || [], label: data.label, endsAt: left ? performance.now() + left * 1000 : 0 };
+            this.coupon = { code: data.code, type: data.type, amount: Number(data.amount) || 0, packages: data.packages || [], min_spend: Number(data.min_spend) || 0, label: data.label, endsAt: left ? performance.now() + left * 1000 : 0 };
             document.getElementById('tf2-coupon-code').value = data.code;
             say(`✓ ${data.label} applied`, true);
             this.startCouponTimer(say);
@@ -257,7 +257,15 @@ const tfBooking = {
     couponFits() {
         if (!this.coupon) return false;
         const pk = this.coupon.packages || [];
-        return !pk.length || pk.includes(this.selectedPackageKey);
+        if (pk.length && !pk.includes(this.selectedPackageKey)) return false;
+        return !this.couponMinGap();
+    },
+
+    // TT$ short of the coupon's minimum session price (0 when it is met or there is none).
+    couponMinGap() {
+        const min = this.coupon ? Number(this.coupon.min_spend) || 0 : 0;
+        const price = this.selectedPackageData ? parseFloat(String(this.selectedPackageData.price).replace(/[^0-9.]/g, '')) || 0 : 0;
+        return min > 0 && price + 0.004 < min ? min - price : 0;
     },
 
     couponOff(base) {
@@ -583,7 +591,7 @@ const tfBooking = {
         this.renderBackdrops();
         let target = 2;
 
-        const pkg = s.packageKey ? pkgs[s.packageKey] : null;
+        const pkg = s.packageKey && pkgs[s.packageKey] ? this.priced(pkgs[s.packageKey]) : null;
         if (pkg) {
             this.selectedPackageKey = s.packageKey;
             this.selectedPackageData = pkg;
@@ -1048,8 +1056,10 @@ const tfBooking = {
         const pkgs = window.twellerBooking.packages;
         const allowed = this.selectedSessionData.allowed_packages || [];
 
-        for (const [key, pkg] of Object.entries(pkgs)) {
+        const sc = this.scarce();
+        for (const [key, rawPkg] of Object.entries(pkgs)) {
             if (!allowed.includes(key) && allowed.length > 0) continue; // Show all if allowed empty/not set (fallback), else filter
+            const pkg = this.priced(rawPkg);
 
             const el = document.createElement('div');
             el.className = 'tf2-package-card';
@@ -1061,8 +1071,11 @@ const tfBooking = {
             let topBooked = badgeText ? `<div class="tf2-top-booked">${esc(badgeText)}</div>` : '';
             if (badgeText) el.classList.add('tf2-package-card--badged');
             
+            // "Only 7 left": the real number of spots left in this batch.
+            const scarceBadge = sc ? `<div class="tf2-scarce${sc.left <= 3 ? ' tf2-scarce--hot' : ''}">only ${sc.left} left</div>` : '';
             let html = `
                 ${topBooked}
+                ${scarceBadge}
                 <div class="tf2-pkg-title">${pkg.name}</div>
             `;
             
@@ -1072,6 +1085,7 @@ const tfBooking = {
             } else {
                 html += `<div class="tf2-pkg-price">TTD ${money(pkg.price)}</div>`;
             }
+            if (sc && sc.step > 0) html += `<div class="tf2-scarce-note">Price goes up to TTD ${money(Number(rawPkg.price) + Number(sc.next_add))} after the next ${sc.left} booking${sc.left === 1 ? '' : 's'}</div>`;
             
             if (pkg.features && Array.isArray(pkg.features)) {
                 html += `<ul class="tf2-pkg-features">`;
@@ -1093,15 +1107,29 @@ const tfBooking = {
             el.innerHTML = html;
             el.setAttribute('role', 'button');
             el.tabIndex = 0;
-            el.onclick = () => this.selectPackage(key, pkg);
+            el.onclick = () => this.selectPackage(key, rawPkg);
             el.addEventListener('keydown', (e) => {
-                if (e.target === el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); this.selectPackage(key, pkg); }
+                if (e.target === el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); this.selectPackage(key, rawPkg); }
             });
             container.appendChild(el);
         }
     },
 
+    // ── Limited spots ("Only 7 left"), real counts from the server ──
+    scarce() {
+        const m = window.twellerBooking.scarcity || {};
+        return m[this.selectedSessionTypeKey] || null;
+    },
+
+    // The package at the price of the batch that is open right now.
+    priced(pkg) {
+        const sc = this.scarce();
+        if (!sc || !sc.add) return pkg;
+        return Object.assign({}, pkg, { price: Number(pkg.price) + Number(sc.add) });
+    },
+
     selectPackage(key, pkg) {
+        pkg = this.priced(pkg);
         const changed = this.selectedPackageKey !== key;
         this.selectedPackageKey = key;
         this.selectedPackageData = pkg;
@@ -1190,7 +1218,8 @@ const tfBooking = {
             lines += `<div style="display:flex; justify-content:space-between; font-size:14px; color:#C9A227;"><span>Coupon ${this.coupon.code}</span><span>− TTD ${fmt(couponOff)}</span></div>`;
             total -= couponOff;
         } else if (this.coupon && !this.couponFits()) {
-            lines += `<div style="font-size:12.5px; opacity:0.85; margin-top:8px;">Coupon ${this.coupon.code} doesn't apply to this package.</div>`;
+            const gap = this.couponMinGap();
+            lines += `<div style="font-size:12.5px; opacity:0.85; margin-top:8px;">${gap ? `Coupon ${this.coupon.code} needs a session of at least TTD ${fmt(this.coupon.min_spend)}.` : `Coupon ${this.coupon.code} doesn't apply to this package.`}</div>`;
         }
 
         // Transport fee: shoots away from the studio, outside the central area.

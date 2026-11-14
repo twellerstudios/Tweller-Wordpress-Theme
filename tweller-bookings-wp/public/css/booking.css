@@ -1080,3 +1080,19 @@ html.tf2-ld-lock { overflow: hidden; }
 .tf2-ld.is-ok .tf2-ld__note { opacity: 0; }
 .tf2-ld.is-ok .tf2-ld__cam .l { animation: none; }
 @media (prefers-reduced-motion: reduce) { .tf2-ld, .tf2-ld__card, .tf2-ld__msgs p, .tf2-ld__bar i { transition: none; } .tf2-ld__cam, .tf2-ld__cam .l, .tf2-ld__flash, .tf2-ld__bar i::after, .tf2-ld.is-ok .tf2-ld__next svg { animation: none; } }
+
+/* Limited spots: "only 7 left" (in the card, so it never sits on top of the Top Booked / Best Value tag) */
+.tweller-booking .tf2-scarce {
+    align-self: flex-start;
+    display: inline-flex; align-items: center; gap: 7px;
+    margin: 0 0 12px;
+    background: #D92B2B; color: #fff;
+    font-size: 12.5px; font-weight: 700; letter-spacing: .02em; text-transform: lowercase;
+    padding: 5px 13px; border-radius: 100px;
+    box-shadow: 0 3px 8px rgba(217, 43, 43, .3);
+}
+.tweller-booking .tf2-scarce::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #fff; flex: none; }
+.tweller-booking .tf2-scarce--hot { animation: tf2-scarce-pulse 1.8s ease-in-out infinite; }
+.tweller-booking .tf2-scarce-note { margin-top: 4px; font-size: 12.5px; color: #B42318; font-weight: 600; }
+@keyframes tf2-scarce-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@media (prefers-reduced-motion: reduce) { .tweller-booking .tf2-scarce--hot { animation: none; } }

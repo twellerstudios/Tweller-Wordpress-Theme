@@ -71,6 +71,10 @@ $act = function ( $c, $do ) {
                     <td><input type="number" id="cp-uses" name="max_uses" min="0" value="1" style="width:90px;"> <span class="tf2-description">1 = one booking only. 0 = unlimited.</span></td>
                 </tr>
                 <tr>
+                    <th><label for="cp-min">Minimum spend (TT$)</label></th>
+                    <td><input type="number" id="cp-min" name="min_spend" min="0" step="1" value="0" style="width:110px;"> <span class="tf2-description">Optional. The code only works when the session price is at least this much (before the discount). 0 = no minimum.</span></td>
+                </tr>
+                <tr>
                     <th><label for="cp-exp">Ends at (countdown)</label></th>
                     <td><input type="datetime-local" id="cp-exp" name="expires"> <span class="tf2-description">Optional. Pick a date and time (site time: <?php echo esc_html( wp_timezone_string() ); ?>). The client sees a live countdown once they enter the code, and it stops working at that moment.</span></td>
                 </tr>
@@ -86,6 +90,50 @@ $act = function ( $c, $do ) {
             </table>
             <p><button type="submit" class="button button-primary">Create coupon</button></p>
         </form>
+    </div>
+
+    <?php $sum = $report['sum']; ?>
+    <div class="tf2-card tf2-mb-6">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <h2 style="margin:0;">Coupon report</h2>
+            <?php if ( $sum['uses'] ) : ?>
+                <a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=tweller_flow_2_coupon_csv' ), 'tweller_flow_2_coupon_csv' ) ); ?>">Download CSV</a>
+            <?php endif; ?>
+        </div>
+        <?php if ( ! $sum['uses'] ) : ?>
+            <p class="tf2-description">No bookings with a coupon yet. They will show up here.</p>
+        <?php else : ?>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:14px 0;">
+                <div style="background:#f6f7f7;border-radius:8px;padding:12px;"><div class="tf2-description">Bookings with a coupon</div><div style="font-size:24px;font-weight:700;"><?php echo (int) $sum['uses']; ?></div></div>
+                <div style="background:#f6f7f7;border-radius:8px;padding:12px;"><div class="tf2-description">Discount given</div><div style="font-size:24px;font-weight:700;">TT$<?php echo esc_html( number_format( $sum['discount'], 2 ) ); ?></div></div>
+                <div style="background:#f6f7f7;border-radius:8px;padding:12px;"><div class="tf2-description">Booked value (after discount)</div><div style="font-size:24px;font-weight:700;">TT$<?php echo esc_html( number_format( $sum['revenue'], 2 ) ); ?></div></div>
+            </div>
+            <h3>By code</h3>
+            <table class="widefat striped" style="margin-bottom:18px;">
+                <thead><tr><th>Code</th><th>Bookings</th><th>Discount given</th><th>Booked value</th><th>Last used</th></tr></thead>
+                <tbody>
+                <?php foreach ( $report['by'] as $code => $r ) : ?>
+                    <tr><td><strong><?php echo esc_html( $code ); ?></strong></td><td><?php echo (int) $r['uses']; ?></td><td>TT$<?php echo esc_html( number_format( $r['discount'], 2 ) ); ?></td><td>TT$<?php echo esc_html( number_format( $r['revenue'], 2 ) ); ?></td><td><?php echo esc_html( wp_date( 'M j, Y g:i a', $r['last'] ) ); ?></td></tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            <h3>Latest bookings with a coupon</h3>
+            <table class="widefat striped">
+                <thead><tr><th>Date</th><th>Code</th><th>Client</th><th>Package</th><th>Discount</th><th>Total</th></tr></thead>
+                <tbody>
+                <?php foreach ( array_slice( $report['log'], 0, 25 ) as $e ) : ?>
+                    <tr>
+                        <td><?php echo esc_html( wp_date( 'M j, g:i a', $e['time'] ) ); ?></td>
+                        <td><?php echo esc_html( $e['code'] ); ?></td>
+                        <td><?php echo esc_html( $e['client'] ); ?></td>
+                        <td><?php echo esc_html( $packages[ $e['package'] ]['name'] ?? $e['package'] ); ?></td>
+                        <td>TT$<?php echo esc_html( number_format( $e['discount'], 2 ) ); ?></td>
+                        <td>TT$<?php echo esc_html( number_format( $e['total'], 2 ) ); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
     </div>
 
     <div class="tf2-card">
@@ -106,7 +154,7 @@ $act = function ( $c, $do ) {
             ?>
                 <tr>
                     <td><strong style="letter-spacing:.05em;"><?php echo esc_html( $code ); ?></strong><br><small><?php echo esc_html( $status ); ?></small></td>
-                    <td><?php echo esc_html( TwellerFlow2_Coupons::label( $c ) ); ?></td>
+                    <td><?php echo esc_html( TwellerFlow2_Coupons::label( $c ) ); ?><?php if ( (float) ( $c['min_spend'] ?? 0 ) > 0 ) echo '<br><small>Min. TT$' . esc_html( number_format( (float) $c['min_spend'] ) ) . '</small>'; ?></td>
                     <td><?php echo esc_html( $pkg_names ? implode( ', ', $pkg_names ) : 'Any package' ); ?></td>
                     <td><?php echo (int) $c['uses']; ?> / <?php echo (int) $c['max_uses'] ? (int) $c['max_uses'] : '∞'; ?></td>
                     <td><?php echo $exp_ts ? esc_html( wp_date( 'M j, Y g:i a', $exp_ts ) ) : '—'; ?></td>

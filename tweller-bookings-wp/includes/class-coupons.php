@@ -23,6 +23,7 @@ class TwellerFlow2_Coupons {
         add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ), 21 );
         add_action( 'admin_post_tweller_flow_2_coupon_save', array( __CLASS__, 'admin_save' ) );
         add_action( 'admin_post_tweller_flow_2_coupon_action', array( __CLASS__, 'admin_action' ) );
+        add_action( 'admin_post_tweller_flow_2_coupon_csv', array( __CLASS__, 'admin_csv' ) );
         add_action( 'init', array( __CLASS__, 'maybe_seed' ), 40 );
     }
 
@@ -91,7 +92,7 @@ class TwellerFlow2_Coupons {
     // ── Rules ────────────────────────────────────────
 
     /** Why a code can't be used for this booking, or '' when it can. */
-    public static function error( $c, $package_key = '', $session_type = '', $email = '' ) {
+    public static function error( $c, $package_key = '', $session_type = '', $email = '', $price = null ) {
         if ( ! $c ) return 'That coupon code wasn\'t recognised. Please check it.';
         if ( empty( $c['active'] ) ) return 'That coupon is no longer active.';
         $ts = self::expiry_ts( $c );
@@ -102,6 +103,10 @@ class TwellerFlow2_Coupons {
         }
         if ( ! empty( $c['session_types'] ) && $session_type !== '' && ! in_array( $session_type, $c['session_types'], true ) ) {
             return 'That coupon doesn\'t apply to this type of session.';
+        }
+        $min = (float) ( $c['min_spend'] ?? 0 );
+        if ( $min > 0 && $price !== null && (float) $price + 0.004 < $min ) {
+            return 'This coupon needs a session of at least TT$' . number_format( $min, 0 ) . ' (before the discount).';
         }
         if ( ! empty( $c['email'] ) && $email !== '' && strtolower( $email ) !== strtolower( $c['email'] ) ) {
             return 'That coupon is for a different email address. Please use the email it was given to.';
@@ -152,6 +157,66 @@ class TwellerFlow2_Coupons {
         self::unlock();
     }
 
+    // ── Use log and reports ──────────────────────────
+
+    const LOG = 'tweller_flow_2_coupon_log';
+
+    /** One line per booking that used a coupon (newest last, capped). */
+    public static function record( $code, $session_id, $client, $package_key, $session_type, $discount, $total ) {
+        $log   = get_option( self::LOG, array() );
+        $log   = is_array( $log ) ? $log : array();
+        $log[] = array(
+            'time'       => time(),
+            'code'       => $code,
+            'session_id' => (int) $session_id,
+            'client'     => $client,
+            'package'    => $package_key,
+            'session'    => $session_type,
+            'discount'   => round( (float) $discount, 2 ),
+            'total'      => round( (float) $total, 2 ),
+        );
+        if ( count( $log ) > 3000 ) $log = array_slice( $log, -3000 );
+        update_option( self::LOG, $log, false );
+    }
+
+    /** Totals overall and per code, from the use log. */
+    public static function report() {
+        $log = get_option( self::LOG, array() );
+        $log = is_array( $log ) ? $log : array();
+        $by  = array();
+        $sum = array( 'uses' => 0, 'discount' => 0.0, 'revenue' => 0.0 );
+        foreach ( $log as $e ) {
+            $k = $e['code'];
+            if ( ! isset( $by[ $k ] ) ) $by[ $k ] = array( 'uses' => 0, 'discount' => 0.0, 'revenue' => 0.0, 'last' => 0 );
+            $by[ $k ]['uses']++;
+            $by[ $k ]['discount'] += $e['discount'];
+            $by[ $k ]['revenue']  += $e['total'];
+            $by[ $k ]['last']      = max( $by[ $k ]['last'], $e['time'] );
+            $sum['uses']++;
+            $sum['discount'] += $e['discount'];
+            $sum['revenue']  += $e['total'];
+        }
+        return array( 'log' => array_reverse( $log ), 'by' => $by, 'sum' => $sum );
+    }
+
+    public static function admin_csv() {
+        if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Not allowed.' );
+        check_admin_referer( 'tweller_flow_2_coupon_csv' );
+        $r = self::report();
+        nocache_headers();
+        header( 'Content-Type: text/csv; charset=utf-8' );
+        header( 'Content-Disposition: attachment; filename="coupon-uses-' . current_time( 'Y-m-d' ) . '.csv"' );
+        $out = fopen( 'php://output', 'w' );
+        fputcsv( $out, array( 'Date', 'Code', 'Client', 'Session type', 'Package', 'Discount TTD', 'Booking total TTD', 'Booking ID' ) );
+        foreach ( $r['log'] as $e ) {
+            // A client name could start with = + - @ ; keep spreadsheets from running it as a formula.
+            $name = preg_match( '/^[=+\-@\t\r]/', (string) $e['client'] ) ? "'" . $e['client'] : $e['client'];
+            fputcsv( $out, array( wp_date( 'Y-m-d H:i', $e['time'] ), $e['code'], $name, $e['session'], $e['package'], $e['discount'], $e['total'], $e['session_id'] ) );
+        }
+        fclose( $out );
+        exit;
+    }
+
     // ── Guess protection (same idea as gift cards) ───
 
     private static function fail_key() {
@@ -186,7 +251,11 @@ class TwellerFlow2_Coupons {
         $pk  = sanitize_key( (string) $request->get_param( 'package' ) );
         $st  = sanitize_key( (string) $request->get_param( 'session' ) );
         $em  = sanitize_email( (string) $request->get_param( 'email' ) );
-        $err = self::error( $c, '', $st, $em ); // a package mismatch is shown in the summary, not here
+        // A package mismatch is shown in the summary, not here; the minimum
+        // spend is checked against the package that is picked (current price).
+        $pkgs  = get_option( 'tweller_flow_2_packages', array() );
+        $price = ( $pk !== '' && isset( $pkgs[ $pk ] ) ) ? (float) $pkgs[ $pk ]['price'] + ( class_exists( 'TwellerFlow2_Scarcity' ) ? TwellerFlow2_Scarcity::price_add( $st ) : 0 ) : null;
+        $err = self::error( $c, '', $st, $em, $price );
         if ( $err ) {
             self::guess_failed();
             return new WP_Error( 'invalid', $err, array( 'status' => 400 ) );
@@ -199,6 +268,7 @@ class TwellerFlow2_Coupons {
             'label'    => self::label( $c ),
             'packages' => array_values( (array) $c['packages'] ),
             'locked'   => ! empty( $c['email'] ),
+            'min_spend' => (float) ( $c['min_spend'] ?? 0 ),
             'expires_ts' => self::expiry_ts( $c ),
             'now_ts'   => time(),
         ) );
@@ -215,6 +285,7 @@ class TwellerFlow2_Coupons {
         $coupons  = array_reverse( self::all(), true );
         $packages = get_option( 'tweller_flow_2_packages', array() );
         $types    = get_option( 'tweller_flow_2_session_types', array() );
+        $report   = self::report();
         include TWELLER_FLOW_2_PLUGIN_DIR . 'admin/views/coupons.php';
     }
 
@@ -267,6 +338,7 @@ class TwellerFlow2_Coupons {
             'session_types' => $st,
             'expires'       => $expires,
             'max_uses'      => max( 0, (int) ( $p['max_uses'] ?? 1 ) ),
+            'min_spend'     => max( 0, round( (float) ( $p['min_spend'] ?? 0 ), 2 ) ),
             'uses'          => 0,
             'email'         => sanitize_email( $p['email'] ?? '' ),
             'note'          => sanitize_text_field( $p['note'] ?? '' ),

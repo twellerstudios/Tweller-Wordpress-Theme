@@ -246,6 +246,12 @@ class TwellerFlow2_Booking_API {
             return new WP_Error( 'invalid_package', 'Invalid package selected.', array( 'status' => 400 ) );
         }
 
+        // Limited-spots pricing: each full batch of bookings can raise the price
+        // (set on the Limited Spots page). Decided here, never by the browser.
+        if ( class_exists( 'TwellerFlow2_Scarcity' ) ) {
+            $package['price'] = (float) $package['price'] + TwellerFlow2_Scarcity::price_add( self::valid_session_type( $data['session_type'] ?? '' ) );
+        }
+
         // Image-use consent: privacy fee if declined, next-session discount
         // (banked from a prior "unlimited" choice) applied to the total here.
         $client_email = sanitize_email( $data['client_email'] );
@@ -265,7 +271,7 @@ class TwellerFlow2_Booking_API {
         if ( ! empty( $data['coupon_code'] ) && class_exists( 'TwellerFlow2_Coupons' ) ) {
             if ( TwellerFlow2_Coupons::guess_blocked() ) return TwellerFlow2_Coupons::guess_error();
             $cp     = TwellerFlow2_Coupons::get( $data['coupon_code'] );
-            $cp_err = TwellerFlow2_Coupons::error( $cp, sanitize_key( $data['package_type'] ), self::valid_session_type( $data['session_type'] ?? '' ), $client_email );
+            $cp_err = TwellerFlow2_Coupons::error( $cp, sanitize_key( $data['package_type'] ), self::valid_session_type( $data['session_type'] ?? '' ), $client_email, (float) $package['price'] );
             if ( $cp_err ) {
                 TwellerFlow2_Coupons::guess_failed();
                 return new WP_Error( 'coupon', $cp_err, array( 'status' => 400 ) );
@@ -406,6 +412,7 @@ class TwellerFlow2_Booking_API {
         }
 
         if ( $coupon_code !== '' ) {
+            TwellerFlow2_Coupons::record( $coupon_code, $session_id, $session_data['client_name'], $session_data['package_type'], $session_data['session_type'], $coupon_off, $pricing['total'] );
             TwellerFlow2_Session::record_stage_history( $session_id, 'booked', 0, 'Coupon ' . $coupon_code . ' applied — TT$' . number_format( $coupon_off, 2 ) . ' off' );
         }
 

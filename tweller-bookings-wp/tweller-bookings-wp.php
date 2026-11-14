@@ -3,7 +3,7 @@
  * Plugin Name: Tweller Bookings WP
  * Plugin URI: https://twellerstudios.com
  * Description: Photography session workflow — booking, pipeline tracking, client proof uploads, photo selection portal, gallery delivery, and WiPay payment integration.
- * Version: 3.66.1
+ * Version: 3.67.0
  * Author: Tweller Studios
  * Author URI: https://twellerstudios.com
  * License: GPL v2 or later
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TWELLER_FLOW_2_VERSION', '3.66.1' );
+define( 'TWELLER_FLOW_2_VERSION', '3.67.0' );
 define( 'TWELLER_FLOW_2_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TWELLER_FLOW_2_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'TWELLER_FLOW_2_TABLE_SESSIONS', 'tweller_sessions' );
@@ -40,6 +40,7 @@ require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-booking-links.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-social-posting.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-gift-cards.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-coupons.php';
+require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-scarcity.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-storage-guard.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-google-contacts.php';
 require_once TWELLER_FLOW_2_PLUGIN_DIR . 'includes/class-google-calendar.php';
@@ -258,6 +259,7 @@ function tweller_flow_2_init() {
     TwellerFlow2_Social_Posting::init();
     TwellerFlow2_Gift_Cards::init();
     TwellerFlow2_Coupons::init();
+    TwellerFlow2_Scarcity::init();
     TwellerFlow2_Storage_Guard::init();
     TwellerFlow2_Google_Contacts::init();
     TwellerFlow2_Google_Calendar::init();
