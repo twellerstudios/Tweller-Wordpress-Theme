@@ -459,13 +459,7 @@ class TwellerFlow2_Tracker_Shortcode {
                         <div class="tf2-gallery__toolbar-inner">
                             <span class="tf2-gallery__toolbar-name" id="tf2-gallery-toolbar-name"><?php echo esc_html( strtoupper( $session->client_name ) ); ?></span>
 
-                            <!--
-                                View strip: the All / Liked tablist, plus the slideshow
-                                control. The slideshow sits in the same pill as the tabs so
-                                it reads as one strip, but deliberately OUTSIDE the
-                                role="tablist" — it is an action, not a view, and a non-tab
-                                child would corrupt the "tab 2 of 3" the screen reader counts.
-                            -->
+                            <!-- View strip: the All / Liked tablist. The slideshow is the first action button. -->
                             <div class="tf2-gallery__tabstrip">
                                 <div class="tf2-gallery__tabs" id="tf2-gallery-tabs" role="tablist" aria-label="Gallery view">
                                     <button type="button" class="tf2-gtab tf2-gtab--active" id="tf2-tab-all" data-view="all" role="tab" aria-selected="true" aria-controls="tf2-gallery-grid">All Photos</button>
@@ -475,42 +469,20 @@ class TwellerFlow2_Tracker_Shortcode {
                                         <span class="tf2-gtab__count" id="tf2-liked-count">0</span>
                                     </button>
                                 </div>
-
-                                <span class="tf2-tabstrip__sep" aria-hidden="true"></span>
-
-                                <div class="tf2-ssmenu" id="tf2-ssmenu">
-                                    <button type="button" class="tf2-gtab tf2-ssmenu__btn" id="tf2-gallery-slideshow" title="Play slideshow" aria-label="Slideshow" aria-haspopup="menu" aria-expanded="false" aria-controls="tf2-ssmenu-list">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                                        <span>Slideshow</span>
-                                        <svg class="tf2-ssmenu__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
-                                    </button>
-                                    <div class="tf2-ssmenu__list" id="tf2-ssmenu-list" role="menu" aria-labelledby="tf2-gallery-slideshow" hidden>
-                                        <button type="button" role="menuitem" class="tf2-ssmenu__item" data-scope="all">
-                                            <span>All photos</span>
-                                            <span class="tf2-gtab__count" id="tf2-ss-all-count">0</span>
-                                        </button>
-                                        <button type="button" role="menuitem" class="tf2-ssmenu__item" data-scope="liked">
-                                            <span>Liked only</span>
-                                            <span class="tf2-gtab__count" id="tf2-ss-liked-count">0</span>
-                                        </button>
-                                    </div>
-                                </div>
                             </div>
 
                             <!--
+                                Order: Slideshow, Download All, Download Liked, Order Prints.
                                 Download Liked is ALWAYS rendered — disabled until something
                                 is liked — so the first like never reflows the row and pushes
                                 Order Prints sideways.
                             -->
                             <div class="tf2-gallery__actions" id="tf2-gallery-actions">
-                                <button id="tf2-prints-open" class="tf2-gbtn tf2-gbtn--primary" type="button" title="Order Prints" style="display:none;">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                                    <span class="tf2-gbtn__label">Order Prints</span>
-                                    <span class="tf2-prints-badge" id="tf2-prints-count" style="display:none;">0</span>
-                                </button>
-                                <button id="tf2-printsel-enter" class="tf2-gbtn" type="button" title="Select photos to print" style="display:none;">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                                    <span class="tf2-gbtn__label">Select to Print</span>
+                                <!-- The slideshow leads: it is the way most people first enjoy their album. -->
+                                <button type="button" id="tf2-gallery-slideshow" class="tf2-gbtn tf2-gbtn--show" title="Play your photos as a slideshow">
+                                    <span class="tf2-gbtn__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" focusable="false"><polygon points="7 4 20 12 7 20 7 4"/></svg></span>
+                                    <span class="tf2-gbtn__label" id="tf2-ss-label">Play slideshow</span>
+                                    <span class="tf2-gbtn__count" id="tf2-ss-count">0</span>
                                 </button>
                                 <a id="tf2-gallery-download-all" class="tf2-gbtn" href="#" title="Download all photos">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -521,6 +493,15 @@ class TwellerFlow2_Tracker_Shortcode {
                                     <span class="tf2-gbtn__label">Download Liked</span>
                                     <span class="tf2-gbtn__count" id="tf2-download-liked-count">0</span>
                                 </a>
+                                <button id="tf2-prints-open" class="tf2-gbtn tf2-gbtn--primary" type="button" title="Order Prints" style="display:none;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                    <span class="tf2-gbtn__label">Order Prints</span>
+                                    <span class="tf2-prints-badge" id="tf2-prints-count" style="display:none;">0</span>
+                                </button>
+                                <button id="tf2-printsel-enter" class="tf2-gbtn" type="button" title="Select photos to print" style="display:none;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                    <span class="tf2-gbtn__label">Select to Print</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -559,6 +540,24 @@ class TwellerFlow2_Tracker_Shortcode {
                         <button type="button" class="tf2-slideshow__pause" id="tf2-ss-pause" title="Pause">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                         </button>
+                    </div>
+
+                    <!-- A gentle invitation to play the slideshow, shown when the album first opens -->
+                    <div class="tf2-ssprompt" id="tf2-ssprompt" role="dialog" aria-labelledby="tf2-ssprompt-t" aria-describedby="tf2-ssprompt-d" hidden>
+                        <button type="button" class="tf2-ssprompt__x" id="tf2-ssprompt-x" aria-label="Close">&times;</button>
+                        <div class="tf2-ssprompt__art" id="tf2-ssprompt-art" aria-hidden="true"></div>
+                        <div class="tf2-ssprompt__body">
+                            <p class="tf2-ssprompt__kicker">Your gallery is ready</p>
+                            <h3 class="tf2-ssprompt__title" id="tf2-ssprompt-t">Watch it as a slideshow</h3>
+                            <p class="tf2-ssprompt__text" id="tf2-ssprompt-d">Sit back while your photos play on their own, full screen.</p>
+                            <div class="tf2-ssprompt__btns">
+                                <button type="button" class="tf2-gbtn tf2-gbtn--show" id="tf2-ssprompt-play">
+                                    <span class="tf2-gbtn__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" focusable="false"><polygon points="7 4 20 12 7 20 7 4"/></svg></span>
+                                    <span class="tf2-gbtn__label">Play slideshow</span>
+                                </button>
+                                <button type="button" class="tf2-ssprompt__later" id="tf2-ssprompt-later">Not now</button>
+                            </div>
+                        </div>
                     </div>
 
                     <!--

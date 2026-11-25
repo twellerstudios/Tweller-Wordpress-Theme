@@ -779,6 +779,11 @@
 
         wireFavouritesUI();
         refreshLikedUI();
+        // The album is open: mark it (the Snap It Forward card sits after it), and
+        // invite the visitor to watch it as a slideshow.
+        var trackerEl = document.querySelector('.tf2-tracker');
+        if (trackerEl) trackerEl.classList.add('tf2-tracker--revealed');
+        setTimeout(function() { if (typeof showSlideshowPrompt === 'function') showSlideshowPrompt(); }, 1400);
         // Download Liked zips a signed-in guest's saved list; the studio has none.
         if (isStudio && downloadLiked) downloadLiked.style.display = 'none';
 
@@ -1330,6 +1335,8 @@
         // Batch selection only makes sense when the store can receive a batch
         if (selEnterBtn && printsCan('openBatchOrder')) {
             selEnterBtn.style.display = '';
+            var actionsEl = document.getElementById('tf2-gallery-actions');
+            if (actionsEl) actionsEl.classList.add('tf2-gallery__actions--sel');
         }
 
         if (printsCan('onCountChange')) {
@@ -1889,10 +1896,8 @@
     var ssClose   = document.getElementById('tf2-ss-close');
     var ssPause   = document.getElementById('tf2-ss-pause');
 
-    var ssMenu     = document.getElementById('tf2-ssmenu');
-    var ssMenuList = document.getElementById('tf2-ssmenu-list');
-    var ssAllCount = document.getElementById('tf2-ss-all-count');
-    var ssLikedNum = document.getElementById('tf2-ss-liked-count');
+    var ssCount    = document.getElementById('tf2-ss-count');
+    var ssLabel    = document.getElementById('tf2-ss-label');
 
     var SS_INTERVAL = 4000;  // ms per photo
     var ssTimer = null, ssIdleTimer = null;
@@ -1910,62 +1915,96 @@
         return out;
     }
 
+    // The slideshow plays what is on screen: the whole album, or, on the
+    // Liked tab, just the liked photos. The button says which, with a count.
+    function slideshowScope() {
+        return (viewMode === 'liked' && likedIndices().length) ? 'liked' : 'all';
+    }
+
     function syncSlideshowCounts() {
-        var liked = likedIndices().length;
-        if (ssAllCount) ssAllCount.textContent = String(photos.length);
-        if (ssLikedNum) ssLikedNum.textContent = String(liked);
-        if (ssMenuList) {
-            var likedItem = ssMenuList.querySelector('[data-scope="liked"]');
-            if (likedItem) likedItem.setAttribute('aria-disabled', liked > 0 ? 'false' : 'true');
-        }
+        var scope = slideshowScope();
+        var n = scope === 'liked' ? likedIndices().length : photos.length;
+        if (ssCount) ssCount.textContent = String(n);
+        if (ssLabel) ssLabel.textContent = scope === 'liked' ? 'Play liked slideshow' : 'Play slideshow';
+        if (ssBtn) ssBtn.title = scope === 'liked' ? 'Play your liked photos as a slideshow' : 'Play your photos as a slideshow';
     }
 
-    function closeSlideshowMenu() {
-        if (!ssMenuList || ssMenuList.hidden) return;
-        ssMenuList.hidden = true;
-        if (ssBtn) ssBtn.setAttribute('aria-expanded', 'false');
-    }
-
-    function openSlideshowMenu() {
-        if (!ssMenuList) return;
-        syncSlideshowCounts();
-        ssMenuList.hidden = false;
-        if (ssBtn) ssBtn.setAttribute('aria-expanded', 'true');
-        var first = ssMenuList.querySelector('[role="menuitem"]:not([aria-disabled="true"])');
-        if (first) first.focus();
-    }
-
-    if (ssBtn && ssMenuList) {
+    if (ssBtn) {
         ssBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             if (!photos.length) return;
-            if (ssMenuList.hidden) openSlideshowMenu();
-            else closeSlideshowMenu();
-        });
-
-        ssMenuList.addEventListener('click', function(e) {
-            var item = e.target.closest ? e.target.closest('[role="menuitem"]') : null;
-            if (!item || item.getAttribute('aria-disabled') === 'true') return;
-            closeSlideshowMenu();
             if (selMode) exitSelectMode();
-            startSlideshow(item.getAttribute('data-scope'));
-        });
-
-        // Click-away and Escape close the menu; neither should reach the
-        // gallery underneath.
-        document.addEventListener('click', function(e) {
-            if (ssMenuList.hidden) return;
-            if (ssMenu && ssMenu.contains(e.target)) return;
-            closeSlideshowMenu();
-        });
-        ssMenuList.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                e.stopPropagation();
-                closeSlideshowMenu();
-                ssBtn.focus();
-            }
+            hideSlideshowPrompt(true);
+            startSlideshow(slideshowScope());
         });
     }
+    // Switching tabs changes what the button will play.
+    [tabAll, tabLiked].forEach(function(t) {
+        if (t) t.addEventListener('click', function() { setTimeout(syncSlideshowCounts, 0); });
+    });
+
+    // ── "Watch it as a slideshow" prompt ──
+    // Shown a moment after the album first opens, at most twice per album on
+    // this device, and never again once the slideshow has been played.
+    var ssPrompt      = document.getElementById('tf2-ssprompt');
+    var ssPromptPlay  = document.getElementById('tf2-ssprompt-play');
+    var ssPromptLater = document.getElementById('tf2-ssprompt-later');
+    var ssPromptX     = document.getElementById('tf2-ssprompt-x');
+    var ssPromptArt   = document.getElementById('tf2-ssprompt-art');
+    var ssPromptKey   = 'tf2_ss_prompt_' + code;
+    var ssPromptTimer = null;
+
+    function promptState() {
+        try { return JSON.parse(localStorage.getItem(ssPromptKey) || '{}') || {}; } catch (e) { return {}; }
+    }
+    function savePromptState(st) {
+        try { localStorage.setItem(ssPromptKey, JSON.stringify(st)); } catch (e) {}
+    }
+
+    function showSlideshowPrompt() {
+        if (!ssPrompt || !photos.length) return;
+        var st = promptState();
+        if (st.played || (st.shown || 0) >= 2) return;
+        st.shown = (st.shown || 0) + 1;
+        savePromptState(st);
+        if (ssPromptArt && !ssPromptArt.childNodes.length) {
+            for (var i = 0; i < Math.min(3, photos.length); i++) {
+                var im = document.createElement('img');
+                im.src = photos[i].thumb_url || photos[i].url;
+                im.alt = '';
+                ssPromptArt.appendChild(im);
+            }
+        }
+        var txt = document.getElementById('tf2-ssprompt-d');
+        if (txt) txt.textContent = 'Sit back while your ' + photos.length + ' photo' + (photos.length === 1 ? '' : 's') + ' play on their own, full screen.';
+        ssPrompt.hidden = false;
+        void ssPrompt.offsetWidth;
+        ssPrompt.classList.add('tf2-ssprompt--in');
+        if (ssBtn) ssBtn.classList.add('tf2-gbtn--glow');
+        // Quietly steps aside after a while; the gold button stays.
+        clearTimeout(ssPromptTimer);
+        ssPromptTimer = setTimeout(function() { hideSlideshowPrompt(false); }, 22000);
+    }
+
+    function hideSlideshowPrompt(played) {
+        clearTimeout(ssPromptTimer);
+        if (played) { var st = promptState(); st.played = 1; savePromptState(st); }
+        if (ssBtn) ssBtn.classList.remove('tf2-gbtn--glow');
+        if (!ssPrompt || ssPrompt.hidden) return;
+        ssPrompt.classList.remove('tf2-ssprompt--in');
+        setTimeout(function() { ssPrompt.hidden = true; }, 320);
+    }
+
+    if (ssPromptPlay) ssPromptPlay.addEventListener('click', function() {
+        hideSlideshowPrompt(true);
+        if (selMode) exitSelectMode();
+        startSlideshow('all');
+    });
+    if (ssPromptLater) ssPromptLater.addEventListener('click', function() { hideSlideshowPrompt(false); });
+    if (ssPromptX) ssPromptX.addEventListener('click', function() { hideSlideshowPrompt(false); });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && ssPrompt && !ssPrompt.hidden) hideSlideshowPrompt(false);
+    });
 
     function startSlideshow(scope) {
         scope = (scope === 'liked') ? 'liked' : 'all';
@@ -1973,6 +2012,7 @@
         if (!ssList.length) return;
 
         trackActivity('slideshow_played', scope === 'liked' ? 'liked' : 'all');
+        hideSlideshowPrompt(true);
         ss.className = 'tf2-slideshow';
         ss.style.display = 'block';
         document.body.style.overflow = 'hidden';

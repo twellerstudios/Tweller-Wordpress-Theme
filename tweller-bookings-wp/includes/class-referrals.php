@@ -318,7 +318,7 @@ class TwellerFlow2_Referrals {
         ob_start();
         ?>
         <div class="tf2-snap">
-            <div class="tf2-snap__kicker">Snap It Forward</div>
+            <div class="tf2-snap__kicker"><?php echo in_array( $session->current_stage, array( 'uploaded', 'delivered' ), true ) ? 'Loved your photos? Snap It Forward' : 'Snap It Forward'; ?></div>
             <p class="tf2-snap__lead">Share your Snap Link. Friends and family get <strong>TT$<?php echo esc_html( number_format( (float) $set['friend_amount'] ) ); ?> off</strong> their first session, and you get <strong>TT$<?php echo esc_html( number_format( (float) $set['reward_amount'] ) ); ?> off</strong> your next one.</p>
             <div class="tf2-snap__row">
                 <input class="tf2-snap__link" type="text" readonly value="<?php echo esc_attr( $short ); ?>" aria-label="Your Snap Link" data-full="<?php echo esc_attr( $link ); ?>">
