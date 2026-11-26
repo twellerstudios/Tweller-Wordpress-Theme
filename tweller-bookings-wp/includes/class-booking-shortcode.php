@@ -275,7 +275,7 @@ class TwellerFlow2_Booking_Shortcode {
                                 <span class="tf2-consent-opt__mark" aria-hidden="true"></span>
                                 <span class="tf2-consent-opt__body">
                                     <span class="tf2-consent-opt__name">Share as many as you like</span>
-                                    <span class="tf2-consent-opt__note">A real help to us &mdash; and we say thank you.</span>
+                                    <span class="tf2-consent-opt__note">A real help to us &mdash; and we say thank you<?php $tf2_cap = class_exists( 'TwellerFlow2_Image_Consent' ) ? TwellerFlow2_Image_Consent::next_discount_cap() : 0; echo $tf2_cap > 0 ? esc_html( ': ' . (int) $tf2_pct . '% off your next session, up to TT$' . number_format( $tf2_cap ) ) : ''; ?>.</span>
                                 </span>
                                 <span class="tf2-consent-opt__tag tf2-consent-opt__tag--gift"><?php echo esc_html( (int) $tf2_pct ); ?>% off next</span>
                             </label>

@@ -185,6 +185,7 @@ const tfBooking = {
         // clients; some codes are tied to one email). Check again as soon as
         // the email is in, and say so right under the email field.
         const email = document.getElementById('tf2-client-email');
+        if (email) email.addEventListener('change', () => this.loadPerks(email.value));
         if (email) email.addEventListener('change', async () => {
             if (!this.coupon || !/.+@.+\..+/.test(email.value)) return;
             const had = this.coupon.code;
@@ -211,6 +212,24 @@ const tfBooking = {
         const saved = (this.readState() || {}).couponCode;
         const code = fromUrl || saved || (snapCookie ? decodeURIComponent(snapCookie) : '');
         if (code) { open(); input.value = code; this.applyCoupon(code, true); }
+    },
+
+    // A thank-you discount waiting for this email (from choosing "share
+    // freely" last time): shown in the order summary so the total here matches
+    // what the server charges.
+    perks: null,
+    async loadPerks(raw) {
+        const e = String(raw || '').trim();
+        const before = JSON.stringify(this.perks);
+        if (!/.+@.+\..+/.test(e)) { this.perks = null; }
+        else {
+            try {
+                const r = await fetch(`${window.twellerBooking.restUrl}perks?email=${encodeURIComponent(e)}`);
+                const d = await r.json();
+                this.perks = d && d.thanks ? { pct: Number(d.thanks.pct) || 0, cap: Number(d.thanks.cap) || 0 } : null;
+            } catch (x) { this.perks = null; }
+        }
+        if (JSON.stringify(this.perks) !== before) this.refreshSummary();
     },
 
     async applyCoupon(raw, quiet) {
@@ -650,6 +669,7 @@ const tfBooking = {
         const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
         set('tf2-client-name',  s.name);
         set('tf2-client-email', s.email);
+        if (s.email) this.loadPerks(s.email);
         set('tf2-client-phone', s.phone);
         set('tf2-client-notes', s.notes);
 
@@ -1290,8 +1310,22 @@ const tfBooking = {
             lines = `<div style="font-size:12.5px; color:#C9A227; margin-top:8px;">✓ You'll earn a discount on your next session.</div>`;
         }
 
-        // Coupon: off the session price (the privacy fee and transport stay).
-        const couponOff = this.couponOff(base);
+        // Thank-you discount (banked by this email): off the session + privacy fee, like the server.
+        let thanks = 0;
+        if (this.perks && this.perks.pct > 0) {
+            thanks = Math.round(total * this.perks.pct) / 100;
+            if (this.perks.cap > 0) thanks = Math.min(thanks, this.perks.cap);
+            if (thanks > 0) {
+                if (!lines.includes('Session')) {
+                    lines = `<div style="display:flex; justify-content:space-between; opacity:0.9; font-size:14px; margin-top:8px;"><span>Session</span><span>TTD ${fmt(base)}</span></div>` + lines;
+                }
+                lines += `<div style="display:flex; justify-content:space-between; font-size:14px; color:#C9A227;"><span>Thank-you discount</span><span>− TTD ${fmt(thanks)}</span></div>`;
+                total -= thanks;
+            }
+        }
+
+        // Coupon: off the session price (the privacy fee and transport stay), never below zero.
+        const couponOff = Math.min(this.couponOff(base), Math.max(0, total));
         if (couponOff > 0) {
             if (!lines.includes('Session')) {
                 lines = `<div style="display:flex; justify-content:space-between; opacity:0.9; font-size:14px; margin-top:8px;"><span>Session</span><span>TTD ${fmt(base)}</span></div>` + lines;
@@ -1343,6 +1377,7 @@ const tfBooking = {
             const row = (label, amount, opts = {}) => `<div class="tf2-pay__row${opts.off ? ' is-off' : ''}"><dt>${esc(label)}${opts.sub ? `<small>${esc(opts.sub)}</small>` : ''}</dt><dd>${opts.text ? esc(opts.text) : (opts.off ? '−' : '') + money(amount)}</dd></div>`;
             let rows = row(`${this.selectedPackageData.name} session`, base, { sub: this.selectedSessionData ? this.selectedSessionData.name : '' });
             if (choice === 'declined' && fee > 0) rows += row('Privacy fee', fee);
+            if (thanks > 0) rows += row('Thank-you discount', thanks, { off: true, sub: `For sharing your photos last time (${this.perks.pct}% off${this.perks.cap > 0 ? ', up to TT$' + this.perks.cap : ''})` });
             if (couponOff > 0) rows += row(this.coupon.snap ? 'Snap It Forward' : `Coupon ${this.coupon.code}`, couponOff, { off: true });
             if (bk.n) {
                 if (bk.free) rows += row('Early bird backdrop', 0, { text: 'Free' });

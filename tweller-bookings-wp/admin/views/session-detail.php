@@ -78,6 +78,9 @@
                 <a href="<?php echo esc_url( $wa_link ); ?>" target="_blank" class="tf2-btn tf2-btn--whatsapp tf2-btn--sm">WhatsApp</a>
             <?php endif; ?>
             <a href="<?php echo esc_url( $tracker_url ); ?>" target="_blank" class="tf2-btn tf2-btn--secondary tf2-btn--sm">Client View</a>
+            <?php if ( class_exists( 'TwellerFlow2_Clients' ) && $session->client_email ) : ?>
+                <a href="<?php echo esc_url( TwellerFlow2_Clients::url( $session->client_email ) ); ?>" class="tf2-btn tf2-btn--secondary tf2-btn--sm">Client perks &amp; history</a>
+            <?php endif; ?>
             <?php if ( $tf2_book_link ) : ?>
                 <button type="button" class="tf2-btn tf2-btn--secondary tf2-btn--sm" title="<?php echo esc_attr( $tf2_book_link ); ?>"
                     onclick="navigator.clipboard.writeText(<?php echo esc_attr( wp_json_encode( $tf2_book_link ) ); ?>); this.textContent='Link copied!';">Copy booking link</button>

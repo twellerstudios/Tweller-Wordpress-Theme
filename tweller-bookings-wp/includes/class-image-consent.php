@@ -34,6 +34,7 @@ class TwellerFlow2_Image_Consent {
     const OPT_CREDITS        = 'tweller_flow_2_client_credits'; // email => credit bucket
     const OPT_FEE            = 'tweller_flow_2_privacy_fee';
     const OPT_DISCOUNT_PCT   = 'tweller_flow_2_next_session_discount_pct';
+    const OPT_DISCOUNT_CAP   = 'tweller_flow_2_next_session_discount_cap';  // TT$ max, 0 = no cap
     const OPT_PAGE           = 'tweller_flow_2_privacy_fee_page';
     const SHORTCODE          = 'tweller_privacy_fee';
 
@@ -139,6 +140,24 @@ class TwellerFlow2_Image_Consent {
     public static function next_discount_pct() {
         $pct = (float) get_option( self::OPT_DISCOUNT_PCT, 50 );
         return min( 100, max( 0, $pct ) );
+    }
+
+    /** Most the thank-you discount can take off (TT$), 0 = no limit. */
+    public static function next_discount_cap() {
+        return max( 0, (float) get_option( self::OPT_DISCOUNT_CAP, 0 ) );
+    }
+
+    /** The thank-you discount on a session priced $subtotal. */
+    public static function next_discount_value( $subtotal ) {
+        $d   = round( max( 0, (float) $subtotal ) * ( self::next_discount_pct() / 100 ), 2 );
+        $cap = self::next_discount_cap();
+        return $cap > 0 ? min( $d, $cap ) : $d;
+    }
+
+    /** "50% off" / "50% off (up to TT$200)". */
+    public static function next_discount_label() {
+        $cap = self::next_discount_cap();
+        return (int) self::next_discount_pct() . '% off' . ( $cap > 0 ? ' (up to TT$' . number_format( $cap ) . ')' : '' );
     }
 
     public static function fee_for_choice( $choice ) {
@@ -264,7 +283,7 @@ class TwellerFlow2_Image_Consent {
         $discount = 0.0;
         $applied  = false;
         if ( self::has_next_session_discount( $email ) ) {
-            $discount = round( $subtotal * ( self::next_discount_pct() / 100 ), 2 );
+            $discount = self::next_discount_value( $subtotal );
             $applied  = true;
         }
 
@@ -339,7 +358,7 @@ class TwellerFlow2_Image_Consent {
         <h4>Your three choices</h4>
         <ul>
             <li><strong>A few images</strong> — our standard, and no fee at all.</li>
-            <li><strong>Share freely</strong> — our thanks is <strong><?php echo esc_html( (int) $pct ); ?>% off your next session</strong>.</li>
+            <li><strong>Share freely</strong> — our thanks is <strong><?php echo esc_html( self::next_discount_label() ); ?> your next session</strong>.</li>
             <li><strong>Nothing at all</strong> — complete privacy, with the <?php echo esc_html( $fee_str ); ?> fee.</li>
         </ul>
 

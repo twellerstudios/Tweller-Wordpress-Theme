@@ -429,7 +429,7 @@ class TwellerFlow2_Booking_API {
             $types = get_option( 'tweller_flow_2_session_types', array() );
             $lines = array( array( 'label' => trim( ( $package['name'] ?? 'Photo' ) . ' session' ), 'sub' => $types[ $session_data['session_type'] ]['name'] ?? '', 'amount' => (float) $package['price'] ) );
             if ( ! empty( $pricing['fee'] ) )      $lines[] = array( 'label' => 'Privacy fee', 'amount' => (float) $pricing['fee'] );
-            if ( ! empty( $pricing['discount'] ) ) $lines[] = array( 'label' => 'Next-session discount', 'amount' => -(float) $pricing['discount'] );
+            if ( ! empty( $pricing['discount'] ) ) $lines[] = array( 'label' => 'Thank-you discount', 'sub' => 'For sharing your photos last time (' . ( class_exists( 'TwellerFlow2_Image_Consent' ) ? TwellerFlow2_Image_Consent::next_discount_label() : '' ) . ')', 'amount' => -(float) $pricing['discount'] );
             if ( $coupon_off > 0 ) $lines[] = array( 'label' => $snap_member ? 'Snap It Forward' : 'Coupon ' . $coupon_code, 'sub' => $snap_member ? 'Shared by ' . $snap_member['name'] : '', 'amount' => -$coupon_off );
             if ( $backdrop_plan ) {
                 $bd_n = function ( $k ) use ( $backdrop_plan ) { $c = TwellerFlow2_Backdrop_Edits::catalogue( $backdrop_plan['session_type'] ); return $c[ $k ]['name'] ?? $k; };
