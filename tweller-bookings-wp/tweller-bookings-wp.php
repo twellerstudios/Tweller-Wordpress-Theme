@@ -3,7 +3,7 @@
  * Plugin Name: Tweller Bookings WP
  * Plugin URI: https://twellerstudios.com
  * Description: Photography session workflow — booking, pipeline tracking, client proof uploads, photo selection portal, gallery delivery, and WiPay payment integration.
- * Version: 3.74.0
+ * Version: 3.74.1
  * Author: Tweller Studios
  * Author URI: https://twellerstudios.com
  * License: GPL v2 or later
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'TWELLER_FLOW_2_VERSION', '3.74.0' );
+define( 'TWELLER_FLOW_2_VERSION', '3.74.1' );
 define( 'TWELLER_FLOW_2_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TWELLER_FLOW_2_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'TWELLER_FLOW_2_TABLE_SESSIONS', 'tweller_sessions' );
@@ -301,6 +301,17 @@ function tweller_flow_2_init() {
     add_action( 'wp_enqueue_scripts', 'tweller_flow_2_public_assets' );
 }
 add_action( 'init', 'tweller_flow_2_init' );
+
+/**
+ * The site is designed light. Some phone browsers (the Google app, Chrome's
+ * auto-dark, dark-mode extensions) recolour text on their own, which left
+ * white text on light cards. Opt out on the public site.
+ */
+function tweller_flow_2_light_only() {
+    echo '<meta name="color-scheme" content="only light">' . "\n";
+    echo '<meta name="darkreader-lock">' . "\n";
+}
+add_action( 'wp_head', 'tweller_flow_2_light_only', 1 );
 
 /**
  * Enqueue public-facing assets

@@ -2481,3 +2481,7 @@ body.page .page-hero {
     .tf2-bank__ic, .tf2-bank__ic svg { width: 18px; height: 18px; }
     .tf2-inv__sum .tf2-inv__sum-due { font-size: 15px; }
 }
+
+/* The site is designed light: stop browsers' "dark theme for websites" (Google app, Chrome auto-dark)
+   from recolouring text, which left white text on light cards. */
+:root { color-scheme: only light; }

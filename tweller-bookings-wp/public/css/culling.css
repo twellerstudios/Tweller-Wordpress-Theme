@@ -704,3 +704,7 @@
 .tc-bd .tc-bd__freeopt span { white-space: normal; }
 .tc-grid__item .tc-bdpick { right: 46px; }
 @media (max-width: 420px) { .tc-bd .tc-bd__freegrid { grid-template-columns: repeat(2, 1fr); } }
+
+/* The site is designed light: stop browsers' "dark theme for websites" (Google app, Chrome auto-dark)
+   from recolouring text, which left white text on light cards. */
+:root { color-scheme: only light; }

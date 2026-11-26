@@ -572,3 +572,7 @@ body.tw-xmas-page { overflow-x: hidden; }
     .tw-more__card { padding: 32px 32px 30px; }
 }
 @media (prefers-reduced-motion: reduce) { .tw-more__fan img { transition: none; } }
+
+/* The site is designed light: stop browsers' "dark theme for websites" (Google app, Chrome auto-dark)
+   from recolouring text, which left white text on light cards. */
+:root { color-scheme: only light; }

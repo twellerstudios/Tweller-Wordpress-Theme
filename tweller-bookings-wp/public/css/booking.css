@@ -1195,3 +1195,7 @@ html.tf2-ld-lock { overflow: hidden; }
     .tweller-booking .tf2-bdo__opt { grid-template-columns: 36px minmax(0, 1fr) 22px; gap: 10px; padding: 12px; }
     .tweller-booking .tf2-bdo__icon { width: 36px; height: 36px; }
 }
+
+/* The site is designed light: stop browsers' "dark theme for websites" (Google app, Chrome auto-dark)
+   from recolouring text, which left white text on light cards. */
+:root { color-scheme: only light; }
