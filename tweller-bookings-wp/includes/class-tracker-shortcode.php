@@ -286,22 +286,26 @@ class TwellerFlow2_Tracker_Shortcode {
                     </div>
                     
                     <?php if ( $idx === 0 && $session->current_stage === 'booked' && $session->payment_status === 'pending' ) : ?>
-                        <?php self::render_wipay_card( $session, (float) $session->total_amount - (float) $session->deposit_amount, true ); ?>
-                        <div class="tf2-tracker__receipt">
+                        <?php $tf2_due = max( 0, (float) $session->total_amount - (float) $session->deposit_amount ); ?>
+                        <?php if ( class_exists( 'TwellerFlow2_Invoice' ) ) echo TwellerFlow2_Invoice::render( $session ); // phpcs:ignore ?>
+                        <?php self::render_wipay_card( $session, $tf2_due, true ); ?>
+                        <div class="tf2-tracker__receipt tf2-tracker__receipt--bank">
                             <div class="tf2-tracker__receipt-header">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--tf2-gold)" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                                <h3>Make payment to confirm booking</h3>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/></svg>
+                                <h3>Bank transfer details</h3>
                             </div>
-                            <?php $banking_info = get_option('tweller_flow_2_banking', ''); ?>
-                            <?php if ( ! empty($banking_info) ) : ?>
-                                <div class="tf2-tracker__banking-info">
-                                    <?php echo wpautop( esc_html( $banking_info ) ); ?>
-                                </div>
+                            <?php if ( class_exists( 'TwellerFlow2_Invoice' ) ) : ?>
+                                <p class="tf2-tracker__receipt-desc">Send <strong><?php echo esc_html( TwellerFlow2_Invoice::money( $tf2_due ) ); ?></strong> to the account below. Use the copy button beside any line to paste it into your banking app.</p>
+                                <?php echo TwellerFlow2_Invoice::render_bank( $tf2_due ); // phpcs:ignore ?>
+                            <?php else : ?>
+                                <?php $banking_info = get_option('tweller_flow_2_banking', ''); ?>
+                                <?php if ( ! empty($banking_info) ) : ?>
+                                    <div class="tf2-tracker__banking-info"><?php echo wpautop( esc_html( $banking_info ) ); ?></div>
+                                <?php endif; ?>
+                                <p class="tf2-tracker__receipt-desc">Please transfer <strong>TTD <?php echo number_format( $tf2_due, 2 ); ?></strong> and upload the receipt screenshot below to verify your booking.</p>
                             <?php endif; ?>
-                            <?php if ( (float) $session->deposit_amount > 0 ) : ?>
-                                <p class="tf2-tracker__receipt-desc">TTD <?php echo number_format( (float) $session->deposit_amount, 2 ); ?> is already covered by your gift card.</p>
-                            <?php endif; ?>
-                            <p class="tf2-tracker__receipt-desc">Please transfer <strong>TTD <?php echo number_format( (float) $session->total_amount - (float) $session->deposit_amount, 2 ); ?></strong> and upload the receipt screenshot below to verify your booking.</p>
+                            <h4 class="tf2-tracker__receipt-sub">Upload your receipt</h4>
+                            <p class="tf2-tracker__receipt-desc">Once you've sent the transfer, upload a screenshot of the receipt and we'll confirm your booking.</p>
                             <form id="tf2-receipt-form" class="tf2-tracker__receipt-form">
                                 <input type="hidden" id="tf2-receipt-code" value="<?php echo esc_attr( $session->tracking_code ); ?>">
                                 
@@ -328,6 +332,7 @@ class TwellerFlow2_Tracker_Shortcode {
                             <div id="tf2-receipt-status" class="tf2-tracker__receipt-status" style="display:none;"></div>
                         </div>
                     <?php elseif ( $idx === 0 && $session->current_stage === 'booked' && $session->payment_status === 'verifying' ) : ?>
+                        <?php if ( class_exists( 'TwellerFlow2_Invoice' ) ) echo TwellerFlow2_Invoice::render( $session ); // phpcs:ignore ?>
                         <div class="tf2-tracker__receipt tf2-tracker__receipt--verifying">
                             <div class="tf2-tracker__receipt-header">
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>

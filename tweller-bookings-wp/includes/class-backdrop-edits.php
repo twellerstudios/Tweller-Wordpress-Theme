@@ -74,6 +74,8 @@ class TwellerFlow2_Backdrop_Edits {
         if ( ! $cat || ! preg_match( '/^Backdrop: (.+)$/m', $notes, $m ) ) return null;
         $by_name = array();
         foreach ( $cat as $k => $c ) $by_name[ strtolower( trim( $c['name'] ) ) ] = $k;
+        // Names these options had before 3.74.
+        $by_name += array( 'our own decor, at home' => 'own-decor', 'on location' => 'on-location' );
         $primary = $by_name[ strtolower( trim( $m[1] ) ) ] ?? '';
         if ( $primary === '' ) return null;
         $free = '';

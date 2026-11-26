@@ -2393,3 +2393,91 @@ body.page .page-hero {
 @media (max-width: 430px) {
     .tf2-gallery__actions .tf2-gbtn:not(.tf2-gbtn--show) > svg { display: none; }
 }
+
+/* ── Invoice (payment step) ─────────────────────────── */
+.tf2-inv { width: 100%; max-width: 420px; box-sizing: border-box; margin: 16px 0 0; padding: 24px; text-align: left;
+    background: #fff; border: 1px solid rgba(0,0,0,.07); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.02);
+    font-family: var(--tf-font); color: #1A1A1A; font-variant-numeric: tabular-nums; }
+.tf2-inv *, .tf2-bank * { box-sizing: border-box; }
+.tf2-inv__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.tf2-inv__from { display: grid; gap: 2px; min-width: 0; }
+.tf2-inv__kicker { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--tf-gray-500); }
+.tf2-inv__brand { font-size: 15px; font-weight: 700; letter-spacing: -.01em; color: #101010; overflow-wrap: anywhere; }
+.tf2-inv__status { flex: none; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; line-height: 1.4; white-space: nowrap; }
+.tf2-inv__status--due { background: #FFF4E5; color: #93370D; }
+.tf2-inv__status--wait { background: #EEF4FF; color: #3538CD; }
+.tf2-inv__status--paid { background: #ECFDF3; color: #067647; }
+.tf2-inv__amount { display: grid; gap: 2px; margin: 20px 0 0; padding: 0 0 20px; border-bottom: 1px solid var(--tf-gray-200); }
+.tf2-inv__amount-k { font-size: 13px; color: var(--tf-gray-500); }
+.tf2-inv__amount-v { font-size: 32px; font-weight: 700; line-height: 1.15; letter-spacing: -.02em; color: #101010; }
+.tf2-inv__amount-s { margin-top: 4px; font-size: 13px; line-height: 1.5; color: var(--tf-gray-500); }
+.tf2-inv__meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; margin: 20px 0 0; }
+.tf2-inv__meta > div { min-width: 0; }
+.tf2-inv__meta dt { margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--tf-gray-500); }
+.tf2-inv__meta dd { margin: 0; font-size: 13.5px; font-weight: 500; line-height: 1.45; color: #101010; overflow-wrap: anywhere; }
+.tf2-inv__meta dd span { display: block; font-weight: 400; color: var(--tf-gray-500); }
+.tf2-inv__items { margin: 24px 0 0; }
+.tf2-inv__row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--tf-gray-100); font-size: 14px; line-height: 1.45; }
+.tf2-inv__row > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.tf2-inv__row > span:last-child { text-align: right; white-space: nowrap; }
+.tf2-inv__row small { display: block; font-size: 12.5px; color: var(--tf-gray-500); }
+.tf2-inv__row--head { padding: 0 0 8px; border-bottom: 1px solid var(--tf-gray-200); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--tf-gray-500); }
+.tf2-inv__row.is-off > span:last-child, .tf2-inv__sum .is-off dd { color: #067647; }
+.tf2-inv__sum { display: grid; gap: 8px; margin: 14px 0 0; }
+.tf2-inv__sum > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; font-size: 14px; }
+.tf2-inv__sum dt { margin: 0; color: #404040; overflow-wrap: anywhere; }
+.tf2-inv__sum dd { margin: 0; text-align: right; white-space: nowrap; font-weight: 500; }
+.tf2-inv__sum .tf2-inv__sum-due { margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--tf-gray-200); font-size: 16px; }
+.tf2-inv__sum .tf2-inv__sum-due dt, .tf2-inv__sum .tf2-inv__sum-due dd { font-weight: 700; color: #101010; }
+@media (max-width: 360px) {
+    .tf2-inv { padding: 20px 16px; }
+    .tf2-inv__amount-v { font-size: 28px; }
+    .tf2-inv__meta { grid-template-columns: 1fr; }
+}
+
+/* ── Bank details with copy buttons ─────────────────── */
+.tf2-bank { list-style: none; margin: 0 0 12px; padding: 0; border: 1px solid var(--tf-gray-200); border-radius: 10px; overflow: hidden; background: #fff; }
+.tf2-bank__row { display: grid; grid-template-columns: minmax(0, 1fr) 96px; align-items: center; gap: 12px; min-height: 64px; margin: 0; padding: 10px 10px 10px 14px; }
+.tf2-bank__row + .tf2-bank__row { border-top: 1px solid var(--tf-gray-200); }
+.tf2-bank__txt { display: grid; gap: 2px; min-width: 0; }
+.tf2-bank__k { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--tf-gray-500); }
+.tf2-bank__v { font-size: 15px; font-weight: 600; line-height: 1.35; color: #101010; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.tf2-bank__copy { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 96px; height: 44px; margin: 0; padding: 0 10px;
+    border: 1px solid var(--tf-gray-300); border-radius: 8px; background: #fff; color: #101010; font: 600 13px/1 var(--tf-font); cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s; -webkit-tap-highlight-color: transparent; }
+.tf2-bank__copy:hover { border-color: #101010; }
+.tf2-bank__copy:focus-visible { outline: 3px solid var(--tf-gold); outline-offset: 2px; }
+.tf2-bank__copy:active { transform: scale(.97); }
+.tf2-bank__ic { display: inline-flex; width: 16px; height: 16px; flex: none; }
+.tf2-bank__ic svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tf2-bank__ic--done { display: none; }
+.tf2-bank__copy.is-done { background: #ECFDF3; border-color: #ABEFC6; color: #067647; }
+.tf2-bank__copy.is-done .tf2-bank__ic--copy { display: none; }
+.tf2-bank__copy.is-done .tf2-bank__ic--done { display: inline-flex; }
+.tf2-bank__note { margin: 0 0 8px; font-size: 13px; line-height: 1.5; color: var(--tf-gray-500); }
+.tf2-bank__live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.tf2-tracker__receipt-sub { margin: 20px 0 4px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,.06); font-size: 14px; font-weight: 700; color: var(--tf-black); font-family: var(--tf-font); }
+.tf2-tracker__receipt--bank:hover { transform: none; }
+.tf2-tracker__receipt--bank .tf2-tracker__receipt-header h3,
+.tf2-tracker__receipt--bank .tf2-tracker__receipt-sub { font-family: var(--tf-font); text-align: left; letter-spacing: -.01em; }
+.tf2-tracker__receipt--bank .tf2-tracker__receipt-header svg { flex: none; }
+@media (max-width: 480px) {
+    .tf2-inv, .tf2-tracker__receipt--bank { padding: 20px 18px; }
+    /* Name + email and the session read as full-width lines; number + date pair up. */
+    .tf2-inv__meta > div:nth-child(-n+2) { grid-column: 1 / -1; }
+    .tf2-bank__row { grid-template-columns: minmax(0, 1fr) 78px; gap: 10px; padding: 10px 8px 10px 12px; }
+    .tf2-bank__k { font-size: 11px; letter-spacing: .04em; }
+    .tf2-bank__copy { width: 78px; padding: 0 6px; gap: 4px; font-size: 12.5px; }
+    .tf2-bank__ic, .tf2-bank__ic svg { width: 14px; height: 14px; }
+}
+.tf2-bank__v { overflow-wrap: break-word; word-break: normal; }
+@media (max-width: 360px) {
+    .tf2-tracker { padding-left: 12px; padding-right: 12px; }
+    .tf2-inv, .tf2-tracker__receipt--bank { padding: 18px 14px; }
+    /* Very small phones: the copy buttons become icon-only squares (tick + green when copied). */
+    .tf2-bank__row { grid-template-columns: minmax(0, 1fr) 44px; }
+    .tf2-bank__copy { width: 44px; padding: 0; }
+    .tf2-bank__lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .tf2-bank__ic, .tf2-bank__ic svg { width: 18px; height: 18px; }
+    .tf2-inv__sum .tf2-inv__sum-due { font-size: 15px; }
+}

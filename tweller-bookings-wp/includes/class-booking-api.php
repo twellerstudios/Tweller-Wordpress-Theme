@@ -423,6 +423,24 @@ class TwellerFlow2_Booking_API {
 
         if ( $backdrop_plan ) TwellerFlow2_Backdrop_Edits::save_plan( $session_id, $backdrop_plan );
 
+        // The invoice the client sees on the payment step: the same lines the
+        // price above was built from.
+        if ( class_exists( 'TwellerFlow2_Invoice' ) ) {
+            $types = get_option( 'tweller_flow_2_session_types', array() );
+            $lines = array( array( 'label' => trim( ( $package['name'] ?? 'Photo' ) . ' session' ), 'sub' => $types[ $session_data['session_type'] ]['name'] ?? '', 'amount' => (float) $package['price'] ) );
+            if ( ! empty( $pricing['fee'] ) )      $lines[] = array( 'label' => 'Privacy fee', 'amount' => (float) $pricing['fee'] );
+            if ( ! empty( $pricing['discount'] ) ) $lines[] = array( 'label' => 'Next-session discount', 'amount' => -(float) $pricing['discount'] );
+            if ( $coupon_off > 0 ) $lines[] = array( 'label' => $snap_member ? 'Snap It Forward' : 'Coupon ' . $coupon_code, 'sub' => $snap_member ? 'Shared by ' . $snap_member['name'] : '', 'amount' => -$coupon_off );
+            if ( $backdrop_plan ) {
+                $bd_n = function ( $k ) use ( $backdrop_plan ) { $c = TwellerFlow2_Backdrop_Edits::catalogue( $backdrop_plan['session_type'] ); return $c[ $k ]['name'] ?? $k; };
+                if ( $backdrop_plan['free'] !== '' ) $lines[] = array( 'label' => 'Early bird backdrop', 'sub' => $bd_n( $backdrop_plan['free'] ), 'amount' => 0, 'text' => 'Free' );
+                if ( $backdrop_plan['paid'] ) $lines[] = array( 'label' => count( $backdrop_plan['paid'] ) === 1 ? 'Extra backdrop' : 'Extra backdrops × ' . count( $backdrop_plan['paid'] ), 'sub' => implode( ', ', array_map( $bd_n, $backdrop_plan['paid'] ) ), 'amount' => (float) $backdrop_plan['fee'] );
+                if ( $backdrop_plan['custom'] !== '' ) $lines[] = array( 'label' => 'Custom backdrop', 'sub' => 'We\'ll send you a quote', 'amount' => 0, 'text' => 'To quote' );
+            }
+            if ( ! empty( $pricing['transport'] ) ) $lines[] = array( 'label' => 'Transport', 'sub' => 'Outside the central area', 'amount' => (float) $pricing['transport'] );
+            TwellerFlow2_Invoice::save( $session_id, array( 'lines' => $lines, 'gift' => $gift_take, 'gift_code' => $gift_take > 0 ? $gift_code : '', 'created' => current_time( 'mysql' ) ) );
+        }
+
         if ( $snap_member ) {
             TwellerFlow2_Referrals::record_booking( $snap_member, $session_id, $session_data['client_name'], $client_email, $coupon_off );
             TwellerFlow2_Session::record_stage_history( $session_id, 'booked', 0, 'Snap It Forward: shared by ' . $snap_member['name'] . ' (' . $snap_member['code'] . ') — TT$' . number_format( $coupon_off, 2 ) . ' off' );

@@ -181,6 +181,28 @@ const tfBooking = {
             if (e.key === 'Enter') { e.preventDefault(); this.applyCoupon(input.value); }
         });
 
+        // Some codes depend on who's booking (Snap It Forward is for first-time
+        // clients; some codes are tied to one email). Check again as soon as
+        // the email is in, and say so right under the email field.
+        const email = document.getElementById('tf2-client-email');
+        if (email) email.addEventListener('change', async () => {
+            if (!this.coupon || !/.+@.+\..+/.test(email.value)) return;
+            const had = this.coupon.code;
+            open();
+            await this.applyCoupon(had);
+            let note = document.getElementById('tf2-email-note');
+            if (this.coupon) { if (note) note.remove(); return; }
+            if (!note) {
+                note = document.createElement('p');
+                note.id = 'tf2-email-note';
+                note.className = 'tf2-email-note';
+                note.setAttribute('role', 'alert');
+                email.insertAdjacentElement('afterend', note);
+            }
+            const why = (document.getElementById('tf2-coupon-msg') || {}).textContent || 'That code can\'t be used with this email.';
+            note.textContent = `${why} The code ${had} has been taken off, and your total updated.`;
+        });
+
         // From a link (?coupon=CODE) or a saved draft.
         const qs = new URLSearchParams(location.search);
         const fromUrl = qs.get('coupon') || qs.get('snap');
@@ -865,19 +887,34 @@ const tfBooking = {
         if (!keys.includes(this.selectedBackdrop)) this.selectedBackdrop = '';
         const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-        const tiles = cfg.choices.map((c) => {
-            const art = c.thumb
-                ? `<img src="${esc(c.thumb)}" alt="" loading="lazy" decoding="async">`
-                : `<span class="tf2-bd__icon" aria-hidden="true">${c.kind === 'location'
-                    ? '<svg viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>'
-                    : '<svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M12 13l-2.2 4h4.4L12 13Z"/></svg>'}</span>`;
-            return `<label class="tf2-bd__opt${c.thumb ? '' : ' tf2-bd__opt--plain'}">
-                <input type="radio" name="tf2_backdrop" value="${esc(c.key)}"${c.key === this.selectedBackdrop ? ' checked' : ''}>
-                <span class="tf2-bd__art">${art}${c.kind === 'scene' ? '<span class="tf2-bd__badge">Digital</span>' : ''}<span class="tf2-bd__tick" aria-hidden="true"></span></span>
+        // Digital scenes are photo tiles; "your own setup" (home decor, a place
+        // you choose) is a separate group with its own heading: the same single
+        // choice, but clearly not a digital backdrop.
+        const checked = (c) => (c.key === this.selectedBackdrop ? ' checked' : '');
+        const scenes = cfg.choices.filter((c) => c.kind === 'scene');
+        const own = cfg.choices.filter((c) => c.kind !== 'scene');
+        const tiles = scenes.map((c) => `<label class="tf2-bd__opt">
+                <input type="radio" name="tf2_backdrop" value="${esc(c.key)}"${checked(c)}>
+                <span class="tf2-bd__art">${c.thumb ? `<img src="${esc(c.thumb)}" alt="" loading="lazy" decoding="async">` : ''}<span class="tf2-bd__badge">Digital</span><span class="tf2-bd__tick" aria-hidden="true"></span></span>
                 <span class="tf2-bd__name">${esc(c.name)}</span>
-                ${c.note ? `<span class="tf2-bd__note">${esc(c.note)}</span>` : ''}
-            </label>`;
-        }).join('');
+            </label>`).join('');
+        const ownIcon = (c) => c.kind === 'location'
+            ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>'
+            : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 7 10h3l-4 6h4v5h4v-5h4l-4-6h3z"/></svg>';
+        const ownRows = own.map((c) => `<label class="tf2-bdo__opt">
+                <input type="radio" name="tf2_backdrop" value="${esc(c.key)}"${checked(c)}>
+                <span class="tf2-bdo__icon">${ownIcon(c)}</span>
+                <span class="tf2-bdo__txt"><span class="tf2-bdo__name">${esc(c.name)}</span>${c.note ? `<span class="tf2-bdo__note">${esc(c.note)}</span>` : ''}</span>
+                <span class="tf2-bdo__tick" aria-hidden="true"></span>
+            </label>`).join('');
+        const ownBlock = own.length ? `<div class="tf2-bdo" role="group" aria-labelledby="tf2-bdo-title">
+                <div class="tf2-bdo__head">
+                    <span class="tf2-bdo__or" aria-hidden="true">or</span>
+                    <h4 class="tf2-bdo__title" id="tf2-bdo-title">${esc(cfg.own_title || 'Or use your own setup')}</h4>
+                    ${cfg.own_intro ? `<p class="tf2-bdo__intro">${esc(cfg.own_intro)}</p>` : ''}
+                </div>
+                <div class="tf2-bdo__list">${ownRows}</div>
+            </div>` : '';
 
         // More than one scene: extra digital backdrops, and a custom idea.
         const price = Number(cfg.extra_price) || 50;
@@ -898,7 +935,8 @@ const tfBooking = {
         box.innerHTML = `<fieldset class="tf2-bd">
             <legend class="tf2-bd__title">${esc(cfg.title || 'Choose your backdrop')}</legend>
             ${cfg.intro ? `<p class="tf2-bd__intro">${esc(cfg.intro)}</p>` : ''}
-            <div class="tf2-bd__grid">${tiles}</div>
+            ${scenes.length ? `<p class="tf2-bd__group">${esc(cfg.digital_title || 'Digital scenes')}</p><div class="tf2-bd__grid">${tiles}</div>` : ''}
+            ${ownBlock}
             ${extra}
             <p class="tf2-bd__error" role="alert">Please choose a backdrop to continue.</p>
         </fieldset>`;
@@ -908,6 +946,12 @@ const tfBooking = {
             this.selectedBackdrop = r.value;
             this.selectedBackdropExtras = this.selectedBackdropExtras.filter((k) => k !== r.value);
             box.classList.remove('tf2-backdrop--missing');
+            // Your own setup is shot at your place: pre-answer "Where's your shoot?" if it's still open.
+            const pick = cfg.choices.find((c) => c.key === r.value);
+            if (pick && pick.kind !== 'scene' && !this.shootType()) {
+                const loc = document.querySelector('input[name="tf2_shoot_location"][value="location"]');
+                if (loc) { loc.checked = true; loc.dispatchEvent(new Event('change', { bubbles: true })); }
+            }
             this.paintExtra();
             this.renderChosen();
             if (this.step === 4 && this.selectedPackageData && this.selectedDate) this.renderSummary();
@@ -915,8 +959,9 @@ const tfBooking = {
         }));
         const on = document.getElementById('tf2-bdc-on'), idea = document.getElementById('tf2-bdc-idea');
         if (on && idea) {
-            on.addEventListener('change', () => { idea.hidden = !on.checked; if (on.checked) idea.focus(); else { this.customBackdrop = ''; this.saveState(); } });
+            on.addEventListener('change', () => { idea.hidden = !on.checked; if (on.checked) idea.focus(); else { this.customBackdrop = ''; this.saveState(); this.refreshSummary(); } });
             idea.addEventListener('input', () => { this.customBackdrop = idea.value.slice(0, 1000); this.saveState(); });
+            idea.addEventListener('change', () => this.refreshSummary());
         }
         this.paintExtra();
         this.renderChosen();
@@ -1288,6 +1333,37 @@ const tfBooking = {
                 <div style="margin-top: 6px; font-weight:700;">To pay: TTD ${fmt(total - use)}</div>`;
         }
 
+        // The order summary right above the book button: every line, the
+        // total and what's due on the next screen (worked out the same way the
+        // server prices the booking).
+        const pay = document.getElementById('tf2-pay');
+        if (pay) {
+            const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+            const money = (n) => 'TT$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const row = (label, amount, opts = {}) => `<div class="tf2-pay__row${opts.off ? ' is-off' : ''}"><dt>${esc(label)}${opts.sub ? `<small>${esc(opts.sub)}</small>` : ''}</dt><dd>${opts.text ? esc(opts.text) : (opts.off ? '−' : '') + money(amount)}</dd></div>`;
+            let rows = row(`${this.selectedPackageData.name} session`, base, { sub: this.selectedSessionData ? this.selectedSessionData.name : '' });
+            if (choice === 'declined' && fee > 0) rows += row('Privacy fee', fee);
+            if (couponOff > 0) rows += row(this.coupon.snap ? 'Snap It Forward' : `Coupon ${this.coupon.code}`, couponOff, { off: true });
+            if (bk.n) {
+                if (bk.free) rows += row('Early bird backdrop', 0, { text: 'Free' });
+                if (bk.paid) rows += row(bk.paid === 1 ? 'Extra backdrop' : `Extra backdrops × ${bk.paid}`, bk.fee);
+            }
+            if (this.customBackdrop && this.customBackdrop.trim()) rows += row('Custom backdrop', 0, { text: 'To quote', sub: 'We\'ll send you a quote' });
+            if (transport > 0) rows += row('Transport (outside central area)', transport);
+            const giftUse = this.gift && this.gift.balance > 0 ? Math.min(this.gift.balance, total) : 0;
+            const due = Math.max(0, total - giftUse);
+            pay.innerHTML = `
+                <div class="tf2-pay__head"><span class="tf2-pay__title">Order summary</span><span class="tf2-pay__when">${esc(d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }))} · ${esc(this.selectedTimeDisplay || '')}</span></div>
+                <dl class="tf2-pay__rows">${rows}</dl>
+                <dl class="tf2-pay__rows" style="border:0;padding:0">
+                    <div class="tf2-pay__row tf2-pay__total"><dt>Total</dt><dd>${money(total)}</dd></div>
+                    ${giftUse ? row(`Gift card ${this.gift.code}`, giftUse, { off: true }) : ''}
+                </dl>
+                <div class="tf2-pay__due"><span>${due > 0 ? 'Amount due' : 'Nothing to pay'}</span><strong>${money(due)}</strong></div>
+                <p class="tf2-pay__note">${due > 0 ? 'You\'ll pay this on the next screen, by card or bank transfer.' : 'Your booking is covered in full.'}</p>`;
+            pay.hidden = false;
+        }
+
         const bcfg = this.backdropConfig();
         const bch = bcfg ? bcfg.choices.find((x) => x.key === this.selectedBackdrop) : null;
         const bxn = bcfg ? this.selectedBackdropExtras.map((k) => (bcfg.choices.find((x) => x.key === k) || {}).name).filter(Boolean) : [];
@@ -1478,6 +1554,7 @@ const tfBooking = {
 
         const seq = this.startLoader();
         errorMsg.style.display = 'none';
+        errorMsg.className = 'tf2-error-msg';
 
         try {
             const res = await fetch(`${window.twellerBooking.restUrl}book`, {
@@ -1510,15 +1587,49 @@ const tfBooking = {
             } else {
                 seq.stop();
                 restoreSubmit();
-                errorMsg.innerText = data.message || 'An error occurred. Please try again.';
-                errorMsg.style.display = 'block';
+                this.showBookingError(data.message || 'Something went wrong. Please try again.', data.code);
             }
         } catch (err) {
             seq.stop();
             restoreSubmit();
-            errorMsg.innerText = 'Network error. Please try again.';
-            errorMsg.style.display = 'block';
+            this.showBookingError('We couldn\'t reach the booking system. Check your connection and try again.');
         }
+    },
+
+    // A booking the server turned down: a clear box right above the button,
+    // scrolled into view. A code that can't be used (e.g. Snap It Forward for a
+    // returning client) offers to carry on without it.
+    showBookingError(message, code) {
+        const box = document.getElementById('tf2-booking-error');
+        if (!box) return;
+        const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const isCode = (code === 'coupon' || code === 'coupon_guess') && this.coupon;
+        const isGift = code === 'gift_card' && this.gift;
+        box.className = 'tf2-error-msg tf2-err';
+        box.innerHTML = `<p class="tf2-err__title">${isCode ? 'This code can\'t be used on your booking' : isGift ? 'There\'s a problem with the gift card' : 'We couldn\'t book this yet'}</p>
+            <p class="tf2-err__msg">${esc(message)}</p>
+            ${isCode ? '<button type="button" class="tf2-err__act" data-drop="coupon">Remove the code and see my total</button>' : ''}
+            ${isGift ? '<button type="button" class="tf2-err__act" data-drop="gift">Remove the gift card</button>' : ''}`;
+        box.style.display = 'grid';
+        const act = box.querySelector('[data-drop]');
+        if (act) act.addEventListener('click', () => {
+            if (act.dataset.drop === 'coupon') {
+                const input = document.getElementById('tf2-coupon-code');
+                if (input) input.value = '';
+                this.applyCoupon('');
+                const msg = document.getElementById('tf2-coupon-msg');
+                if (msg) { msg.textContent = 'Code removed. Check your total below, then book.'; msg.hidden = false; msg.className = 'tf2-gift__msg tf2-gift__msg--ok'; }
+            } else {
+                this.gift = null;
+                const gi = document.getElementById('tf2-gift-code'); if (gi) gi.value = '';
+                this.saveState(); this.refreshSummary();
+            }
+            box.style.display = 'none';
+            const pay = document.getElementById('tf2-pay');
+            if (pay) pay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        try { box.focus({ preventScroll: true }); } catch (e) {}
     }
 };
 

@@ -456,11 +456,14 @@ class TwellerFlow2_Landing {
             $img = self::scene_images( $sc );
             $choices[] = array( 'key' => sanitize_key( $sc['slug'] ), 'name' => $sc['name'], 'thumb' => $img['sm'], 'full' => $img['lg'], 'kind' => 'scene' );
         }
-        $choices[] = array( 'key' => 'own-decor', 'name' => 'Our own decor, at home', 'thumb' => '', 'kind' => 'home', 'note' => 'Your tree, your living room' );
-        $choices[] = array( 'key' => 'on-location', 'name' => 'On location', 'thumb' => '', 'kind' => 'location', 'note' => 'A place you choose' );
+        $choices[] = array( 'key' => 'own-decor', 'name' => 'Your own decor at home', 'thumb' => '', 'kind' => 'home', 'note' => 'Your tree and decorations, photographed just as they are' );
+        $choices[] = array( 'key' => 'on-location', 'name' => 'A place you choose', 'thumb' => '', 'kind' => 'location', 'note' => 'A garden, a gallery, anywhere festive' );
         $all[ $s['session_key'] ] = array(
             'title'       => 'Choose your backdrop',
-            'intro'       => 'The 4 scenes are digital backdrops: we photograph you on white (in studio or at your home), then place the backdrop you pick in. Only the background changes; you are not altered.',
+            'intro'       => 'Pick one. The 4 scenes are digital backdrops: we photograph you on white (in studio or at your home), then place the scene you choose behind you. Only the background changes; you are not altered.',
+            'digital_title' => 'Digital scenes',
+            'own_title'   => 'Or use your own setup',
+            'own_intro'   => 'No digital backdrop: we photograph your real Christmas setting just as it is.',
             'choices'     => $choices,
             'extra'       => self::early_bird_active(),   // early bird: the first extra digital backdrop is free
             'extra_label' => 'Early bird: your first extra backdrop is free',

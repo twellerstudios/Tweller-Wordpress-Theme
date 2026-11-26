@@ -2114,3 +2114,38 @@
         });
     }
 })();
+
+// Bank details on the payment step: one tap copies a line (account number,
+// name, bank, amount…) to paste into a banking app.
+(function () {
+    function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+        return new Promise(function (resolve, reject) {
+            var ta = document.createElement('textarea');
+            ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.top = '-1000px'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+            var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(ta);
+            ok ? resolve() : reject(new Error('copy failed'));
+        });
+    }
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest && e.target.closest('.tf2-bank__copy');
+        if (!btn) return;
+        var text = btn.getAttribute('data-copy') || '';
+        var lbl = btn.querySelector('.tf2-bank__lbl');
+        var live = document.querySelector('.tf2-bank__live');
+        copyText(text).then(function () {
+            document.querySelectorAll('.tf2-bank__copy.is-done').forEach(function (b) { if (b !== btn) { b.classList.remove('is-done'); var l = b.querySelector('.tf2-bank__lbl'); if (l) l.textContent = 'Copy'; } });
+            btn.classList.add('is-done');
+            if (lbl) lbl.textContent = 'Copied';
+            if (live) live.textContent = 'Copied: ' + text;
+            clearTimeout(btn._t);
+            btn._t = setTimeout(function () { btn.classList.remove('is-done'); if (lbl) lbl.textContent = 'Copy'; }, 2000);
+        }).catch(function () {
+            if (lbl) lbl.textContent = 'Selected';
+            var v = btn.parentNode.querySelector('.tf2-bank__v');
+            if (v && window.getSelection) { var r = document.createRange(); r.selectNodeContents(v); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+        });
+    });
+})();

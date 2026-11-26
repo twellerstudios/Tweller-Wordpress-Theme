@@ -343,9 +343,10 @@ class TwellerFlow2_Booking_Shortcode {
                     </div>
                     <?php endif; ?>
 
+                    <div class="tf2-pay" id="tf2-pay" aria-live="polite" hidden></div>
+                    <div id="tf2-booking-error" class="tf2-error-msg" role="alert" tabindex="-1" style="display:none;"></div>
                     <button type="submit" class="tf2-btn-submit" id="tf2-submit-btn"><?php echo esc_html( $submit_lbl ); ?></button>
                     <p class="tf2-submit-hint">This step reserves your session &mdash; nothing is charged yet. On the next screen you&rsquo;ll pay by debit/credit card or bank transfer.</p>
-                    <div id="tf2-booking-error" class="tf2-error-msg" style="display:none;"></div>
                 </form>
             </div>
             
