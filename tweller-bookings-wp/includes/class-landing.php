@@ -454,7 +454,7 @@ class TwellerFlow2_Landing {
         $choices = array();
         foreach ( $s['scenes'] as $sc ) {
             $img = self::scene_images( $sc );
-            $choices[] = array( 'key' => sanitize_key( $sc['slug'] ), 'name' => $sc['name'], 'thumb' => $img['sm'], 'kind' => 'scene' );
+            $choices[] = array( 'key' => sanitize_key( $sc['slug'] ), 'name' => $sc['name'], 'thumb' => $img['sm'], 'full' => $img['lg'], 'kind' => 'scene' );
         }
         $choices[] = array( 'key' => 'own-decor', 'name' => 'Our own decor, at home', 'thumb' => '', 'kind' => 'home', 'note' => 'Your tree, your living room' );
         $choices[] = array( 'key' => 'on-location', 'name' => 'On location', 'thumb' => '', 'kind' => 'location', 'note' => 'A place you choose' );
@@ -462,8 +462,10 @@ class TwellerFlow2_Landing {
             'title'       => 'Choose your backdrop',
             'intro'       => 'The 4 scenes are digital backdrops: we photograph you on white (in studio or at your home), then place the backdrop you pick in. Only the background changes; you are not altered.',
             'choices'     => $choices,
-            'extra'       => self::early_bird_active(),
-            'extra_label' => 'Early bird: pick your free extra scene',
+            'extra'       => self::early_bird_active(),   // early bird: the first extra digital backdrop is free
+            'extra_label' => 'Early bird: your first extra backdrop is free',
+            'extra_price' => class_exists( 'TwellerFlow2_Backdrop_Edits' ) ? TwellerFlow2_Backdrop_Edits::price() : 50,
+            'custom'      => true,
         );
         return $all;
     }

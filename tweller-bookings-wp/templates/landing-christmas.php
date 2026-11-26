@@ -136,7 +136,7 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
         <p class="tw-lede">These are digital backdrops: we photograph your family on a white backdrop, then place the backdrop you choose in. Only the background changes; you stay exactly as photographed.</p>
         <ol class="tw-digital" aria-label="How digital backdrops work">
             <li><span class="tw-digital__n">1</span><b>We photograph you on white</b><small>In studio, or at your home with our portable backdrop</small></li>
-            <li><span class="tw-digital__n">2</span><b>You choose your scene</b><small>Any of the 4 below (book early for a second one free)</small></li>
+            <li><span class="tw-digital__n">2</span><b>You choose your scene</b><small>Any of the 4 below, or mix several (TT$<?php echo esc_html( class_exists( 'TwellerFlow2_Backdrop_Edits' ) ? number_format( TwellerFlow2_Backdrop_Edits::price() ) : '50' ); ?> per extra scene<?php echo $eb_on ? ', the first one free if you book early' : ''; ?>)</small></li>
             <li><span class="tw-digital__n">3</span><b>We place the backdrop in</b><small>Light and colour matched so it looks natural</small></li>
         </ol>
     </div>
@@ -170,6 +170,49 @@ $picture = function ( $scene, $img, $attrs = array(), $lazy = true ) {
             <?php endforeach; ?>
         </div>
     </div>
+    </div>
+</section>
+
+<!-- 2b · More than one scene · Custom created backdrops -->
+<?php
+$bd_price  = class_exists( 'TwellerFlow2_Backdrop_Edits' ) ? number_format( TwellerFlow2_Backdrop_Edits::price() ) : '50';
+$custom_wa = 'https://wa.me/' . preg_replace( '/\D/', '', $s['whatsapp'] ) . '?text=' . rawurlencode( "Hi Tweller Studios! I'd love a custom Christmas backdrop. My idea: " );
+?>
+<section class="tw-sec tw-more" aria-labelledby="tw-more-title">
+    <div class="tw-wrap">
+        <p class="tw-kicker">Make it yours</p>
+        <h2 id="tw-more-title" class="tw-h2"><span class="tw-h2__t">Love more than one scene?</span></h2>
+        <p class="tw-lede">Mix your backdrops in one session. Add any digital scene for TT$<?php echo esc_html( $bd_price ); ?>, then choose which backdrop goes on which photo when you pick your favourites.</p>
+        <div class="tw-more__grid">
+            <article class="tw-option tw-more__card">
+                <div class="tw-more__fan" aria-hidden="true">
+                    <?php foreach ( array_slice( $scenes, 0, 3 ) as $sc ) : $im = $L::scene_images( $sc ); ?>
+                        <img src="<?php echo esc_url( $im['sm'] ); ?>" width="<?php echo (int) $im['sm_w']; ?>" height="<?php echo (int) $im['sm_h']; ?>" alt="" loading="lazy" decoding="async">
+                    <?php endforeach; ?>
+                </div>
+                <h3 class="tw-option__title">Mix your scenes</h3>
+                <p class="tw-more__price"><b>+TT$<?php echo esc_html( $bd_price ); ?></b> per extra digital backdrop</p>
+                <?php $n1 = $scenes[0]['name'] ?? ''; $n2 = $scenes[1]['name'] ?? ''; ?>
+                <p><?php if ( $n1 && $n2 ) : ?>The family portrait by the <?php echo esc_html( $n1 ); ?>, the little ones in the <?php echo esc_html( $n2 ); ?>. <?php endif; ?>Add as many scenes as you like when you book, then choose them photo by photo when you pick your favourites.</p>
+                <?php if ( $eb_on ) : ?>
+                    <p class="tw-more__eb"><span>Early bird</span> Book by <?php echo esc_html( $eb_date ); ?> and your first extra scene is free.</p>
+                <?php endif; ?>
+                <a class="tw-btn tw-btn--primary tw-more__cta" href="#packages" data-scroll>Choose your scenes</a>
+            </article>
+            <article class="tw-option tw-more__card tw-more__card--custom">
+                <div class="tw-more__mark" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" width="44" height="44"><path d="M24 5l3.6 10.4L38 19l-10.4 3.6L24 33l-3.6-10.4L10 19l10.4-3.6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M38 31l1.6 4.4L44 37l-4.4 1.6L38 43l-1.6-4.4L32 37l4.4-1.6z" fill="currentColor"/><circle cx="10" cy="38" r="2.4" fill="currentColor"/></svg>
+                </div>
+                <p class="tw-more__new">New</p>
+                <h3 class="tw-option__title">Custom created backdrops</h3>
+                <p>Not seeing a backdrop you love? Tell us your idea and we'll create one just for you: a snowy cabin, your family's colours, a corner of your own Christmas traditions. <em>Bring your ideas to life.</em></p>
+                <div class="tw-more__btns">
+                    <a class="tw-btn tw-more__btn" href="<?php echo esc_url( $custom_wa ); ?>" target="_blank" rel="noopener" data-contact="whatsapp"><?php echo $icon_wa; // phpcs:ignore ?> Share your idea</a>
+                    <a class="tw-more__link" href="#packages" data-scroll>or add it when you book</a>
+                </div>
+                <p class="tw-more__fine">We'll reply with a quote and a preview before we create it.</p>
+            </article>
+        </div>
     </div>
 </section>
 

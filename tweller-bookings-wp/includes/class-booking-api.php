@@ -298,6 +298,25 @@ class TwellerFlow2_Booking_API {
             }
         }
 
+        // Backdrops (Christmas scenes, own decor…): the main one is included;
+        // each extra digital backdrop is TT$50 (an early-bird booking's first
+        // extra is free); a custom-backdrop idea is noted for a quote. Priced
+        // here, never by the browser, and noted at the top of the booking.
+        $backdrop_note = '';
+        $backdrop_plan = null;
+        $session_key   = self::valid_session_type( $data['session_type'] ?? '' );
+        $bd_cfg        = TwellerFlow2_Booking_Shortcode::backdrops()[ $session_key ] ?? null;
+        if ( $bd_cfg && ! empty( $bd_cfg['choices'] ) && class_exists( 'TwellerFlow2_Backdrop_Edits' ) ) {
+            $extras = isset( $data['backdrop_extras'] ) && is_array( $data['backdrop_extras'] ) ? $data['backdrop_extras'] : array_filter( array( $data['backdrop_extra'] ?? '' ) );
+            $bd = TwellerFlow2_Backdrop_Edits::from_booking( $session_key, $data['backdrop'] ?? '', $extras, $data['custom_backdrop'] ?? '', ! empty( $bd_cfg['extra'] ) );
+            if ( is_wp_error( $bd ) ) return $bd;
+            list( $backdrop_plan, $bd_fee, $backdrop_note ) = $bd;
+            if ( $bd_fee > 0 ) {
+                $pricing['backdrops'] = $bd_fee;
+                $pricing['total']     = round( $pricing['total'] + $bd_fee, 2 );
+            }
+        }
+
         // Where the shoot is: away from the studio and outside the central
         // area adds the transport fee (after any discount — it is a cost,
         // not part of the session price).
@@ -355,29 +374,6 @@ class TwellerFlow2_Booking_API {
             }
         }
 
-        // Backdrop (Christmas scene, own decor…): required when the session
-        // offers a picker; written at the top of the notes so the studio
-        // sees it on the booking, in the admin and in the new-booking email.
-        $backdrop_note = '';
-        $session_key   = self::valid_session_type( $data['session_type'] ?? '' );
-        $bd_cfg        = TwellerFlow2_Booking_Shortcode::backdrops()[ $session_key ] ?? null;
-        if ( $bd_cfg && ! empty( $bd_cfg['choices'] ) ) {
-            $names = array();
-            foreach ( $bd_cfg['choices'] as $c ) $names[ $c['key'] ] = $c['name'];
-            $pick  = sanitize_key( $data['backdrop'] ?? '' );
-            if ( ! isset( $names[ $pick ] ) ) {
-                if ( $gift_take > 0 ) {
-                    $gc = TwellerFlow2_Gift_Cards::get_by_code( $gift_code );
-                    if ( $gc ) TwellerFlow2_Gift_Cards::credit( $gc->id, $gift_take, 'Refunded — booking not completed' );
-                }
-                return new WP_Error( 'backdrop', 'Please choose your backdrop.', array( 'status' => 400 ) );
-            }
-            $backdrop_note = 'Backdrop: ' . $names[ $pick ];
-            $extra = sanitize_key( $data['backdrop_extra'] ?? '' );
-            if ( ! empty( $bd_cfg['extra'] ) && $extra !== '' && $extra !== $pick && isset( $names[ $extra ] ) ) {
-                $backdrop_note .= "\nFree extra scene (early bird): " . $names[ $extra ];
-            }
-        }
         $client_notes = sanitize_textarea_field( $data['notes'] ?? '' );
 
         $session_data = array(
@@ -424,6 +420,8 @@ class TwellerFlow2_Booking_API {
             }
             return new WP_Error( 'create_failed', 'Could not create booking.', array( 'status' => 500 ) );
         }
+
+        if ( $backdrop_plan ) TwellerFlow2_Backdrop_Edits::save_plan( $session_id, $backdrop_plan );
 
         if ( $snap_member ) {
             TwellerFlow2_Referrals::record_booking( $snap_member, $session_id, $session_data['client_name'], $client_email, $coupon_off );

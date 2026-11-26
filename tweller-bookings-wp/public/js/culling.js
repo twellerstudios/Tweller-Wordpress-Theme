@@ -20,6 +20,8 @@
     var freebies = 0;
     var upsellPricePerPhoto = 30;
     var submitted = false;
+    var bd = null;          // backdrops this client booked (see TwellerFlow2_Backdrop_Edits::portal_data)
+    var bdAssign = {};      // proof id -> backdrop key
 
     // Elements
     var loading     = document.getElementById('tc-loading');
@@ -98,7 +100,11 @@
                 return;
             }
 
+            bd = data.backdrops || null;
+            if (bd && bd.assign) Object.keys(bd.assign).forEach(function(k) { bdAssign[k] = bd.assign[k]; });
+
             // Render
+            renderBackdropPanel();
             buildGrid();
             counter.style.display = '';
             grid.style.display = '';
@@ -189,6 +195,8 @@
             item.appendChild(check);
             item.appendChild(number);
             item.appendChild(zoom);
+            var pick = backdropPicker(proof.id);
+            if (pick) item.appendChild(pick);
 
             item.addEventListener('click', function() {
                 if (submitted) return;
@@ -331,6 +339,138 @@
         if (lb) lb.style.display = 'none';
     }
 
+    // ── Backdrops: which one goes on which photo ─────────
+    function esc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+    function bdMine() { return (bd && bd.mine) ? bd.mine : []; }
+
+    // A menu on each chosen photo when there is a real choice to make.
+    function bdHasChoice() {
+        var n = bdMine().length;
+        return n > 1 || (n === 1 && bd && !bd.primary_digital);
+    }
+
+    function bdDefault() {
+        var mine = bdMine();
+        if (bd && bd.primary_digital && mine.some(function(m) { return m.key === bd.primary; })) return bd.primary;
+        if (mine.length === 1 && bd && bd.primary_digital) return mine[0].key;
+        return bd ? bd.keep : '';
+    }
+
+    function bdKeyFor(id) {
+        var k = bdAssign[id];
+        var ok = k === (bd && bd.keep) || bdMine().some(function(m) { return m.key === k; });
+        return ok ? k : bdDefault();
+    }
+
+    function bdThumb(key) {
+        var m = bdMine().filter(function(x) { return x.key === key; })[0];
+        return m ? m.thumb : '';
+    }
+
+    function bdName(key) {
+        if (bd && key === bd.keep) return 'Keep as shot';
+        var m = bdMine().filter(function(x) { return x.key === key; })[0];
+        return m ? m.name : '';
+    }
+
+    function backdropPicker(id) {
+        if (!bd || !bdMine().length) return null;
+        var wrap = document.createElement('div');
+        wrap.className = 'tc-bdpick';
+        // Picking a backdrop must never toggle the photo's selection.
+        ['click', 'mousedown', 'touchstart', 'pointerdown'].forEach(function(ev) {
+            wrap.addEventListener(ev, function(e) { e.stopPropagation(); }, { passive: true });
+        });
+        paintPicker(wrap, id);
+        return wrap;
+    }
+
+    function paintPicker(wrap, id) {
+        var key = bdKeyFor(id);
+        var th = bdThumb(key);
+        if (!bdHasChoice()) {
+            wrap.innerHTML = (th ? '<img src="' + esc(th) + '" alt="">' : '') + '<span class="tc-bdpick__fixed">' + esc(bdName(key)) + '</span>';
+            return;
+        }
+        var opts = bdMine().map(function(m) { return '<option value="' + esc(m.key) + '"' + (m.key === key ? ' selected' : '') + '>' + esc(m.name) + '</option>'; }).join('') +
+            '<option value="' + esc(bd.keep) + '"' + (key === bd.keep ? ' selected' : '') + '>Keep as shot</option>';
+        wrap.innerHTML = (th ? '<img src="' + esc(th) + '" alt="">' : '<span class="tc-bdpick__dot" aria-hidden="true"></span>') +
+            '<select aria-label="Backdrop for this photo">' + opts + '</select>';
+        var sel = wrap.querySelector('select');
+        sel.addEventListener('change', function() {
+            bdAssign[id] = sel.value;
+            paintPicker(wrap, id);
+            renderBackdropPanel();
+        });
+    }
+
+    function repaintPickers() {
+        grid.querySelectorAll('.tc-grid__item').forEach(function(item) {
+            var id = parseInt(item.getAttribute('data-id'), 10);
+            var old = item.querySelector('.tc-bdpick');
+            var neu = backdropPicker(id);
+            if (old && neu) item.replaceChild(neu, old); else if (neu) item.appendChild(neu); else if (old) old.remove();
+        });
+    }
+
+    // The panel above the grid: their backdrops, how many photos each, and
+    // the early-bird free backdrop when it has not been chosen yet.
+    function renderBackdropPanel() {
+        var box = document.getElementById('tc-bd');
+        if (!box || !bd) return;
+        var mine = bdMine();
+        if (!mine.length && !bd.free_available) { box.hidden = true; return; }
+        var counts = {};
+        selectedIds.forEach(function(id) { var k = bdKeyFor(id); counts[k] = (counts[k] || 0) + 1; });
+        var chips = mine.map(function(m) {
+            return '<li class="tc-bd__chip">' + (m.thumb ? '<img src="' + esc(m.thumb) + '" alt="">' : '') + '<span><b>' + esc(m.name) + '</b><small>' + (counts[m.key] || 0) + ' photo' + ((counts[m.key] || 0) === 1 ? '' : 's') + '</small></span></li>';
+        }).join('');
+        var html = '<div class="tc-bd__head"><h3 class="tc-bd__title">Your backdrops</h3>' +
+            (bdHasChoice() ? '<p class="tc-bd__hint">Select a photo, then choose its backdrop from the menu at the bottom of the photo.</p>'
+                : (mine.length ? '<p class="tc-bd__hint">Every photo you choose gets this backdrop.</p>' : '')) + '</div>';
+        if (mine.length) html += '<ul class="tc-bd__chips">' + chips + (counts[bd.keep] ? '<li class="tc-bd__chip tc-bd__chip--keep"><span><b>Keep as shot</b><small>' + counts[bd.keep] + ' photo' + (counts[bd.keep] === 1 ? '' : 's') + '</small></span></li>' : '') + '</ul>';
+        if (bd.free_available && bd.free_options && bd.free_options.length) {
+            html += '<div class="tc-bd__free"><p class="tc-bd__freetitle"><span aria-hidden="true">🎁</span> Your early-bird gift: <b>one extra backdrop, free</b>. Choose it now and use it on any of your photos.</p>' +
+                '<div class="tc-bd__freegrid">' + bd.free_options.map(function(o) {
+                    return '<button type="button" class="tc-bd__freeopt" data-key="' + esc(o.key) + '">' + (o.thumb ? '<img src="' + esc(o.thumb) + '" alt="">' : '') + '<span>' + esc(o.name) + '</span></button>';
+                }).join('') + '</div><p class="tc-bd__freemsg" role="status" aria-live="polite"></p></div>';
+        }
+        box.innerHTML = html;
+        box.hidden = false;
+        box.querySelectorAll('.tc-bd__freeopt').forEach(function(b) {
+            b.addEventListener('click', function() { redeemFree(b.getAttribute('data-key'), b); });
+        });
+    }
+
+    function redeemFree(key, btn) {
+        var msg = document.querySelector('.tc-bd__freemsg');
+        if (msg) msg.textContent = 'Adding your free backdrop…';
+        btn.disabled = true;
+        var body = { key: key };
+        if (token) body.token = token;
+        fetch(apiUrl + code + '/redeem-backdrop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': nonce },
+            body: JSON.stringify(body)
+        })
+        .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
+        .then(function(r) {
+            if (!r.ok || !r.j.ok) throw new Error((r.j && r.j.message) || 'Could not add it. Please try again.');
+            bd = r.j.backdrops;
+            renderBackdropPanel();
+            repaintPickers();
+        })
+        .catch(function(e) { if (msg) msg.textContent = e.message; btn.disabled = false; });
+    }
+
+    function backdropSummary() {
+        if (!bd || !bdMine().length) return '';
+        var counts = {};
+        selectedIds.forEach(function(id) { var k = bdKeyFor(id); counts[k] = (counts[k] || 0) + 1; });
+        return Object.keys(counts).map(function(k) { return counts[k] + ' × ' + bdName(k); }).join(', ');
+    }
+
     function toggleSelection(id, item) {
         if (selectedIds.has(id)) {
             selectedIds.delete(id);
@@ -342,6 +482,7 @@
         updateCounter();
         updateSelectionNumbers();
         updateExtraBanner();
+        renderBackdropPanel();
     }
 
     function updateSelectionNumbers() {
@@ -418,6 +559,15 @@
             } else {
                 confirmUpsell.style.display = 'none';
             }
+            var bdLine = document.getElementById('tc-confirm-bd');
+            if (!bdLine && confirmUpsell) {
+                bdLine = document.createElement('p');
+                bdLine.id = 'tc-confirm-bd';
+                bdLine.className = 'tc-confirm-bd';
+                confirmUpsell.parentNode.insertBefore(bdLine, confirmUpsell);
+            }
+            var bdSum = backdropSummary();
+            if (bdLine) { bdLine.textContent = bdSum ? 'Backdrops: ' + bdSum : ''; bdLine.style.display = bdSum ? '' : 'none'; }
             confirmModal.style.display = 'flex';
         });
     }
@@ -436,6 +586,10 @@
             var body = {
                 proof_ids: Array.from(selectedIds),
             };
+            if (bd && bdMine().length) {
+                body.backdrops = {};
+                selectedIds.forEach(function(id) { body.backdrops[id] = bdKeyFor(id); });
+            }
             if (token) body.token = token;
 
             fetch(apiUrl + code + '/select', {

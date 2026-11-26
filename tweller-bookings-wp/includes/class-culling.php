@@ -374,6 +374,8 @@ class TwellerFlow2_Culling {
             'proofs'                => $proof_list,
             'proof_count'           => count( $proof_list ),
             'selected_ids'          => $selected_ids,
+            // Backdrops this client booked: which one goes on which photo is chosen here.
+            'backdrops'             => class_exists( 'TwellerFlow2_Backdrop_Edits' ) ? TwellerFlow2_Backdrop_Edits::portal_data( $session ) : null,
         ));
     }
 
@@ -399,7 +401,7 @@ class TwellerFlow2_Culling {
             return new WP_Error( 'no_selections', 'No photos selected', array( 'status' => 400 ) );
         }
 
-        $result = self::apply_selections( $session, $code, $proof_ids, 'Client submitted' );
+        $result = self::apply_selections( $session, $code, $proof_ids, 'Client submitted', $request->get_param( 'backdrops' ) );
         $total_selected = $result['total'];
         $extra_count    = $result['extra'];
         $extra_cost_ttd = $result['extra_cost'];
@@ -430,7 +432,7 @@ class TwellerFlow2_Culling {
      * submitted, store upsell info, and advance the pipeline to "culled".
      * Shared by the client portal submit and the admin editor.
      */
-    private static function apply_selections( $session, $code, $proof_ids, $who = 'Client submitted' ) {
+    private static function apply_selections( $session, $code, $proof_ids, $who = 'Client submitted', $bd_map = null ) {
         $packages = get_option( 'tweller_flow_2_packages', array() );
         $pkg = $packages[ $session->package_type ] ?? array();
         $included = ( $pkg['images'] ?? 15 ) + self::FREEBIES;
@@ -487,6 +489,17 @@ class TwellerFlow2_Culling {
             'total_price' => $extra_cost_ttd,
             'count'       => $total_selected,
         ));
+
+        // Which backdrop goes on which photo. An admin edit (no map) keeps
+        // the client's earlier choices for photos that are still selected.
+        if ( class_exists( 'TwellerFlow2_Backdrop_Edits' ) ) {
+            if ( ! is_array( $bd_map ) ) {
+                $plan   = TwellerFlow2_Backdrop_Edits::plan_for( $session );
+                $bd_map = array();
+                foreach ( (array) ( $plan['assign'] ?? array() ) as $pid => $row ) $bd_map[ (int) $pid ] = $row['key'];
+            }
+            TwellerFlow2_Backdrop_Edits::save_assignments( $session, $bd_map, $proof_ids );
+        }
 
         return array(
             'total'      => $total_selected,
@@ -777,6 +790,9 @@ class TwellerFlow2_Culling {
             </div>
 
             <!-- Photo grid -->
+            <!-- The client's backdrops: which one goes on which photo (filled by culling.js) -->
+            <div class="tc-bd" id="tc-bd" hidden></div>
+
             <div class="tc-grid" id="tc-grid" style="display:none;"></div>
 
             <!-- Confirm modal -->

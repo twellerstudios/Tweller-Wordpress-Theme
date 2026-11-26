@@ -10,7 +10,8 @@ const tfBooking = {
     selectedTimeStr: null,
     selectedTimeDisplay: null,
     selectedBackdrop: '',
-    selectedBackdropExtra: '',
+    selectedBackdropExtras: [],   // extra digital backdrops (TT$50 each; the first free for an early bird)
+    customBackdrop: '',          // a custom-backdrop idea (quoted separately)
 
     init() {
         if (!window.twellerBooking) return;
@@ -527,7 +528,8 @@ const tfBooking = {
                 phone: el('tf2-client-phone') ? el('tf2-client-phone').value : '',
                 notes: el('tf2-client-notes') ? el('tf2-client-notes').value : '',
                 backdrop: this.selectedBackdrop,
-                backdropExtra: this.selectedBackdropExtra,
+                backdropExtras: this.selectedBackdropExtras,
+                customBackdrop: this.customBackdrop,
                 shootLocation: this.shootType(),
                 shootPoint: this.shootPoint
             }));
@@ -589,7 +591,8 @@ const tfBooking = {
         this.selectedSessionTypeKey = s.sessionTypeKey;
         this.selectedSessionData = type;
         this.selectedBackdrop = s.backdrop || '';
-        this.selectedBackdropExtra = s.backdropExtra || '';
+        this.selectedBackdropExtras = Array.isArray(s.backdropExtras) ? s.backdropExtras : (s.backdropExtra ? [s.backdropExtra] : []);
+        this.customBackdrop = s.customBackdrop || '';
         this.renderPackages();
         this.renderBackdrops();
         let target = 2;
@@ -857,7 +860,7 @@ const tfBooking = {
         const box = document.getElementById('tf2-backdrop');
         if (!box) return;
         const cfg = this.backdropConfig();
-        if (!cfg) { box.hidden = true; box.innerHTML = ''; this.selectedBackdrop = ''; this.selectedBackdropExtra = ''; return; }
+        if (!cfg) { box.hidden = true; box.innerHTML = ''; this.selectedBackdrop = ''; this.selectedBackdropExtras = []; this.customBackdrop = ''; return; }
         const keys = cfg.choices.map((c) => c.key);
         if (!keys.includes(this.selectedBackdrop)) this.selectedBackdrop = '';
         const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -876,12 +879,21 @@ const tfBooking = {
             </label>`;
         }).join('');
 
-        let extra = '';
-        if (cfg.extra) {
-            extra = `<div class="tf2-bd__extra"><span class="tf2-bd__extralabel" id="tf2-dd-label">${esc(cfg.extra_label || 'Your free extra scene')}</span>
-                <details class="tf2-dd" id="tf2-dd"><summary aria-labelledby="tf2-dd-label" id="tf2-dd-sum"></summary>
-                <ul class="tf2-dd__list" id="tf2-dd-list"></ul></details></div>`;
-        }
+        // More than one scene: extra digital backdrops, and a custom idea.
+        const price = Number(cfg.extra_price) || 50;
+        const extra = `<div class="tf2-bdx" id="tf2-bdx">
+                <div class="tf2-bdx__head">
+                    <span class="tf2-bdx__title">Add more backdrops</span>
+                    <span class="tf2-bdx__price">+TT$${price} per extra digital backdrop${cfg.extra ? ' · <b>early bird: your first extra is free</b>' : ''}</span>
+                </div>
+                <div class="tf2-bdx__grid" id="tf2-bdx-grid"></div>
+                <p class="tf2-bdx__sum" id="tf2-bdx-sum" aria-live="polite"></p>
+            </div>
+            ${cfg.custom ? `<div class="tf2-bdc">
+                <label class="tf2-bdc__toggle"><input type="checkbox" id="tf2-bdc-on"${this.customBackdrop ? ' checked' : ''}>
+                    <span><b>Custom created backdrop</b> Not seeing a backdrop you love? Tell us your idea and we'll create one for you. We'll send you a quote.</span></label>
+                <textarea id="tf2-bdc-idea" class="tf2-bdc__idea" rows="3" maxlength="1000" placeholder="e.g. A cosy cabin with snow outside the window, red and gold colours"${this.customBackdrop ? '' : ' hidden'}>${esc(this.customBackdrop)}</textarea>
+            </div>` : ''}`;
 
         box.innerHTML = `<fieldset class="tf2-bd">
             <legend class="tf2-bd__title">${esc(cfg.title || 'Choose your backdrop')}</legend>
@@ -894,43 +906,64 @@ const tfBooking = {
 
         box.querySelectorAll('input[name="tf2_backdrop"]').forEach((r) => r.addEventListener('change', () => {
             this.selectedBackdrop = r.value;
-            if (this.selectedBackdropExtra === r.value) this.selectedBackdropExtra = '';
+            this.selectedBackdropExtras = this.selectedBackdropExtras.filter((k) => k !== r.value);
             box.classList.remove('tf2-backdrop--missing');
             this.paintExtra();
             this.renderChosen();
             if (this.step === 4 && this.selectedPackageData && this.selectedDate) this.renderSummary();
             this.saveState();
         }));
+        const on = document.getElementById('tf2-bdc-on'), idea = document.getElementById('tf2-bdc-idea');
+        if (on && idea) {
+            on.addEventListener('change', () => { idea.hidden = !on.checked; if (on.checked) idea.focus(); else { this.customBackdrop = ''; this.saveState(); } });
+            idea.addEventListener('input', () => { this.customBackdrop = idea.value.slice(0, 1000); this.saveState(); });
+        }
         this.paintExtra();
         this.renderChosen();
     },
 
-    // The free extra scene: a thumbnail dropdown (never the scene already chosen).
+    // Extra backdrops chosen, and what they cost (the first is free for an early bird).
+    backdropExtrasCost() {
+        const cfg = this.backdropConfig();
+        if (!cfg) return { n: 0, free: 0, paid: 0, fee: 0 };
+        const n = this.selectedBackdropExtras.length;
+        const free = cfg.extra && n > 0 ? 1 : 0;
+        const paid = Math.max(0, n - free);
+        return { n, free, paid, fee: paid * (Number(cfg.extra_price) || 50) };
+    },
+
+    // The extra-backdrop tiles: every digital scene except the main one, tick to add.
     paintExtra() {
         const cfg = this.backdropConfig();
-        const sum = document.getElementById('tf2-dd-sum'), list = document.getElementById('tf2-dd-list'), dd = document.getElementById('tf2-dd');
-        if (!cfg || !sum || !list) return;
+        const grid = document.getElementById('tf2-bdx-grid'), sum = document.getElementById('tf2-bdx-sum'), wrap = document.getElementById('tf2-bdx');
+        if (!cfg || !grid) return;
         const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-        const scenes = cfg.choices.filter((c) => c.thumb && c.key !== this.selectedBackdrop);
-        if (!scenes.some((c) => c.key === this.selectedBackdropExtra)) this.selectedBackdropExtra = '';
-        const cur = scenes.find((c) => c.key === this.selectedBackdropExtra);
-        sum.innerHTML = cur
-            ? `<img src="${esc(cur.thumb)}" alt=""><span>${esc(cur.name)}</span>`
-            : `<span class="tf2-dd__ph" aria-hidden="true">+</span><span>Choose your free scene (or decide later)</span>`;
-        list.innerHTML = `<li><button type="button" data-extra="" class="${cur ? '' : 'is-on'}"><span class="tf2-dd__ph" aria-hidden="true">–</span><span>Decide later</span></button></li>` +
-            scenes.map((c) => `<li><button type="button" data-extra="${esc(c.key)}" class="${c.key === this.selectedBackdropExtra ? 'is-on' : ''}"><img src="${esc(c.thumb)}" alt="" loading="lazy"><span>${esc(c.name)}</span></button></li>`).join('');
-        list.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
-            this.selectedBackdropExtra = b.getAttribute('data-extra') || '';
+        const scenes = cfg.choices.filter((c) => c.kind === 'scene' && c.key !== this.selectedBackdrop);
+        this.selectedBackdropExtras = this.selectedBackdropExtras.filter((k) => scenes.some((c) => c.key === k));
+        if (wrap) wrap.hidden = !scenes.length;
+        const price = Number(cfg.extra_price) || 50;
+        grid.innerHTML = scenes.map((c) => {
+            const pos = this.selectedBackdropExtras.indexOf(c.key);
+            const on = pos > -1;
+            const tag = on ? (cfg.extra && pos === 0 ? 'Free' : `+TT$${price}`) : (cfg.extra && !this.selectedBackdropExtras.length ? 'Free' : `+TT$${price}`);
+            return `<label class="tf2-bdx__opt${on ? ' is-on' : ''}">
+                <input type="checkbox" value="${esc(c.key)}"${on ? ' checked' : ''}>
+                <span class="tf2-bdx__art">${c.thumb ? `<img src="${esc(c.thumb)}" alt="" loading="lazy" decoding="async">` : ''}<span class="tf2-bdx__tick" aria-hidden="true"></span></span>
+                <span class="tf2-bdx__name">${esc(c.name)}</span>
+                <span class="tf2-bdx__tag${tag === 'Free' ? ' is-free' : ''}">${tag}</span>
+            </label>`;
+        }).join('');
+        const k = this.backdropExtrasCost();
+        sum.textContent = !k.n ? 'Optional: mix scenes in one session. You choose which photo gets which backdrop when you pick your photos.'
+            : `${k.n} extra backdrop${k.n === 1 ? '' : 's'}: ${k.fee ? 'TT$' + k.fee.toLocaleString() : 'free'}${k.free ? ' (1 free, early bird)' : ''}. You choose which photo gets which backdrop when you pick your photos.`;
+        grid.querySelectorAll('input[type=checkbox]').forEach((cb) => cb.addEventListener('change', () => {
+            if (cb.checked) { if (!this.selectedBackdropExtras.includes(cb.value)) this.selectedBackdropExtras.push(cb.value); }
+            else this.selectedBackdropExtras = this.selectedBackdropExtras.filter((x) => x !== cb.value);
             this.paintExtra();
             this.renderChosen();
             if (this.step === 4 && this.selectedPackageData && this.selectedDate) this.renderSummary();
-            if (dd) dd.open = false;
             this.saveState();
         }));
-        if (dd && !dd.dataset.wired) {
-            dd.dataset.wired = '1';
-            document.addEventListener('click', (e) => { if (dd.open && !dd.contains(e.target)) dd.open = false; });
-        }
     },
 
     // "Your backdrop" chip: shown next to the booking so the choice is always visible.
@@ -946,9 +979,9 @@ const tfBooking = {
         if (!c) {
             el.innerHTML = `<span class="tf2-chosen__ph" aria-hidden="true">?</span><span class="tf2-chosen__txt"><span class="tf2-chosen__k">Your backdrop</span><b>None chosen yet</b></span><button type="button" class="tf2-chosen__chg" data-chg>Choose</button>`;
         } else {
-            const x = cfg.choices.find((y) => y.key === this.selectedBackdropExtra);
+            const n = this.selectedBackdropExtras.length;
             el.innerHTML = (c.thumb ? `<img src="${esc(c.thumb)}" alt="">` : `<span class="tf2-chosen__ph" aria-hidden="true">✓</span>`) +
-                `<span class="tf2-chosen__txt"><span class="tf2-chosen__k">Your backdrop</span><b>${esc(c.name)}</b>${x ? `<span class="tf2-chosen__x">+ free scene: ${esc(x.name)}</span>` : ''}</span>` +
+                `<span class="tf2-chosen__txt"><span class="tf2-chosen__k">Your backdrop</span><b>${esc(c.name)}</b>${n ? `<span class="tf2-chosen__x">+ ${n} more backdrop${n === 1 ? '' : 's'}</span>` : ''}</span>` +
                 `<button type="button" class="tf2-chosen__chg" data-chg>Change</button>`;
         }
         const btn = el.querySelector('[data-chg]');
@@ -962,7 +995,7 @@ const tfBooking = {
     /** Pre-select a backdrop from outside the wizard (the landing page's scene viewer). */
     chooseBackdrop(key) {
         this.selectedBackdrop = key;
-        if (this.selectedBackdropExtra === key) this.selectedBackdropExtra = '';
+        this.selectedBackdropExtras = this.selectedBackdropExtras.filter((k) => k !== key);
         const r = document.querySelector('input[name="tf2_backdrop"][value="' + key + '"]');
         if (r) { r.checked = true; document.getElementById('tf2-backdrop').classList.remove('tf2-backdrop--missing'); }
         this.paintExtra();
@@ -1225,6 +1258,16 @@ const tfBooking = {
             lines += `<div style="font-size:12.5px; opacity:0.85; margin-top:8px;">${gap ? `Coupon ${this.coupon.code} needs a session of at least TTD ${fmt(this.coupon.min_spend)}.` : `Coupon ${this.coupon.code} doesn't apply to this package.`}</div>`;
         }
 
+        // Extra digital backdrops (TT$50 each; an early bird's first is free).
+        const bk = this.backdropExtrasCost();
+        if (bk.n) {
+            if (!lines.includes('Session')) {
+                lines = `<div style="display:flex; justify-content:space-between; opacity:0.9; font-size:14px; margin-top:8px;"><span>Session</span><span>TTD ${fmt(total)}</span></div>` + lines;
+            }
+            lines += `<div style="display:flex; justify-content:space-between; opacity:0.9; font-size:14px;"><span>Extra backdrops (${bk.n}${bk.free ? ', 1 free' : ''})</span><span>${bk.fee ? 'TTD ' + fmt(bk.fee) : 'Free'}</span></div>`;
+            total += bk.fee;
+        }
+
         // Transport fee: shoots away from the studio, outside the central area.
         const where = document.getElementById('tf2-where');
         const transport = where && this.shootType() === 'location' && this.shootPoint && this.shootPoint.outside
@@ -1247,8 +1290,8 @@ const tfBooking = {
 
         const bcfg = this.backdropConfig();
         const bch = bcfg ? bcfg.choices.find((x) => x.key === this.selectedBackdrop) : null;
-        const bex = bcfg ? bcfg.choices.find((x) => x.key === this.selectedBackdropExtra) : null;
-        const bline = bch ? `<div class="tf2-summary-bd">${bch.thumb ? `<img src="${bch.thumb}" alt="">` : ''}<span>Backdrop: <b>${bch.name}</b>${bex ? ` · free scene: <b>${bex.name}</b>` : ''}</span></div>` : '';
+        const bxn = bcfg ? this.selectedBackdropExtras.map((k) => (bcfg.choices.find((x) => x.key === k) || {}).name).filter(Boolean) : [];
+        const bline = bch ? `<div class="tf2-summary-bd">${bch.thumb ? `<img src="${bch.thumb}" alt="">` : ''}<span>Backdrop: <b>${bch.name}</b>${bxn.length ? ` + <b>${bxn.join(', ')}</b>` : ''}</span></div>` : '';
         summary.innerHTML = `
             <h4>${this.selectedPackageData.name}</h4>
             <div class="tf2-summary-detail">${d.toLocaleDateString(undefined, options)} at ${this.selectedTimeDisplay}</div>
@@ -1381,7 +1424,8 @@ const tfBooking = {
             gift_code: this.gift ? this.gift.code : '',
             coupon_code: this.couponFits() ? this.coupon.code : '',
             backdrop: this.selectedBackdrop,
-            backdrop_extra: this.selectedBackdropExtra,
+            backdrop_extras: this.selectedBackdropExtras,
+            custom_backdrop: this.customBackdrop,
             shoot_location: this.shootType(),
             shoot_lat: this.shootPoint ? this.shootPoint.lat : '',
             shoot_lng: this.shootPoint ? this.shootPoint.lng : '',

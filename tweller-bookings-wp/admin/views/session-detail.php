@@ -552,6 +552,9 @@
                     <?php endif; ?>
                 </div>
             </div>
+
+            <!-- Backdrop edits: which backdrop for which photo, and the editing brief -->
+            <?php if ( class_exists( 'TwellerFlow2_Backdrop_Edits' ) ) { echo TwellerFlow2_Backdrop_Edits::admin_card( $session ); /* phpcs:ignore */ if ( TwellerFlow2_Backdrop_Edits::plan_for( $session ) ) include TWELLER_FLOW_2_PLUGIN_DIR . 'admin/views/partials/copy-js.php'; } ?>
         </div>
 
         <!-- Right Column -->

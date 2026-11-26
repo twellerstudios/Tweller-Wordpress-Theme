@@ -539,3 +539,36 @@ body.tw-xmas-page { overflow-x: hidden; }
 .tw-ba__head { grid-template-columns: auto 1fr; }
 @media (min-width: 700px) { .tw-ba__head { grid-template-columns: auto 1fr; } .tw-xmas .tw-ba__pick { grid-column: auto; grid-row: auto; } }
 @media (max-width: 599px) { .tw-xmas .tw-slide__pick { width: 100%; } .tw-xmas .tw-ba__foot .tw-ba__pick { width: 100%; } }
+
+/* 2b · More than one scene · Custom created backdrops */
+.tw-more { background: var(--paper); padding-top: 8px; }
+.tw-more__grid { display: grid; gap: 16px; }
+.tw-more__card { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 26px 24px; overflow: hidden; }
+.tw-more__card p { margin: 0; }
+.tw-more__fan { position: relative; height: 112px; margin: 2px 0 8px; }
+.tw-more__fan img { position: absolute; top: 8px; width: min(150px, 46%); height: 100px; object-fit: cover; border-radius: 10px; border: 3px solid #fff;
+    box-shadow: 0 14px 28px -14px rgba(21, 17, 14, .55); transition: transform .45s var(--ease); }
+.tw-more__fan img:nth-child(1) { left: 0; transform: rotate(-6deg); }
+.tw-more__fan img:nth-child(2) { left: min(84px, 27%); top: 2px; z-index: 2; transform: rotate(2deg); }
+.tw-more__fan img:nth-child(3) { left: min(168px, 54%); transform: rotate(7deg); }
+.tw-more__card:hover .tw-more__fan img:nth-child(1) { transform: rotate(-9deg) translateX(-6px); }
+.tw-more__card:hover .tw-more__fan img:nth-child(3) { transform: rotate(10deg) translateX(6px); }
+.tw-more__price { font-size: 15px; color: var(--muted); }
+.tw-more__price b { font: 600 28px/1 var(--serif); color: var(--red); margin-right: 4px; }
+.tw-more__eb { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(226, 191, 116, .16); color: var(--ink-2); font-size: 14.5px; }
+.tw-more__eb span { padding: 3px 9px; border-radius: 99px; background: var(--green); color: #fff; font: 700 11px/1.4 var(--sans); letter-spacing: .12em; text-transform: uppercase; }
+.tw-more__cta { margin-top: auto; align-self: flex-start; }
+.tw-more__card--custom { background: linear-gradient(160deg, rgba(23, 58, 46, .06), rgba(226, 191, 116, .14)); border-style: dashed; }
+.tw-more__mark { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 18px; color: var(--gold-ink); background: rgba(226, 191, 116, .22); }
+.tw-more .tw-more__card .tw-more__new { align-self: flex-start; padding: 3px 10px; border-radius: 99px; background: var(--red); color: #fff !important; font: 700 11px/1.5 var(--sans); letter-spacing: .14em; text-transform: uppercase; }
+.tw-more__card--custom em { font-family: var(--serif); font-size: 1.12em; color: var(--ink); }
+.tw-more__btns { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: auto; padding-top: 6px; }
+.tw-more__btn { background: var(--green); color: #fff; }
+.tw-more__btn:hover { filter: brightness(1.12); }
+.tw-more__link { color: var(--ink); font-weight: 600; text-underline-offset: 3px; }
+.tw-more__fine { font-size: 13px; color: var(--muted); }
+@media (min-width: 900px) {
+    .tw-more__grid { grid-template-columns: 1.1fr 1fr; gap: 20px; }
+    .tw-more__card { padding: 32px 32px 30px; }
+}
+@media (prefers-reduced-motion: reduce) { .tw-more__fan img { transition: none; } }

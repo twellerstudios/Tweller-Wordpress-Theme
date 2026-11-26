@@ -666,3 +666,41 @@
 @media (max-width: 600px) {
     .tc-lb-stage { height: 62vh; }
 }
+
+/* ── Backdrops: which one goes on which photo ─────────── */
+.tc-bd { margin: 0 0 18px; padding: 18px 20px; border-radius: 14px; background: #FAF7F1; border: 1px solid #E8DFCD; }
+.tc-bd[hidden] { display: none; }
+.tc-bd__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-bottom: 12px; }
+.tc-bd__title { margin: 0; font-size: 17px; font-weight: 700; color: #111; }
+.tc-bd__hint { margin: 0; font-size: 13.5px; color: #6B6257; }
+.tc-bd__chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.tc-bd__chip { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 12px; background: #fff; border: 1px solid #E8DFCD; }
+.tc-bd__chip img { width: 54px; height: 36px; object-fit: cover; border-radius: 8px; }
+.tc-bd__chip b { display: block; font-size: 13.5px; color: #111; }
+.tc-bd__chip small { font-size: 12px; color: #6B6257; }
+.tc-bd__chip--keep { padding-left: 14px; }
+.tc-bd__free { margin-top: 16px; padding-top: 14px; border-top: 1px dashed #D8C9A8; }
+.tc-bd__freetitle { margin: 0 0 10px; font-size: 14px; color: #3D3630; }
+.tc-bd__freegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.tc-bd__freeopt { display: flex; flex-direction: column; gap: 6px; padding: 6px; border: 2px solid #E8DFCD; border-radius: 12px; background: #fff; cursor: pointer; font: 600 13px/1.2 inherit; color: #111; text-align: left; }
+.tc-bd__freeopt img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 8px; }
+.tc-bd__freeopt:hover, .tc-bd__freeopt:focus-visible { border-color: #1F5A3A; outline: none; }
+.tc-bd__freeopt[disabled] { opacity: .6; cursor: wait; }
+.tc-bd__freemsg { margin: 8px 0 0; font-size: 13px; color: #6B6257; }
+
+/* The menu on each chosen photo (above the invisible image shield) */
+.tc-bdpick { position: absolute; left: 6px; right: 6px; bottom: 6px; z-index: 3; display: none; align-items: center; gap: 6px;
+    padding: 4px 6px 4px 4px; border-radius: 10px; background: rgba(255, 255, 255, .95); box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.tc-grid__item--selected .tc-bdpick { display: flex; }
+.tc-bdpick img { flex: none; width: 34px; height: 24px; object-fit: cover; border-radius: 5px; pointer-events: none; }
+.tc-bdpick__dot { flex: none; width: 10px; height: 10px; margin: 0 4px; border-radius: 50%; background: #C9B48A; }
+.tc-bdpick select { flex: 1; min-width: 0; min-height: 32px; border: 0; background: transparent; font: 600 12.5px/1.2 inherit; color: #111; cursor: pointer; }
+.tc-bdpick__fixed { font-size: 12.5px; font-weight: 600; color: #111; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tc-confirm-bd { margin: 0 0 10px; padding: 10px 12px; border-radius: 8px; background: #FAF7F1; color: #3D3630; font-size: 14px; }
+/* Free-gift options stay a compact grid even when the theme styles buttons full-width;
+   the per-photo backdrop menu leaves room for the zoom button. */
+.tc-bd .tc-bd__freegrid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+.tc-bd .tc-bd__freeopt { width: auto; min-width: 0; margin: 0; }
+.tc-bd .tc-bd__freeopt span { white-space: normal; }
+.tc-grid__item .tc-bdpick { right: 46px; }
+@media (max-width: 420px) { .tc-bd .tc-bd__freegrid { grid-template-columns: repeat(2, 1fr); } }
