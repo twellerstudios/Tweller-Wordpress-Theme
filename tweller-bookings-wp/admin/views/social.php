@@ -41,7 +41,7 @@ if ( $album_id ) foreach ( $all as $a ) if ( (int) $a['session']->id === $album_
     transition: transform .18s ease, box-shadow .18s ease; }
 .tf2-sp__card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -12px rgba(17,24,39,.25); color: inherit; }
 .tf2-sp__card:focus-visible { outline: 3px solid #93C5FD; outline-offset: 2px; }
-.tf2-sp__mosaic { position: relative; display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; aspect-ratio: 4 / 3; background: #EEE; }
+.tf2-sp__mosaic { position: relative; display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; aspect-ratio: 4 / 3; background: #EEE; overflow: hidden; }
 .tf2-sp__mosaic img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .tf2-sp__mosaic img:first-child { grid-row: 1 / 3; }
 .tf2-sp__mosaic--1 { grid-template-columns: 1fr; } .tf2-sp__mosaic--1 img:first-child { grid-row: auto; }
